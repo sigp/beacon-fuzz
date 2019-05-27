@@ -12,11 +12,15 @@ void Differential::AddModule(std::shared_ptr<Base> module) {
 }
 
 void Differential::Run(const std::vector<uint8_t> data) const {
-    std::optional<std::vector<uint8_t>> prev;
+    std::optional<std::vector<uint8_t>> prev = std::nullopt;
     bool first = true;
 
     for (const auto& module : modules) {
         auto cur = module->Run(data);
+
+        if ( cur == std::nullopt ) {
+            continue;
+        }
 
         if ( first == false && cur != prev ) {
             printf("Difference detected\n");

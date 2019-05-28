@@ -19,6 +19,26 @@ git clone https://github.com/guidovranken/go-fuzz.git
 cd go-fuzz
 git checkout libfuzzer-extensions
 
+mkdir -p $GOPATH/src/github.com/protolambda
+
+cd $GOPATH/src/github.com/protolambda
+git clone https://github.com/ethereum/eth2.0-specs
+cd eth2.0-specs
+git checkout v0.6.0
+
+# Get and configure zrnt
+cd $GOPATH/src/github.com/protolambda
+git clone https://github.com/protolambda/zrnt.git
+# Dependency of zrnt
+go get gopkg.in/yaml.v2
+cd zrnt/eth2/core/
+go generate
+cd /eth2
+
+
+# Get eth2.0-specs
+git clone --depth 1 https://github.com/ethereum/eth2.0-specs.git
+export ETH2_SPECS_PATH=`realpath eth2.0-specs/`
 cd /eth2
 
 go get golang.org/x/tools/go/packages
@@ -38,7 +58,7 @@ make
 
 cd /eth2/fuzzers
 # Recursively make all fuzzers
-make
+make all
 
 # Find fuzzers, copy them over
 #find . -type f ! -name '*.*' -executable -exec cp {} /eth2/out \;

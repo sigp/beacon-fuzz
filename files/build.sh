@@ -39,6 +39,7 @@ cd zrnt/eth2/core/
 go generate
 cd /eth2
 
+go get github.com/prysmaticlabs/go-ssz
 
 # Get eth2.0-specs
 git clone --depth 1 https://github.com/ethereum/eth2.0-specs.git

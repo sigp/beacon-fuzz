@@ -12,7 +12,7 @@ CXXFLAGS+=-I $(realpath ..)
 LDFLAGS+=-L $(realpath ../lib) -leth2fuzz
 export
 
-TARGETS := py-go-test shuffle
+TARGETS := py-go-test shuffle deposit
 .PHONY: $(TARGETS)
 
 $(TARGETS):

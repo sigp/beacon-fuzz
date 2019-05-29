@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #define COVERAGE_ARRAY_SIZE 65536
 
 extern "C" {
@@ -9,9 +7,7 @@ extern "C" {
     uint8_t coverage_counter[COVERAGE_ARRAY_SIZE];
 }
 
-extern "C" void global_record_code_coverage(const char* filename, const char* function, const int line)
+extern "C" void global_record_code_coverage(void* codeptr, int lasti)
 {
-    static std::hash<std::string> hasher;
-    coverage_counter[ hasher(std::string(filename) + std::string(function) + std::to_string(line)) % COVERAGE_ARRAY_SIZE ] = 1;
+    coverage_counter[ ((size_t)(codeptr) ^ (size_t)(lasti)) % COVERAGE_ARRAY_SIZE ] = 1;
 }
-

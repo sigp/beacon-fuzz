@@ -1,4 +1,4 @@
-CXXFLAGS+=-std=c++17
+CXXFLAGS+=-std=c++17 -O3
 
 all : libeth2fuzz.a
 

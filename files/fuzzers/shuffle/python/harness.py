@@ -1,3 +1,4 @@
+hash = _hash
 import struct
 def FuzzerRunOne(FuzzerInput):
     if len(FuzzerInput) < 2 + 32:

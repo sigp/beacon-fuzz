@@ -1,5 +1,9 @@
 #!/bin/bash
 
+curl https://sh.rustup.rs -sSf | sh -s -- -y
+rustup default nightly
+source $HOME/.cargo/env
+
 cd /eth2
 
 export CC=clang-6.0

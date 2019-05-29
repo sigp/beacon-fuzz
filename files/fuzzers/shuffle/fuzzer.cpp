@@ -2,13 +2,50 @@
 #include <lib/python.h>
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/rust.h>
+#include <cstring>
 
 #ifndef PYTHON_HARNESS_PATH
 #error PYTHON_HARNESS_PATH undefined
 #endif
 
+extern "C" bool shuffle_list_c(uint64_t* input_ptr, size_t input_size, uint8_t* seed_ptr);
+
+namespace fuzzing {
+    class Lighthouse_Shuffle : public Rust {
+        std::optional<std::vector<uint8_t>> run(const std::vector<uint8_t>& data) override {
+            std::vector<size_t> input;
+            uint16_t count;
+            uint8_t* seed = (uint8_t*)malloc(32);
+
+            if ( data.size() < sizeof(count) + sizeof(seed) ) {
+                return std::nullopt;
+            }
+
+            memcpy(&count, data.data(), sizeof(count));
+            count %= 100;
+            memcpy(seed, data.data() + sizeof(count), 32);
+
+            input.resize(count);
+            for (size_t i = 0; i < count; i++) {
+                input[i] = i;
+            }
+
+            if ( shuffle_list_c(input.data(), input.size(), seed) == false ) {
+                return std::nullopt;
+            }
+
+            std::vector<uint8_t> ret(input.size() * sizeof(size_t));
+            memcpy(ret.data(), input.data(), input.size() * sizeof(size_t));
+
+            return ret;
+        }
+    };
+} /* namespace fuzzing */
+
 std::shared_ptr<fuzzing::Python> python = nullptr;
 std::shared_ptr<fuzzing::Go> go = nullptr;
+std::shared_ptr<fuzzing::Lighthouse_Shuffle> lighthouse = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -16,11 +53,15 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     differential = std::make_unique<fuzzing::Differential>();
 
     differential->AddModule(
-        python = std::make_shared<fuzzing::Python>((*argv)[0], PYTHON_HARNESS_PATH)
+            python = std::make_shared<fuzzing::Python>((*argv)[0], PYTHON_HARNESS_PATH)
     );
 
     differential->AddModule(
             go = std::make_shared<fuzzing::Go>()
+    );
+
+    differential->AddModule(
+            lighthouse = std::make_shared<fuzzing::Lighthouse_Shuffle>()
     );
 
     return 0;

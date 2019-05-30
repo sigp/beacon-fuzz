@@ -1,0 +1,12 @@
+[package]
+name = "block_header_fuzzer"
+version = "0.1.0"
+authors = ["Guido Vranken <guido.vranken@ethereum.org>", "Paul Hauner <paul@sigmaprime.io>"]
+edition = "2018"
+
+[dependencies]
+ssz = { path = "../../../lighthouse/eth2/utils/ssz/" }
+ssz_derive = { path = "../../../lighthouse/eth2/utils/ssz_derive/" }
+state_processing = { path = "../../../lighthouse/eth2/state_processing/" }
+types = { path = "../../../lighthouse/eth2/types" }
+libc = "0.2"

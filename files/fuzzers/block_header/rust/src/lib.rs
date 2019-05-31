@@ -42,9 +42,10 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
 
 #[no_mangle]
 pub fn block_header_c(
-    // TODO: I'm not sure these input vars are correct.
     input_ptr: *mut uint8_t,
-    input_size: size_t) -> bool {
+    input_size: size_t,
+    output_ptr: *mut uint8_t,
+    output_size: *mut size_t) -> bool {
 
     let input_bytes: &[u8] = unsafe {
         slice::from_raw_parts(input_ptr, input_size as usize)
@@ -52,13 +53,16 @@ pub fn block_header_c(
 
     // Note: `FoundationEthSpec` contains the "constants" in the official spec.
     if let Ok(output_bytes) = fuzz::<FoundationEthSpec>(input_bytes) {
-        // TODO: I doubt this `copy_nonoverlapping` is correct.
         unsafe {
-            ptr::copy_nonoverlapping(output_bytes.as_ptr(), input_ptr, input_size);
+            if output_bytes.len() > *output_size {
+                return false;
+            }
+            ptr::copy_nonoverlapping(output_bytes.as_ptr(), output_ptr, output_bytes.len());
+            *output_size = output_bytes.len();
         }
 
-        true
+        return true;
     } else {
-        false
+        return false;
     }
 }

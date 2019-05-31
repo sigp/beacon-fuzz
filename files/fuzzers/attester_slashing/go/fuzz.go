@@ -8,7 +8,7 @@ import (
     "bufio"
 )
 
-type DepositTestCase struct {
+type Input struct {
 	Pre                 beacon.BeaconState
 	AttesterSlashing    beacon.AttesterSlashing
 }
@@ -16,7 +16,7 @@ type DepositTestCase struct {
 func Fuzz(data []byte) []byte {
     reader := bytes.NewReader(data)
 
-    var input DepositTestCase;
+    var input Input;
     if err := go_ssz.Decode(reader, &input); err != nil {
         return []byte{}
     }

@@ -45,9 +45,20 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::vector<uint8_t> v(data, data + size);
+typedef struct { void *data; long long len; long long cap; } GoSlice;
+extern "C" {
+    size_t BlockHeaderPreprocess(GoSlice);
+    void BlockHeaderPreprocessGetReturnData(GoSlice);
+}
 
+extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size) {
+    const size_t modifiedSize = BlockHeaderPreprocess({data, (long long)size, (long long)size});
+    if ( modifiedSize == 0 ) {
+        return 0;
+    }
+
+    std::vector<uint8_t> v(modifiedSize);
+    BlockHeaderPreprocessGetReturnData({v.data(), (long long)v.size(), (long long)v.size()});
     differential->Run(v);
 
     return 0;

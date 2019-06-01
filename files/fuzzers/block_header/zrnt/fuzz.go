@@ -41,13 +41,13 @@ func Fuzz(data []byte) []byte {
 
 var g_return_data = make([]byte, 0);
 
-//export BlockHeaderPreprocessGetReturnData
-func BlockHeaderPreprocessGetReturnData(return_data []byte) {
+//export SSZPreprocessGetReturnData
+func SSZPreprocessGetReturnData(return_data []byte) {
     copy(return_data, g_return_data)
 }
 
-//export BlockHeaderPreprocess
-func BlockHeaderPreprocess(data []byte) int {
+//export SSZPreprocess
+func SSZPreprocess(data []byte) int {
     g_return_data = []byte{}
     var input Input;
 

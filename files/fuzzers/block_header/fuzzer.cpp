@@ -2,6 +2,7 @@
 #include <lib/differential.h>
 #include <lib/go.h>
 #include <lib/rust.h>
+#include <lib/ssz-preprocess.h>
 #include <cstring>
 
 extern "C" bool block_header_c(uint8_t* input_ptr, size_t input_size, uint8_t* output_ptr, size_t* output_size);
@@ -52,13 +53,10 @@ extern "C" {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size) {
-    const size_t modifiedSize = BlockHeaderPreprocess({data, (long long)size, (long long)size});
-    if ( modifiedSize == 0 ) {
+    auto v = fuzzing::SSZPreprocess(data, size);
+    if ( v.empty() ) {
         return 0;
     }
-
-    std::vector<uint8_t> v(modifiedSize);
-    BlockHeaderPreprocessGetReturnData({v.data(), (long long)v.size(), (long long)v.size()});
     differential->Run(v);
 
     return 0;

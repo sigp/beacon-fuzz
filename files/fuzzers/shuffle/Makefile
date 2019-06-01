@@ -1,35 +1,35 @@
 all: fuzzer
 
-PYTHON_HARNESS_PATH="\"$(realpath python/eth2_specs/test_libs/pyspec/spec.py)\""
+PYTHON_HARNESS_PATH="\"$(realpath pyspec/eth2_specs/test_libs/pyspec/spec.py)\""
 
-python/eth2_specs/test_libs/pyspec/spec.py : python/harness.py
+pyspec/eth2_specs/test_libs/pyspec/spec.py : pyspec/harness.py
 	test $(ETH2_SPECS_PATH)
-	rm -rf python/eth2_specs
-	mkdir -p python/eth2_specs
-	cp -R $(ETH2_SPECS_PATH)/* python/eth2_specs
-	cd python/eth2_specs && make phase0
-	cp python/eth2_specs/test_libs/pyspec/eth2spec/phase0/spec.py python/eth2_specs/test_libs/pyspec
-	cat python/harness.py >>python/eth2_specs/test_libs/pyspec/spec.py
+	rm -rf pyspec/eth2_specs
+	mkdir -p pyspec/eth2_specs
+	cp -R $(ETH2_SPECS_PATH)/* pyspec/eth2_specs
+	cd pyspec/eth2_specs && make phase0
+	cp pyspec/eth2_specs/test_libs/pyspec/eth2spec/phase0/spec.py pyspec/eth2_specs/test_libs/pyspec
+	cat pyspec/harness.py >>pyspec/eth2_specs/test_libs/pyspec/spec.py
 
-rust.a : rust/
+lighthouse.a : lighthouse/
 	# TODO add coverage flags to Rust build
-	rm -rf rust.a
-	rm -rf rust_out/
-	mkdir rust_out/
+	rm -rf lighthouse.a
+	rm -rf lighthouse_out/
+	mkdir lighthouse_out/
 	cargo rustc \
-		--target-dir=rust_out \
-		--manifest-path=rust/Cargo.toml \
+		--target-dir=lighthouse_out \
+		--manifest-path=lighthouse/Cargo.toml \
 		--release -- \
 		--crate-type=staticlib \
 		--target x86_64-unknown-linux-gnu
-	cp rust_out/release/deps/libswap_or_not_shuffle_fuzzer-*.a rust.a
+	cp lighthouse_out/release/deps/libswap_or_not_shuffle_fuzzer-*.a lighthouse.a
 
-go.a : go/fuzz.go
+zrnt.a : zrnt/fuzz.go
 	test $(GO_FUZZ_BUILD_PATH)
-	cd go && $(GO_FUZZ_BUILD_PATH) -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../go.a .
+	cd zrnt && $(GO_FUZZ_BUILD_PATH) -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../zrnt.a .
 
-fuzzer : fuzzer.cpp go.a python/eth2_specs/test_libs/pyspec/spec.py rust.a
-	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH=$(PYTHON_HARNESS_PATH) fuzzer.cpp go.a rust.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
+fuzzer : fuzzer.cpp zrnt.a pyspec/eth2_specs/test_libs/pyspec/spec.py lighthouse.a
+	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH=$(PYTHON_HARNESS_PATH) fuzzer.cpp zrnt.a lighthouse.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
 
 clean:
-	rm -rf fuzzer go.a python/eth2_specs rust_out
+	rm -rf fuzzer zrnt.a pyspec/eth2_specs lighthouse_out

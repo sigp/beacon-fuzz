@@ -31,15 +31,9 @@ cd eth2.0-specs
 git checkout v0.6.0
 
 # Get and configure zrnt
-cd $GOPATH/src/github.com/protolambda
-git clone https://github.com/protolambda/zrnt.git
-# Dependency of zrnt
-go get gopkg.in/yaml.v2
-cd zrnt/eth2/core/
-go generate
+go get github.com/protolambda/zrnt
+go get github.com/protolambda/zssz
 cd /eth2
-
-go get github.com/prysmaticlabs/go-ssz
 
 # Get eth2.0-specs
 git clone --depth 1 https://github.com/ethereum/eth2.0-specs.git
@@ -61,6 +55,7 @@ make install
 cd /eth2/lib
 make
 
+export GOPATH=$GOPATH:/eth2/lib/go
 cd /eth2/fuzzers
 # Recursively make all fuzzers
 make all

@@ -3,9 +3,7 @@ package fuzz
 import (
 	"github.com/protolambda/zrnt/eth2/beacon"
 	"github.com/protolambda/zrnt/eth2/beacon/block_processing"
-    go_ssz "github.com/prysmaticlabs/go-ssz"
-    "bytes"
-    "bufio"
+    "helper"
 )
 
 type Input struct {
@@ -14,22 +12,16 @@ type Input struct {
 }
 
 func Fuzz(data []byte) []byte {
-    reader := bytes.NewReader(data)
-
-    var input Input;
-    if err := go_ssz.Decode(reader, &input); err != nil {
+    var input Input
+    if err := helper.Decode(data, &input); err != nil {
         return []byte{}
     }
+
+    helper.CorrectInvariants(input.Pre)
 
     if err := block_processing.ProcessAttestation(&input.Pre, &input.Attestation); err != nil {
         return []byte{}
     }
 
-    var ret bytes.Buffer
-    writer := bufio.NewWriter(&ret)
-    if err := go_ssz.Encode(writer, input.Pre); err != nil {
-        return []byte{}
-    }
-
-    return ret.Bytes()
+    return helper.EncodePoststate(input.Pre)
 }

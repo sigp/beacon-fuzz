@@ -1,23 +1,17 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/beacon"
 	"github.com/protolambda/zrnt/eth2/beacon/block_processing"
-    go_ssz "github.com/prysmaticlabs/go-ssz"
-    "bytes"
-    "bufio"
+    "helper"
 )
 
-type Input struct {
-	Pre             beacon.BeaconState
-	VoluntaryExit   beacon.VoluntaryExit
+func init() {
+    helper.SetInputType(helper.INPUT_TYPE_VOLUNTARY_EXIT)
 }
 
 func Fuzz(data []byte) []byte {
-    reader := bytes.NewReader(data)
-
-    var input Input;
-    if err := go_ssz.Decode(reader, &input); err != nil {
+    input, err := helper.DecodeVoluntaryExit(data)
+    if err != nil {
         return []byte{}
     }
 
@@ -25,11 +19,5 @@ func Fuzz(data []byte) []byte {
         return []byte{}
     }
 
-    var ret bytes.Buffer
-    writer := bufio.NewWriter(&ret)
-    if err := go_ssz.Encode(writer, input.Pre); err != nil {
-        return []byte{}
-    }
-
-    return ret.Bytes()
+    return helper.EncodePoststate(input.Pre)
 }

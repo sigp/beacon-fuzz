@@ -11,6 +11,7 @@ import (
     "reflect"
     "errors"
     "bufio"
+    "fmt"
 )
 
 type InputType uint64
@@ -86,17 +87,14 @@ func CheckInvariants(state beacon.BeaconState, correct bool) error {
     /* Balances and ValidatorRegistry must be the same length */
     if len(state.Balances) != len(state.ValidatorRegistry) {
         if correct == false {
-            return errors.New("Balances/ValidatorRegistry length mismatch")
+            return fmt.Errorf("Balances/ValidatorRegistry length mismatch (%v and %v)", len(state.Balances), len(state.ValidatorRegistry))
         }
-        if len(state.Balances) < len(state.ValidatorRegistry) {
-            for i := 0; i < len(state.ValidatorRegistry); i++ {
-                state.Balances = append(state.Balances, 0)
-            }
-        } else {
-            for i := 0; i < len(state.Balances); i++ {
-                var tmp beacon.Validator
-                state.ValidatorRegistry = append(state.ValidatorRegistry, &tmp)
-            }
+        for len(state.Balances) < len(state.ValidatorRegistry) {
+            state.Balances = append(state.Balances, 0)
+        }
+        for len(state.ValidatorRegistry) < len(state.Balances) {
+            var tmp beacon.Validator
+            state.ValidatorRegistry = append(state.ValidatorRegistry, &tmp)
         }
     }
 
@@ -127,53 +125,59 @@ func CorrectInvariants(state beacon.BeaconState) {
 
 func AssertInvariants(state beacon.BeaconState) {
     if err := CheckInvariants(state, false); err != nil {
-        panic("Invariant check failed")
+        panic(fmt.Sprintf("Invariant check failed: %v", err))
     }
 }
 
-func Decode(data []byte, dest interface{}) error {
+func Decode(data []byte, dest interface{}, fuzzer bool) error {
     reader := bytes.NewReader(data)
-    //if err := zssz.Decode(reader, uint32(len(data)), dest, *getSSZType(dest)); err != nil {
-    if err, _ := zssz.DecodeFuzzBytes(reader, uint32(len(data)), dest, *getSSZType(dest)); err != nil {
-        return errors.New("Cannot decode")
+    if fuzzer == true {
+        if err, _ := zssz.DecodeFuzzBytes(reader, uint32(len(data)), dest, *getSSZType(dest)); err != nil {
+            return errors.New("Cannot decode")
+        }
+    } else {
+        if err := zssz.Decode(reader, uint32(len(data)), dest, *getSSZType(dest)); err != nil {
+            panic("")
+            return errors.New("Cannot decode")
+        }
     }
 
     return nil
 }
 
-func DecodeAttestation(data []byte) (InputAttestation, error) {
+func DecodeAttestation(data []byte, fuzzer bool) (InputAttestation, error) {
     var input InputAttestation
-    err := Decode(data, &input);
+    err := Decode(data, &input, fuzzer);
     return input, err
 }
 
-func DecodeAttesterSlashing(data []byte) (InputAttesterSlashing, error) {
+func DecodeAttesterSlashing(data []byte, fuzzer bool) (InputAttesterSlashing, error) {
     var input InputAttesterSlashing
-    err := Decode(data, &input);
+    err := Decode(data, &input, fuzzer);
     return input, err
 }
 
-func DecodeBlockHeader(data []byte) (InputBlockHeader, error) {
+func DecodeBlockHeader(data []byte, fuzzer bool) (InputBlockHeader, error) {
     var input InputBlockHeader
-    err := Decode(data, &input);
+    err := Decode(data, &input, fuzzer);
     return input, err
 }
 
-func DecodeDeposit(data []byte) (InputDeposit, error) {
+func DecodeDeposit(data []byte, fuzzer bool) (InputDeposit, error) {
     var input InputDeposit
-    err := Decode(data, &input);
+    err := Decode(data, &input, fuzzer);
     return input, err
 }
 
-func DecodeTransfer(data []byte) (InputTransfer, error) {
+func DecodeTransfer(data []byte, fuzzer bool) (InputTransfer, error) {
     var input InputTransfer
-    err := Decode(data, &input);
+    err := Decode(data, &input, fuzzer);
     return input, err
 }
 
-func DecodeVoluntaryExit(data []byte) (InputVoluntaryExit, error) {
+func DecodeVoluntaryExit(data []byte, fuzzer bool) (InputVoluntaryExit, error) {
     var input InputVoluntaryExit
-    err := Decode(data, &input);
+    err := Decode(data, &input, fuzzer);
     return input, err
 }
 
@@ -182,6 +186,9 @@ func Encode(src interface{}) []byte {
     writer := bufio.NewWriter(&ret)
     if err := zssz.Encode(writer, src, *getSSZType(src)); err != nil {
         panic("Cannot encode")
+    }
+    if err := writer.Flush(); err != nil {
+        panic("Cannot flush encoded output")
     }
 
     return ret.Bytes()
@@ -192,6 +199,9 @@ func EncodeState(state beacon.BeaconState) []byte {
     writer := bufio.NewWriter(&ret)
     if err := zssz.Encode(writer, &state, *statessztype); err != nil {
         panic("Cannot encode state")
+    }
+    if err := writer.Flush(); err != nil {
+        panic("Cannot flush encoded output")
     }
 
     return ret.Bytes()
@@ -224,17 +234,33 @@ func SSZPreprocessGetReturnData(return_data []byte) {
 func SSZPreprocess(data []byte) int {
     switch inputType {
     case    INPUT_TYPE_ATTESTATION:
-        input, err := DecodeAttestation(data)
-        return sszPreprocess(input.Pre, err)
+        input, err := DecodeAttestation(data, true)
+        if err == nil {
+            g_return_data = Encode(input)
+            return len(g_return_data)
+        }
+        return 0
     case    INPUT_TYPE_BLOCK_HEADER:
-        input, err := DecodeBlockHeader(data)
-        return sszPreprocess(input.Pre, err)
+        input, err := DecodeBlockHeader(data, true)
+        if err == nil {
+            g_return_data = Encode(input)
+            return len(g_return_data)
+        }
+        return 0
     case    INPUT_TYPE_TRANSFER:
-        input, err := DecodeTransfer(data)
-        return sszPreprocess(input.Pre, err)
+        input, err := DecodeTransfer(data, true)
+        if err == nil {
+            g_return_data = Encode(input)
+            return len(g_return_data)
+        }
+        return 0
     case    INPUT_TYPE_VOLUNTARY_EXIT:
-        input, err := DecodeVoluntaryExit(data)
-        return sszPreprocess(input.Pre, err)
+        input, err := DecodeVoluntaryExit(data, true)
+        if err == nil {
+            g_return_data = Encode(input)
+            return len(g_return_data)
+        }
+        return 0
     default:
         panic("Invalid type configured")
     }

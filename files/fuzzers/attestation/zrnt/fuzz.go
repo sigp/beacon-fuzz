@@ -1,19 +1,17 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/beacon"
 	"github.com/protolambda/zrnt/eth2/beacon/block_processing"
     "helper"
 )
 
-type Input struct {
-	Pre         beacon.BeaconState
-	Attestation beacon.Attestation
+func init() {
+    helper.SetInputType(helper.INPUT_TYPE_ATTESTATION)
 }
 
 func Fuzz(data []byte) []byte {
-    var input Input
-    if err := helper.Decode(data, &input); err != nil {
+    input, err := helper.DecodeAttestation(data, false)
+    if err != nil {
         return []byte{}
     }
 

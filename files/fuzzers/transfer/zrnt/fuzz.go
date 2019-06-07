@@ -10,7 +10,7 @@ func init() {
 }
 
 func Fuzz(data []byte) []byte {
-    input, err := helper.DecodeTransfer(data)
+    input, err := helper.DecodeTransfer(data, false)
     if err != nil {
         return []byte{}
     }

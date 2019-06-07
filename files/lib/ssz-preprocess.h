@@ -9,12 +9,12 @@
 
 namespace fuzzing {
     extern "C" {
-        size_t SSZPreprocess(GoSlice);
+        int SSZPreprocess(GoSlice);
         void SSZPreprocessGetReturnData(GoSlice);
     }
 
     std::vector<uint8_t> SSZPreprocess(uint8_t* data, size_t size) {
-        const size_t modifiedSize = SSZPreprocess({data, (long long)size, (long long)size});
+        const int modifiedSize = SSZPreprocess({data, (long long)size, (long long)size});
         if ( modifiedSize == 0 ) {
             return {};
         }

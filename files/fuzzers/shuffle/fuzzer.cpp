@@ -18,7 +18,7 @@ namespace fuzzing {
             uint16_t count;
             uint8_t* seed = (uint8_t*)malloc(32);
 
-            if ( data.size() < sizeof(count) + sizeof(seed) ) {
+            if ( data.size() < sizeof(count) + 32 ) {
                 return std::nullopt;
             }
 
@@ -27,14 +27,20 @@ namespace fuzzing {
             memcpy(seed, data.data() + sizeof(count), 32);
 
             input.resize(count);
+
+            /* input[0..count] = 0..count */
             for (size_t i = 0; i < count; i++) {
                 input[i] = i;
             }
 
+            /* Call Lighthouse shuffle function */
             if ( shuffle_list_c(input.data(), input.size(), seed) == false ) {
+                /* Lighthouse shuffle function failed */
+
                 return std::nullopt;
             }
 
+            /* std::vector<size_t> -> std::vector<uint8_t> */
             std::vector<uint8_t> ret(input.size() * sizeof(size_t));
             memcpy(ret.data(), input.data(), input.size() * sizeof(size_t));
 

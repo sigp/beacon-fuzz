@@ -4,6 +4,7 @@ import "C"
 
 import (
 	"github.com/protolambda/zrnt/eth2/core"
+	zrnt_ssz "github.com/protolambda/zrnt/eth2/util/ssz"
 	"github.com/protolambda/zrnt/eth2/beacon"
     "github.com/protolambda/zssz"
     "github.com/protolambda/zssz/types"
@@ -23,6 +24,7 @@ const INPUT_TYPE_BLOCK_HEADER InputType = 3
 const INPUT_TYPE_DEPOSIT InputType = 4
 const INPUT_TYPE_TRANSFER InputType = 5
 const INPUT_TYPE_VOLUNTARY_EXIT InputType = 6
+const INPUT_TYPE_PROPOSER_SLASHING InputType = 7
 
 var inputType InputType = INPUT_TYPE_INVALID
 
@@ -54,6 +56,11 @@ type InputTransfer struct {
 type InputVoluntaryExit struct {
 	Pre             beacon.BeaconState
 	VoluntaryExit   beacon.VoluntaryExit
+}
+
+type InputProposerSlashing struct {
+	Pre                 beacon.BeaconState
+	ProposerSlashing    beacon.ProposerSlashing
 }
 
 var ssztype *types.SSZ
@@ -137,8 +144,7 @@ func Decode(data []byte, dest interface{}, fuzzer bool) error {
         }
     } else {
         if err := zssz.Decode(reader, uint32(len(data)), dest, *getSSZType(dest)); err != nil {
-            panic("")
-            return errors.New("Cannot decode")
+            panic(fmt.Sprintf("Decoding that should always succeed failed: %v", err))
         }
     }
 
@@ -181,6 +187,12 @@ func DecodeVoluntaryExit(data []byte, fuzzer bool) (InputVoluntaryExit, error) {
     return input, err
 }
 
+func DecodeProposerSlashing(data []byte, fuzzer bool) (InputProposerSlashing, error) {
+    var input InputProposerSlashing
+    err := Decode(data, &input, fuzzer);
+    return input, err
+}
+
 func Encode(src interface{}) []byte {
     var ret bytes.Buffer
     writer := bufio.NewWriter(&ret)
@@ -213,16 +225,6 @@ func EncodePoststate(state beacon.BeaconState) []byte {
     return EncodeState(state)
 }
 
-func sszPreprocess(state beacon.BeaconState, err error) int {
-    if err != nil {
-        return 0
-    }
-
-    CorrectInvariants(state)
-    g_return_data = EncodeState(state)
-    return len(g_return_data)
-}
-
 var g_return_data = make([]byte, 0);
 
 //export SSZPreprocessGetReturnData
@@ -236,6 +238,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_ATTESTATION:
         input, err := DecodeAttestation(data, true)
         if err == nil {
+            CorrectInvariants(input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -243,6 +246,16 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_BLOCK_HEADER:
         input, err := DecodeBlockHeader(data, true)
         if err == nil {
+            CorrectInvariants(input.Pre)
+            if err := CheckInvariants(input.Pre, false); err != nil {
+                return 0
+            }
+
+            /* BlockHeader-specific invariants */
+            {
+                input.Block.PreviousBlockRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader)
+            }
+
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -250,6 +263,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_TRANSFER:
         input, err := DecodeTransfer(data, true)
         if err == nil {
+            CorrectInvariants(input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -257,6 +271,15 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_VOLUNTARY_EXIT:
         input, err := DecodeVoluntaryExit(data, true)
         if err == nil {
+            CorrectInvariants(input.Pre)
+            g_return_data = Encode(input)
+            return len(g_return_data)
+        }
+        return 0
+    case    INPUT_TYPE_PROPOSER_SLASHING:
+        input, err := DecodeProposerSlashing(data, true)
+        if err == nil {
+            CorrectInvariants(input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }

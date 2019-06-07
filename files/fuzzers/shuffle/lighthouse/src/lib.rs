@@ -16,7 +16,7 @@ pub fn shuffle_list_c(
         Vec::from_raw_parts(seed_ptr, 32, 32)
     };
 
-    return match shuffle_list(input.to_vec(), 90, &seed, true) {
+    return match shuffle_list(input.to_vec(), 90, &seed, false) {
         None => false,
         Some(x) => {
             unsafe {

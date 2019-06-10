@@ -12,7 +12,7 @@
 
 namespace fuzzing {
 
-Python::Python(const std::string argv0, const std::string scriptPath) :
+Python::Python(const std::string argv0, const std::string scriptPath, std::optional<std::string> libPath) :
     Base() {
     std::string scriptRootPath;
 
@@ -60,10 +60,14 @@ Python::Python(const std::string argv0, const std::string scriptPath) :
         std::string setPYTHONPATH;
         setPYTHONPATH += "import sys";
         setPYTHONPATH += "\n";
-        setPYTHONPATH += "sys.path.append('" + scriptRootPath + "')";
+        setPYTHONPATH += "sys.path.append('" + scriptRootPath + "')\n";
+        if ( libPath != std::nullopt ) {
+            setPYTHONPATH += "sys.path.append('" + *libPath + "')\n";
+        }
         setPYTHONPATH += "\n";
         if ( PyRun_SimpleString(setPYTHONPATH.c_str()) != 0 ) {
             printf("Fatal: Cannot set PYTHONPATH\n");
+            PyErr_PrintEx(1);
             abort();
         }
 
@@ -78,6 +82,7 @@ Python::Python(const std::string argv0, const std::string scriptPath) :
 
     if ( pValue == nullptr ) {
         printf("Fatal: Cannot create Python function from string\n");
+        PyErr_PrintEx(1);
         abort();
     }
     Py_DECREF(pValue);

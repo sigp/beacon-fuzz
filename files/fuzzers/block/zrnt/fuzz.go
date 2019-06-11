@@ -3,6 +3,7 @@ package fuzz
 import (
     "helper"
     "github.com/protolambda/zrnt/eth2/beacon"
+    "github.com/protolambda/zrnt/eth2/core"
     "github.com/protolambda/zrnt/eth2/beacon/transition"
 	zrnt_ssz "github.com/protolambda/zrnt/eth2/util/ssz"
     "encoding/binary"
@@ -46,6 +47,15 @@ func Fuzz(data []byte) []byte {
         latestHeaderCopy.StateRoot = zrnt_ssz.HashTreeRoot(state, beacon.BeaconStateSSZ)
         prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, beacon.BeaconBlockHeaderSSZ)
         RandomlyValid(prevRoot[:], blockWrapper.Block.PreviousBlockRoot[:], 0.9)
+    }
+
+    {
+        for i := 0; i < len(blockWrapper.Block.Body.Attestations); i++ {
+            data := &blockWrapper.Block.Body.Attestations[i].Data
+            if data.Shard < core.Shard(len(state.CurrentCrosslinks)) {
+                data.PreviousCrosslinkRoot = zrnt_ssz.HashTreeRoot(state.CurrentCrosslinks[data.Shard], beacon.CrosslinkSSZ)
+            }
+        }
     }
     /* End block corrections */
 

@@ -1,6 +1,7 @@
 #define GO_FUZZ_PREFIX deposit_
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/ssz-preprocess.h>
 #include <cstring>
 
 std::shared_ptr<fuzzing::Go> go = nullptr;
@@ -17,8 +18,11 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::vector<uint8_t> v(data, data + size);
+extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size) {
+    auto v = fuzzing::SSZPreprocess(data, size);
+    if ( v.empty() ) {
+        return 0;
+    }
 
     differential->Run(v);
 

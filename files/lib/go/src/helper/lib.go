@@ -29,7 +29,7 @@ const INPUT_TYPE_DEPOSIT InputType = 4
 const INPUT_TYPE_TRANSFER InputType = 5
 const INPUT_TYPE_VOLUNTARY_EXIT InputType = 6
 const INPUT_TYPE_PROPOSER_SLASHING InputType = 7
-const INPUT_TYPE_STATE_BLOCK InputType = 8
+const INPUT_TYPE_BLOCK_WRAPPER InputType = 8
 
 var inputType InputType = INPUT_TYPE_INVALID
 
@@ -276,6 +276,12 @@ func DecodeStateBlock(data []byte, fuzzer bool) (InputStateBlock, error) {
     return input, err
 }
 
+func DecodeBlockWrapper(data []byte, fuzzer bool) (InputBlockWrapper, error) {
+    var input InputBlockWrapper
+    err := Decode(data, &input, fuzzer);
+    return input, err
+}
+
 func encodeOfType(src interface{}, sszType types.SSZ) []byte {
     var ret bytes.Buffer
     writer := bufio.NewWriter(&ret)
@@ -303,7 +309,7 @@ func EncodePoststate(state beacon.BeaconState) []byte {
     return EncodeState(state)
 }
 
-func getStateByID(stateID uint32) (beacon.BeaconState, error) {
+func GetStateByID(stateID uint32) (beacon.BeaconState, error) {
     var state beacon.BeaconState
     if stateID >= uint32(len(PreloadedStates)) {
         return state, fmt.Errorf("Invalid prestate ID")
@@ -339,9 +345,9 @@ func correctBlock(state beacon.BeaconState, block *beacon.BeaconBlock) {
     {
         for i := 0; i < len(block.Body.Attestations); i++ {
             data := &block.Body.Attestations[i].Data
-            if data.Shard < core.Shard(len(state.CurrentCrosslinks)) {
-                previousCrosslinkRoot := zrnt_ssz.HashTreeRoot(state.CurrentCrosslinks[data.Shard], beacon.CrosslinkSSZ)
-                randomlyValid(previousCrosslinkRoot[:], data.PreviousCrosslinkRoot[:], 0.9)
+            if data.Crosslink.Shard < core.Shard(len(state.CurrentCrosslinks)) {
+                previousCrosslinkRoot := zrnt_ssz.HashTreeRoot(state.CurrentCrosslinks[data.Crosslink.Shard], beacon.CrosslinkSSZ)
+                randomlyValid(previousCrosslinkRoot[:], data.Crosslink.ParentRoot[:], 0.9)
             }
         }
     }
@@ -422,17 +428,18 @@ func SSZPreprocess(data []byte) int {
             return len(g_return_data)
         }
         return 0
-    case    INPUT_TYPE_STATE_BLOCK:
+    case    INPUT_TYPE_BLOCK_WRAPPER:
         blockWrapper, err := decodeBlockWrapper(data, true)
         if err != nil {
             return 0
         }
 
-        state, err := getStateByID(blockWrapper.StateID)
+        state, err := GetStateByID(blockWrapper.StateID)
         if err != nil {
             return 0
         }
 
+        /*
         var stateBlock InputStateBlock
 
         stateBlock.State = state
@@ -441,8 +448,32 @@ func SSZPreprocess(data []byte) int {
         correctBlock(stateBlock.State, &stateBlock.Block)
 
         g_return_data = encodeOfType(stateBlock, stateBlockSSZType)
+        */
+        correctBlock(state, &blockWrapper.Block)
+        g_return_data = encodeOfType(blockWrapper, blockWrapperSSZType)
         return len(g_return_data)
     default:
         panic("Invalid type configured")
     }
+}
+
+func GetStateBlock(data []byte) (InputStateBlock, error) {
+    var stateBlock InputStateBlock
+
+    blockWrapper, err := decodeBlockWrapper(data, true)
+    if err != nil {
+        return stateBlock, fmt.Errorf("Cannot decode blockwrapper")
+    }
+
+    state, err := GetStateByID(blockWrapper.StateID)
+    if err != nil {
+        return stateBlock, fmt.Errorf("Cannot decode blockwrapper")
+    }
+
+    stateBlock.State = state
+    stateBlock.Block = blockWrapper.Block
+
+    correctBlock(stateBlock.State, &stateBlock.Block)
+
+    return stateBlock, nil
 }

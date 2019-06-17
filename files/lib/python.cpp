@@ -57,6 +57,18 @@ Python::Python(const std::string argv0, const std::string scriptPath, std::optio
     Py_Initialize();
 
     {
+        std::string setArgv0;
+        setArgv0 += "import sys";
+        setArgv0 += "\n";
+        setArgv0 += "sys.argv[0] = '" + scriptPath + "'\n";
+        if ( PyRun_SimpleString(setArgv0.c_str()) != 0 ) {
+            printf("Fatal: Cannot set argv[0]\n");
+            PyErr_PrintEx(1);
+            abort();
+        }
+    }
+
+    {
         std::string setPYTHONPATH;
         setPYTHONPATH += "import sys";
         setPYTHONPATH += "\n";
@@ -70,7 +82,6 @@ Python::Python(const std::string argv0, const std::string scriptPath, std::optio
             PyErr_PrintEx(1);
             abort();
         }
-
     }
 
     PyObject *pValue, *pModule, *pLocal;

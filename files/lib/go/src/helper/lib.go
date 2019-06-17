@@ -339,7 +339,7 @@ func correctBlock(state beacon.BeaconState, block *beacon.BeaconBlock) {
         latestHeaderCopy := state.LatestBlockHeader
         latestHeaderCopy.StateRoot = zrnt_ssz.HashTreeRoot(state, beacon.BeaconStateSSZ)
         prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, beacon.BeaconBlockHeaderSSZ)
-        randomlyValid(prevRoot[:], block.PreviousBlockRoot[:], 0.9)
+        randomlyValid(prevRoot[:], block.ParentRoot[:], 0.9)
     }
 
     {
@@ -389,7 +389,7 @@ func SSZPreprocess(data []byte) int {
 
             /* BlockHeader-specific invariants */
             {
-                input.Block.PreviousBlockRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, beacon.BeaconBlockHeaderSSZ)
+                input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, beacon.BeaconBlockHeaderSSZ)
             }
 
             g_return_data = Encode(input)

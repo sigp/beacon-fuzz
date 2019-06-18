@@ -30,8 +30,14 @@ cd eth2.0-specs
 git checkout v0.6.0
 
 # Get and configure zrnt
-go get github.com/protolambda/zrnt
+mkdir -p $GOPATH/src/github.com/protolambda
+cd $GOPATH/src/github.com/protolambda
+git clone https://github.com/protolambda/zrnt.git
+cd zrnt
+git fetch origin v07x:v07x
+git checkout v07x
 go get github.com/protolambda/zssz
+go get github.com/cespare/xxhash
 cd /eth2
 
 # Get eth2.0-specs

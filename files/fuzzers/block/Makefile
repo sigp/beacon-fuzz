@@ -18,8 +18,8 @@ pythonlib/:
 	mkdir pythonlib/
 	cp -R eth2.0-specs/test_libs/pyspec/eth2spec pythonlib/
 	cp -R eth2.0-specs/test_libs/config_helpers/preset_loader pythonlib/
-	pip3 install -r eth2.0-specs/test_libs/config_helpers/requirements.txt -t pythonlib/ --system
-	pip3 install -r eth2.0-specs/test_libs/pyspec/requirements.txt -t pythonlib/ --system
+	CFLAGS="" CXXFLAGS="" LDFLAGS="" pip3 install -r eth2.0-specs/test_libs/config_helpers/requirements.txt -t pythonlib/ --system
+	CFLAGS="" CXXFLAGS="" LDFLAGS="" pip3 install -r eth2.0-specs/test_libs/pyspec/requirements.txt -t pythonlib/ --system
 
 fuzzer : fuzzer.cpp zrnt.a pythonlib/
 	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH=$(PYTHON_HARNESS_PATH) -DPYTHON_LIB_PATH=$(PYTHON_LIB_PATH) fuzzer.cpp zrnt.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer

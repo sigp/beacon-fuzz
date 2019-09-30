@@ -8,6 +8,10 @@
 #ifndef PYTHON_HARNESS_PATH
 #error PYTHON_HARNESS_PATH undefined
 #endif
+#ifndef PYTHON_HARNESS_BIN
+// python binary to use as the name
+#error PYTHON_HARNESS_BIN undefined
+#endif
 
 extern "C" bool shuffle_list_c(uint64_t* input_ptr, size_t input_size, uint8_t* seed_ptr);
 
@@ -58,8 +62,11 @@ std::unique_ptr<fuzzing::Differential> differential = nullptr;
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     differential = std::make_unique<fuzzing::Differential>();
 
+    
+    // if the program name is the path to a python binary in a venv containing relevant dependencies,
+    // these should be included in the sys.path
     differential->AddModule(
-            python = std::make_shared<fuzzing::Python>((*argv)[0], PYTHON_HARNESS_PATH)
+            python = std::make_shared<fuzzing::Python>(PYTHON_HARNESS_BIN, PYTHON_HARNESS_PATH)
     );
 
     differential->AddModule(

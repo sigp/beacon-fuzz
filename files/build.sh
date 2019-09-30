@@ -20,6 +20,8 @@ cd cpython
 ./configure --prefix=$CPYTHON_INSTALL_PATH
 make -j$(nproc)
 make install
+# Upgrade pip 
+"$CPYTHON_INSTALL_PATH/bin/python3" -m pip install --upgrade pip
 
 cd /eth2/lib
 # NOTE this doesn't depend on any GOPATH

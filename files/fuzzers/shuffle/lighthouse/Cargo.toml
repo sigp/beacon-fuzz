@@ -7,3 +7,6 @@ edition = "2018"
 [dependencies]
 swap_or_not_shuffle = { path = "../../../lighthouse/eth2/utils/swap_or_not_shuffle/" }
 libc = "0.2"
+
+[lib]
+crate-type = ["staticlib"]

@@ -1,7 +1,10 @@
+SHUFFLE_ROOT=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
 all: fuzzer
 
-PYTHON_HARNESS_PATH="\"$(realpath pyspec/eth2_specs/test_libs/pyspec/spec.py)\""
-PYTHON_HARNESS_DIR="\"$(realpath pyspec/eth2_specs/test_libs/pyspec/)\""
+# NOTE assumes the pwd is the 
+PYTHON_HARNESS_DIR="$(SHUFFLE_ROOT)/pyspec/eth2_specs/test_libs/pyspec/"
+PYTHON_HARNESS_PATH="$(PYTHON_HARNESS_DIR)/spec.py"
 
 pyspec/eth2_specs/test_libs/pyspec/spec.py : pyspec/harness.py
 	test $(ETH2_SPECS_PATH)
@@ -22,12 +25,10 @@ lighthouse.a : lighthouse/
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/
 	mkdir lighthouse_out/
-	cargo rustc \
+	cargo build \
 		--target-dir=lighthouse_out \
 		--manifest-path=lighthouse/Cargo.toml \
-		--release -- \
-		--crate-type=staticlib \
-		--target x86_64-unknown-linux-gnu
+		--release
 	cp lighthouse_out/release/deps/libswap_or_not_shuffle_fuzzer-*.a lighthouse.a
 
 zrnt.a : zrnt/fuzz.go
@@ -35,7 +36,7 @@ zrnt.a : zrnt/fuzz.go
 	cd zrnt && $(GO_FUZZ_BUILD_PATH) -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../zrnt.a .
 
 fuzzer : fuzzer.cpp zrnt.a pyspec/eth2_specs/test_libs/pyspec/spec.py lighthouse.a
-	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH=$(PYTHON_HARNESS_PATH) -DPYTHON_HARNESS_BIN="$(PYTHON_HARNESS_DIR)/venv/bin/python" fuzzer.cpp zrnt.a lighthouse.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
+	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH="\"$(PYTHON_HARNESS_PATH)\"" -DPYTHON_HARNESS_BIN="\"$(PYTHON_HARNESS_DIR)/venv/bin/python\"" fuzzer.cpp zrnt.a lighthouse.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
 
 clean:
 	rm -rf fuzzer zrnt.a pyspec/eth2_specs lighthouse_out

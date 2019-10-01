@@ -1,10 +1,10 @@
-SHUFFLE_ROOT=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+SHUFFLE_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 all: fuzzer
 
 # NOTE assumes the pwd is the 
-PYTHON_HARNESS_DIR="$(SHUFFLE_ROOT)/pyspec/eth2_specs/test_libs/pyspec/"
-PYTHON_HARNESS_PATH="$(PYTHON_HARNESS_DIR)/spec.py"
+PYTHON_HARNESS_DIR := $(SHUFFLE_ROOT)pyspec/eth2_specs/test_libs/pyspec/
+PYTHON_HARNESS_PATH := $(PYTHON_HARNESS_DIR)spec.py
 
 pyspec/eth2_specs/test_libs/pyspec/spec.py : pyspec/harness.py
 	test $(ETH2_SPECS_PATH)

@@ -9,7 +9,7 @@ export CC=clang-6.0
 export CXX=clang++-6.0
 
 # Get eth2.0-specs
-git clone --depth 1 https://github.com/ethereum/eth2.0-specs.git
+git clone --depth 1 --branch v0.7.1 https://github.com/ethereum/eth2.0-specs.git
 export ETH2_SPECS_PATH=`realpath eth2.0-specs/`
 cd /eth2
 
@@ -41,11 +41,9 @@ rm -rf "$ZRNT_GOPATH"
 rm -rf "$ZRNT_TMP"
 mkdir -p "$ZRNT_TMP"
 cd $ZRNT_TMP
-git clone https://github.com/protolambda/zrnt.git
-cd zrnt
-# TODO variables for relevant branch
-git fetch origin v07x:v07x
-git checkout v07x
+git clone --depth 1 --branch v0.7.1 https://github.com/protolambda/zrnt.git
+# TODO variables for relevant spec release and tags - a manifest file?
+
 # hacky way to use module dependencies with go fuzz
 # see https://github.com/dvyukov/go-fuzz/issues/195#issuecomment-523526736
 # TODO avoid a single GOPATH passed everywhere
@@ -89,9 +87,7 @@ mkdir -p $GOPATH/src/github.com/protolambda
 
 # TODO why is eth2.0-specs in protolambda?
 cd $GOPATH/src/github.com/protolambda
-git clone https://github.com/ethereum/eth2.0-specs
-cd eth2.0-specs
-git checkout v0.6.0
+git clone --depth 1 --branch v0.7.1 https://github.com/ethereum/eth2.0-specs
 cd /eth2
 
 export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"

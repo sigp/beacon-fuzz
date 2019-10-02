@@ -2,7 +2,7 @@ package fuzz
 
 import (
     "helper"
-    "github.com/protolambda/zrnt/eth2/beacon/transition"
+    "github.com/protolambda/zrnt/eth2/phase0"
     "github.com/cespare/xxhash"
     //"github.com/protolambda/zrnt/eth2/util/hashing"
     //"github.com/protolambda/zrnt/eth2/util/ssz"
@@ -45,7 +45,13 @@ func Fuzz(data []byte) []byte {
         panic("Retrieving state failed")
     }
 
-    err = transition.StateTransition(&state, &blockWrapper.Block, false)
+    // Not needed if we make the helper.GetStateByID return a FullFeaturedState
+    // Might want to use phase0.InitState instead?
+    ffstate := phase0.NewFullFeaturedState(&state)
+    blockProc := &phase0.BlockProcessFeature{}
+    blockProc.Meta = ffstate
+    blockProc.Block = &blockWrapper.Block
+    err = ffstate.StateTransition(blockProc, false)
 
     if err != nil {
         return []byte{}

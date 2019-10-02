@@ -1,7 +1,7 @@
 package fuzz
 
 import (
-    "github.com/protolambda/zrnt/eth2/util/shuffling"
+    "github.com/protolambda/zrnt/eth2/util/shuffle"
     "github.com/protolambda/zrnt/eth2/core"
     "encoding/binary"
 )
@@ -20,7 +20,7 @@ func Fuzz(data []byte) []byte {
         input[i] = core.ValidatorIndex(i)
     }
 
-    shuffling.UnshuffleList(input, seed)
+    shuffle.UnshuffleList(input, seed)
 
     ret := make([]byte, count * 8)
     for i := 0; i < count; i++ {

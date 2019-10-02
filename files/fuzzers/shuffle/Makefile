@@ -11,7 +11,7 @@ pyspec/eth2_specs/test_libs/pyspec/spec.py : pyspec/harness.py
 	test "$(PYTHON_HARNESS_DIR)"
 	rm -rf pyspec/eth2_specs
 	mkdir -p pyspec/eth2_specs
-	cp -R "$(ETH2_SPECS_PATH)/*" pyspec/eth2_specs
+	cp -R "$(ETH2_SPECS_PATH)/"* pyspec/eth2_specs
 	cd pyspec/eth2_specs && make pyspec
 	cp pyspec/eth2_specs/test_libs/pyspec/eth2spec/phase0/spec.py pyspec/eth2_specs/test_libs/pyspec
 	cat pyspec/harness.py >> pyspec/eth2_specs/test_libs/pyspec/spec.py

@@ -5,7 +5,16 @@ import "C"
 import (
 	"github.com/protolambda/zrnt/eth2/core"
 	zrnt_ssz "github.com/protolambda/zrnt/eth2/util/ssz"
-	"github.com/protolambda/zrnt/eth2/beacon"
+	"github.com/protolambda/zrnt/eth2/beacon/attestations"
+	"github.com/protolambda/zrnt/eth2/beacon/slashings/attslash"
+	"github.com/protolambda/zrnt/eth2/beacon/slashings/propslash"
+	"github.com/protolambda/zrnt/eth2/beacon/validator"
+	"github.com/protolambda/zrnt/eth2/beacon/crosslinks"
+	"github.com/protolambda/zrnt/eth2/beacon/header"
+	"github.com/protolambda/zrnt/eth2/beacon/deposits"
+	"github.com/protolambda/zrnt/eth2/beacon/transfers"
+	"github.com/protolambda/zrnt/eth2/beacon/exits"
+        "github.com/protolambda/zrnt/eth2/phase0"
     "github.com/protolambda/zssz"
     "github.com/protolambda/zssz/types"
     "bytes"
@@ -18,6 +27,7 @@ import (
     "path"
     "encoding/binary"
 )
+
 
 type InputType uint64
 
@@ -34,51 +44,52 @@ const INPUT_TYPE_BLOCK_WRAPPER InputType = 8
 var inputType InputType = INPUT_TYPE_INVALID
 
 type InputAttestation struct {
-	Pre         beacon.BeaconState
-	Attestation beacon.Attestation
+	Pre         phase0.BeaconState
+	Attestation attestations.Attestation
 }
 
 type InputAttesterSlashing struct {
-	Pre                 beacon.BeaconState
-	AttesterSlashing    beacon.AttesterSlashing
+	Pre                 phase0.BeaconState
+	AttesterSlashing    attslash.AttesterSlashing
 }
 
 type InputBlockHeader struct {
-	Pre         beacon.BeaconState
-	Block       beacon.BeaconBlock
+	Pre         phase0.BeaconState
+	Block       phase0.BeaconBlock
 }
 
 type InputDeposit struct {
-	Pre         beacon.BeaconState
-	Deposit     beacon.Deposit
+	Pre         phase0.BeaconState
+	Deposit     deposits.Deposit
 }
 
 type InputTransfer struct {
-	Pre         beacon.BeaconState
-	Transfer    beacon.Transfer
+	Pre         phase0.BeaconState
+	Transfer    transfers.Transfer
 }
 
 type InputVoluntaryExit struct {
-	Pre             beacon.BeaconState
-	VoluntaryExit   beacon.VoluntaryExit
+	Pre             phase0.BeaconState
+	VoluntaryExit   exits.VoluntaryExit
 }
 
 type InputProposerSlashing struct {
-	Pre                 beacon.BeaconState
-	ProposerSlashing    beacon.ProposerSlashing
+	Pre                 phase0.BeaconState
+	ProposerSlashing    propslash.ProposerSlashing
 }
 
 type InputBlockWrapper struct {
 	StateID             uint32
-	Block               beacon.BeaconBlock
+	Block               phase0.BeaconBlock
 }
 
 type InputStateBlock   struct {
-	State               beacon.BeaconState
-	Block               beacon.BeaconBlock
+	State               phase0.BeaconState
+	Block               phase0.BeaconBlock
 }
 
-var PreloadedStates = make([]beacon.BeaconState, 0);
+// TODO should this be a []phase0.FullFeaturedState instead?
+var PreloadedStates = make([]phase0.BeaconState, 0);
 
 var ssztype *types.SSZ
 var blockWrapperSSZType types.SSZ
@@ -93,7 +104,7 @@ func loadPrestates() {
     stateID := 0
     for {
 
-        var state beacon.BeaconState
+        var state phase0.BeaconState
 
         filename := path.Join(stateCorpusPath, fmt.Sprintf("%v", stateID))
 
@@ -104,7 +115,7 @@ func loadPrestates() {
 
         reader := bytes.NewReader(data)
 
-        if err := zssz.Decode(reader, uint32(len(data)), &state, beacon.BeaconStateSSZ); err != nil {
+        if err := zssz.Decode(reader, uint64(len(data)), &state, phase0.BeaconStateSSZ); err != nil {
             panic(fmt.Sprintf("Cannot decode prestate %v: %v", filename, err))
         }
 
@@ -157,28 +168,37 @@ func getSSZType(dest interface{}) *types.SSZ {
     return ssztype
 }
 
-func CheckInvariants(state beacon.BeaconState, correct bool) error {
+// TODO should this be a pointer or are we actually meaning to pass a copy?
+func CheckInvariants(state phase0.BeaconState, correct bool) error {
     /* Balances and ValidatorRegistry must be the same length */
-    if len(state.Balances) != len(state.ValidatorRegistry) {
+    // TODO to use fullfeaturedstate instead of phase0.BeaconState?
+    // how to get from beaconstate to meta?
+    // TODO is this how its supposed to work?
+    // perhaps use phase0.InitState instead? (in genesis)
+    ffstate := phase0.NewFullFeaturedState(&state)
+    if len(ffstate.RegistryState.Balances) != len(ffstate.RegistryState.Validators) {
         if correct == false {
-            return fmt.Errorf("Balances/ValidatorRegistry length mismatch (%v and %v)", len(state.Balances), len(state.ValidatorRegistry))
+            return fmt.Errorf("Balances/ValidatorRegistry length mismatch (%v and %v)", len(ffstate.RegistryState.Balances), len(ffstate.RegistryState.Validators))
         }
-        for len(state.Balances) < len(state.ValidatorRegistry) {
-            state.Balances = append(state.Balances, 0)
+        for len(ffstate.RegistryState.Balances) < len(ffstate.RegistryState.Validators) {
+            ffstate.RegistryState.Balances = append(ffstate.RegistryState.Balances, 0)
         }
-        for len(state.ValidatorRegistry) < len(state.Balances) {
-            var tmp beacon.Validator
-            state.ValidatorRegistry = append(state.ValidatorRegistry, &tmp)
+        for len(ffstate.RegistryState.Validators) < len(ffstate.RegistryState.Balances) {
+            var tmp validator.Validator
+            ffstate.RegistryState.Validators = append(ffstate.RegistryState.Validators, &tmp)
         }
     }
 
     /* Avoid division by zero in ProcessBlockHeader */
     {
-        epoch := state.Epoch()
-        committeesPerSlot := state.GetEpochCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
-        offset := core.Shard(committeesPerSlot) * core.Shard(state.Slot%core.SLOTS_PER_EPOCH)
-        shard := (state.GetEpochStartShard(epoch) + offset) % core.SHARD_COUNT
-        firstCommittee := state.GetCrosslinkCommittee(epoch, shard)
+        epoch := ffstate.VersioningState.CurrentEpoch()
+        committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
+        offset := core.Shard(committeesPerSlot) * core.Shard(ffstate.Slot%core.SLOTS_PER_EPOCH)
+        // TODO this typechecks but may not be correct/intended operation?
+        shardStatus := ffstate.ShardRotFeature.LoadStartShardStatus(epoch)
+        shard := (shardStatus.GetStartShard(epoch) + offset) % core.SHARD_COUNT
+        shuffleStatus := ffstate.LoadShufflingStatus()
+        firstCommittee := shuffleStatus.GetCrosslinkCommittee(epoch, shard)
         if len(firstCommittee) == 0 {
             if correct == false {
                 return errors.New("Empty firstCommittee")
@@ -191,13 +211,13 @@ func CheckInvariants(state beacon.BeaconState, correct bool) error {
     return nil
 }
 
-func CorrectInvariants(state beacon.BeaconState) {
+func CorrectInvariants(state phase0.BeaconState) {
     if err := CheckInvariants(state, true); err != nil {
         panic("CheckInvariants failed")
     }
 }
 
-func AssertInvariants(state beacon.BeaconState) {
+func AssertInvariants(state phase0.BeaconState) {
     if err := CheckInvariants(state, false); err != nil {
         panic(fmt.Sprintf("Invariant check failed: %v", err))
     }
@@ -206,11 +226,11 @@ func AssertInvariants(state beacon.BeaconState) {
 func decodeOfType(data []byte, dest interface{}, fuzzer bool, sszType types.SSZ) error {
     reader := bytes.NewReader(data)
     if fuzzer == true {
-        if err, _ := zssz.DecodeFuzzBytes(reader, uint32(len(data)), dest, sszType); err != nil {
+        if _, err := zssz.DecodeFuzzBytes(reader, uint64(len(data)), dest, sszType); err != nil {
             return errors.New("Cannot decode")
         }
     } else {
-        if err := zssz.Decode(reader, uint32(len(data)), dest, sszType); err != nil {
+        if err := zssz.Decode(reader, uint64(len(data)), dest, sszType); err != nil {
             panic(fmt.Sprintf("Decoding that should always succeed failed: %v", err))
         }
     }
@@ -285,7 +305,8 @@ func DecodeBlockWrapper(data []byte, fuzzer bool) (InputBlockWrapper, error) {
 func encodeOfType(src interface{}, sszType types.SSZ) []byte {
     var ret bytes.Buffer
     writer := bufio.NewWriter(&ret)
-    if err := zssz.Encode(writer, src, sszType); err != nil {
+    // TODO can handle the number of bytes written if an error occurs?
+    if _, err := zssz.Encode(writer, src, sszType); err != nil {
         panic("Cannot encode")
     }
     if err := writer.Flush(); err != nil {
@@ -299,18 +320,20 @@ func Encode(src interface{}) []byte {
     return encodeOfType(src, *getSSZType(src))
 }
 
-func EncodeState(state beacon.BeaconState) []byte {
-    return encodeOfType(&state, beacon.BeaconStateSSZ)
+func EncodeState(state phase0.BeaconState) []byte {
+    return encodeOfType(&state, phase0.BeaconStateSSZ)
 }
 
-func EncodePoststate(state beacon.BeaconState) []byte {
+func EncodePoststate(state phase0.BeaconState) []byte {
     AssertInvariants(state)
 
     return EncodeState(state)
 }
 
-func GetStateByID(stateID uint32) (beacon.BeaconState, error) {
-    var state beacon.BeaconState
+// TODO should this return a pointer to the state, or are we wanting a new copy
+// created?
+func GetStateByID(stateID uint32) (phase0.BeaconState, error) {
+    var state phase0.BeaconState
     if stateID >= uint32(len(PreloadedStates)) {
         return state, fmt.Errorf("Invalid prestate ID")
     }
@@ -330,15 +353,15 @@ func randomlyValid(valid []byte, random []byte, chance float32) {
 	}
 }
 
-func correctBlock(state beacon.BeaconState, block *beacon.BeaconBlock) {
+func correctBlock(state phase0.BeaconState, block *phase0.BeaconBlock) {
     {
         block.Slot = state.Slot + (block.Slot % 10)
     }
 
     {
         latestHeaderCopy := state.LatestBlockHeader
-        latestHeaderCopy.StateRoot = zrnt_ssz.HashTreeRoot(state, beacon.BeaconStateSSZ)
-        prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, beacon.BeaconBlockHeaderSSZ)
+        latestHeaderCopy.StateRoot = zrnt_ssz.HashTreeRoot(state, phase0.BeaconStateSSZ)
+        prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, header.BeaconBlockHeaderSSZ)
         randomlyValid(prevRoot[:], block.ParentRoot[:], 0.9)
     }
 
@@ -346,7 +369,7 @@ func correctBlock(state beacon.BeaconState, block *beacon.BeaconBlock) {
         for i := 0; i < len(block.Body.Attestations); i++ {
             data := &block.Body.Attestations[i].Data
             if data.Crosslink.Shard < core.Shard(len(state.CurrentCrosslinks)) {
-                previousCrosslinkRoot := zrnt_ssz.HashTreeRoot(state.CurrentCrosslinks[data.Crosslink.Shard], beacon.CrosslinkSSZ)
+                previousCrosslinkRoot := zrnt_ssz.HashTreeRoot(state.CurrentCrosslinks[data.Crosslink.Shard], crosslinks.CrosslinkSSZ)
                 randomlyValid(previousCrosslinkRoot[:], data.Crosslink.ParentRoot[:], 0.9)
             }
         }
@@ -389,7 +412,7 @@ func SSZPreprocess(data []byte) int {
 
             /* BlockHeader-specific invariants */
             {
-                input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, beacon.BeaconBlockHeaderSSZ)
+                input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, header.BeaconBlockHeaderSSZ)
             }
 
             g_return_data = Encode(input)

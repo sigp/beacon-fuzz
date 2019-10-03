@@ -53,7 +53,7 @@ namespace fuzzing {
     };
 } /* namespace fuzzing */
 
-std::shared_ptr<fuzzing::Python> python = nullptr;
+std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 std::shared_ptr<fuzzing::Go> go = nullptr;
 std::shared_ptr<fuzzing::Lighthouse_Shuffle> lighthouse = nullptr;
 
@@ -66,7 +66,7 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     // if the program name is the path to a python binary in a venv containing relevant dependencies,
     // these should be included in the sys.path
     differential->AddModule(
-            python = std::make_shared<fuzzing::Python>(PYTHON_HARNESS_BIN, PYTHON_HARNESS_PATH)
+            pyspec = std::make_shared<fuzzing::Python>(PYTHON_HARNESS_BIN, PYTHON_HARNESS_PATH)
     );
 
     differential->AddModule(

@@ -49,6 +49,7 @@ def FuzzerRunOne(FuzzerInput):
         poststate = spec.state_transition(prestate, state_block.block, False)
         return serialize(poststate)
     except AssertionError as e:
+        #TODO why are these being caught?
         pass
     except IndexError:
         pass

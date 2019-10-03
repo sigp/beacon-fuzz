@@ -8,20 +8,41 @@ cd /eth2
 export CC=clang-6.0
 export CXX=clang++-6.0
 
-# Get eth2.0-specs
-git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs.git
-export ETH2_SPECS_PATH=`realpath eth2.0-specs/`
-cd /eth2
-
 # CPython
 mkdir cpython-install
 export CPYTHON_INSTALL_PATH=`realpath cpython-install`
 cd cpython
+# TODO worth adding --enable-optimizations?
 ./configure --prefix=$CPYTHON_INSTALL_PATH
 make -j$(nproc)
 make install
 # Upgrade pip 
 "$CPYTHON_INSTALL_PATH/bin/python3" -m pip install --upgrade pip
+
+cd /eth2
+# Get eth2.0-specs
+git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs.git
+export ETH2_SPECS_PATH=`realpath eth2.0-specs/`
+
+# Build pyspec and dependencies
+cd "$ETH2_SPECS_PATH"
+make pyspec
+export PY_SPEC_VENV_PATH="$ETH2_SPECS_PATH/venv"
+rm -rf "$PY_SPEC_VENV_PATH"
+"$CPYTHON_INSTALL_PATH/bin/python3" -m venv "$PY_SPEC_VENV_PATH"
+"$PY_SPEC_VENV_PATH/bin/pip" install --upgrade pip
+cd "$ETH2_SPECS_PATH/test_libs/pyspec"
+"$PY_SPEC_VENV_PATH/bin/pip" install -r "./requirements.txt"
+"$PY_SPEC_VENV_PATH/bin/pip" install -e .
+cd "$ETH2_SPECS_PATH/test_libs/config_helpers"
+"$PY_SPEC_VENV_PATH/bin/pip" install -r "./requirements.txt"
+"$PY_SPEC_VENV_PATH/bin/pip" install -e .
+
+# Now any script run with the python executable below will have access to pyspec
+export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH/bin/python3"
+
+# as any modifications to the pyspec occur at runtime (monkey patching), its
+# ok to have a centralized pyspec codebase for all fuzzing targets
 
 cd /eth2/lib
 # NOTE this doesn't depend on any GOPATH

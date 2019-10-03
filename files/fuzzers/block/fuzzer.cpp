@@ -9,11 +9,12 @@
 #error PYTHON_HARNESS_PATH undefined
 #endif
 
-#ifndef PYTHON_LIB_PATH
-#error PYTHON_LIB_PATH undefined
+#ifndef PYTHON_HARNESS_BIN
+// python binary to use as the name
+#error PYTHON_HARNESS_BIN undefined
 #endif
 
-std::shared_ptr<fuzzing::Python> PySpec = nullptr;
+std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 std::shared_ptr<fuzzing::Go> zrnt = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
@@ -22,7 +23,7 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     differential = std::make_unique<fuzzing::Differential>();
 
     differential->AddModule(
-        PySpec = std::make_shared<fuzzing::Python>((*argv)[0], PYTHON_HARNESS_PATH, PYTHON_LIB_PATH)
+        pyspec = std::make_shared<fuzzing::Python>(PYTHON_HARNESS_BIN, PYTHON_HARNESS_PATH)
     );
     differential->AddModule(
         zrnt = std::make_shared<fuzzing::Go>()

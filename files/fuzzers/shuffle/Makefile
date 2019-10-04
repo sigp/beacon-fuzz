@@ -1,10 +1,13 @@
 SHUFFLE_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-all: fuzzer
 
 PY_SPEC_HARNESS_PATH := $(SHUFFLE_ROOT)/pyspec/harness.py
 
-lighthouse.a : lighthouse/
+lighthouse_dir_contents := $(shell find $(SHUFFLE_ROOT)/lighthouse | sed 's/ /\\ /g')
+
+all: fuzzer
+
+lighthouse.a : lighthouse $(lighthouse_dir_contents)
 	# TODO add coverage flags to Rust build
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/

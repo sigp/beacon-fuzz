@@ -2,7 +2,7 @@ BLOCK_ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 all: fuzzer
 
-PY_SPEC_HARNESS_PATH := $(BLOCK_ROOT)/harness.py
+PY_SPEC_HARNESS_PATH := $(BLOCK_ROOT)/pyspec/harness.py
 
 zrnt.a : zrnt/fuzz.go
 	test $(GO_FUZZ_BUILD_PATH)

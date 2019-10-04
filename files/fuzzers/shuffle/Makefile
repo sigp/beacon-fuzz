@@ -8,7 +8,7 @@ lighthouse_dir_contents := $(shell find $(SHUFFLE_ROOT)/lighthouse | sed 's/ /\\
 all: fuzzer
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents)
-	# TODO add coverage flags to Rust build
+	# TODO add coverage flags, llvm args to Rust build
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/
 	mkdir lighthouse_out/

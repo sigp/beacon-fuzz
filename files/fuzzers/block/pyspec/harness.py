@@ -1,10 +1,11 @@
 import os
 import sys
-from eth2spec.phase0 import spec as spec
+from eth2spec.phase0 import spec
 
 # Apply 'minimal' template
 from preset_loader import loader
-configs_path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'eth2.0-specs/configs')
+# TODO fix up
+configs_path = '/eth2/eth2.0-specs/configs'
 presets = loader.load_presets(configs_path, 'minimal')
 spec.apply_constants_preset(presets)
 

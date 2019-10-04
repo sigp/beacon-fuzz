@@ -64,7 +64,7 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
 
     
     // if the program name is the path to a python binary in a venv containing relevant dependencies,
-    // these should be included in the sys.path
+    // these dependencies will be accessible
     differential->AddModule(
             pyspec = std::make_shared<fuzzing::Python>(PYTHON_HARNESS_BIN, PYTHON_HARNESS_PATH)
     );

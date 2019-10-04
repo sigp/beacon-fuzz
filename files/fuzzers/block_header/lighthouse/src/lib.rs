@@ -1,24 +1,23 @@
 use ssz::{Encode, Decode};
 use ssz_derive::{Encode, Decode};
-use types::{BeaconState, BeaconBlock, EthSpec, FoundationEthSpec};
+use types::{BeaconState, BeaconBlock, EthSpec, MainnetEthSpec};
 use std::{slice, ptr};
 use libc::{uint8_t, size_t};
-use state_processing::{BlockProcessingError, per_block_processing::{process_block_header, verify_block_signature}};
+use state_processing::{BlockProcessingError, per_block_processing::{process_block_header, VerifySignatures}};
 
 #[derive(Decode, Encode)]
 struct BlockHeaderTestCase<T: EthSpec> {
     pub pre: BeaconState<T>,
-    pub block: BeaconBlock,
+    pub block: BeaconBlock<T>,
 }
 
 impl<T: EthSpec> BlockHeaderTestCase<T> {
     /// Run `process_block_header` and return a `BeaconState` on success, or a
     /// `BlockProcessingError` on failure.
     fn process_header(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
-        let spec = T::spec();
+        let spec = T::default_spec();
 
-        process_block_header(&mut self.pre, &self.block, &spec)?;
-        verify_block_signature(&mut self.pre, &self.block, &spec)?;
+        process_block_header(&mut self.pre, &self.block, None, VerifySignatures::True, &spec)?;
 
         Ok(self.pre)
     }
@@ -51,8 +50,8 @@ pub fn block_header_c(
         slice::from_raw_parts(input_ptr, input_size as usize)
     };
 
-    // Note: `FoundationEthSpec` contains the "constants" in the official spec.
-    if let Ok(output_bytes) = fuzz::<FoundationEthSpec>(input_bytes) {
+    // Note: `MainnetEthSpec` contains the "constants" in the official spec.
+    if let Ok(output_bytes) = fuzz::<MainnetEthSpec>(input_bytes) {
         unsafe {
             if output_bytes.len() > *output_size {
                 return false;

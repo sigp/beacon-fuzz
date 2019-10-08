@@ -23,6 +23,7 @@ cd /eth2
 # Get eth2.0-specs
 git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs.git
 export ETH2_SPECS_PATH=`realpath eth2.0-specs/`
+# TODO create an env.sh as part of build?
 
 # Build pyspec and dependencies
 cd "$ETH2_SPECS_PATH"
@@ -32,10 +33,12 @@ rm -rf "$PY_SPEC_VENV_PATH"
 "$CPYTHON_INSTALL_PATH/bin/python3" -m venv "$PY_SPEC_VENV_PATH"
 "$PY_SPEC_VENV_PATH/bin/pip" install --upgrade pip
 cd "$ETH2_SPECS_PATH/test_libs/pyspec"
-"$PY_SPEC_VENV_PATH/bin/pip" install -r "./requirements.txt"
+# don't need to use requirements.py as the setup.py contains pinned dependencies
 "$PY_SPEC_VENV_PATH/bin/pip" install -e .
 cd "$ETH2_SPECS_PATH/test_libs/config_helpers"
-"$PY_SPEC_VENV_PATH/bin/pip" install -r "./requirements.txt"
+# dodgy hack to adjust dependencies until we are working with a spec version that includes
+# https://github.com/ethereum/eth2.0-specs/pull/1426
+sed -i 's/ruamel\.yaml==0\.15\.96/ruamel\.yaml==0.16.5/g' setup.py
 "$PY_SPEC_VENV_PATH/bin/pip" install -e .
 
 # Now any script run with the python executable below will have access to pyspec

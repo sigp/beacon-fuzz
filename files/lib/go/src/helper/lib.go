@@ -43,6 +43,7 @@ const INPUT_TYPE_BLOCK_WRAPPER InputType = 8
 
 var inputType InputType = INPUT_TYPE_INVALID
 
+// TODO should we have these as pointers instead?
 type InputAttestation struct {
 	Pre         phase0.BeaconState
 	Attestation attestations.Attestation
@@ -169,55 +170,86 @@ func getSSZType(dest interface{}) *types.SSZ {
 }
 
 // TODO should this be a pointer or are we actually meaning to pass a copy?
-func CheckInvariants(state phase0.BeaconState, correct bool) error {
-    /* Balances and ValidatorRegistry must be the same length */
-    // TODO to use fullfeaturedstate instead of phase0.BeaconState?
-    // how to get from beaconstate to meta?
-    // TODO is this how its supposed to work?
-    // perhaps use phase0.InitState instead? (in genesis)
-    ffstate := phase0.NewFullFeaturedState(&state)
-    if len(ffstate.RegistryState.Balances) != len(ffstate.RegistryState.Validators) {
-        if correct == false {
-            return fmt.Errorf("Balances/ValidatorRegistry length mismatch (%v and %v)", len(ffstate.RegistryState.Balances), len(ffstate.RegistryState.Validators))
-        }
-        for len(ffstate.RegistryState.Balances) < len(ffstate.RegistryState.Validators) {
-            ffstate.RegistryState.Balances = append(ffstate.RegistryState.Balances, 0)
-        }
-        for len(ffstate.RegistryState.Validators) < len(ffstate.RegistryState.Balances) {
+// TODO remove
+// NOTE we couldn't actually correct/modify any changes if passing a copy of the struct
+func CheckInvariants(state *phase0.BeaconState, correct bool) error {
+    if correct == true {
+        // need to have at least as many validators as slots per epoch
+        // TODO initState requires this (why?)
+        for core.Slot(len(state.Validators)) < core.SLOTS_PER_EPOCH {
             var tmp validator.Validator
-            ffstate.RegistryState.Validators = append(ffstate.RegistryState.Validators, &tmp)
+            state.RegistryState.Validators = append(state.RegistryState.Validators, &tmp)
+        }
+    }
+    /* Balances and ValidatorRegistry must be the same length */
+    if len(state.RegistryState.Balances) != len(state.RegistryState.Validators) {
+        if correct == false {
+            return fmt.Errorf("Balances/ValidatorRegistry length mismatch (%v and %v)", len(state.RegistryState.Balances), len(state.RegistryState.Validators))
+        }
+        // TODO check go for loop vs while?
+        for len(state.RegistryState.Balances) < len(state.RegistryState.Validators) {
+            state.RegistryState.Balances = append(state.RegistryState.Balances, 0)
+        }
+        for len(state.RegistryState.Validators) < len(state.RegistryState.Balances) {
+            var tmp validator.Validator
+            state.RegistryState.Validators = append(state.RegistryState.Validators, &tmp)
         }
     }
 
+    // TODO is this how its supposed to work?
+    // perhaps use phase0.InitState instead? (in genesis)
+    // not sure if we want to use a full init state from genesis
+    // this precomputes data, and loads startshardstatus etc
+
+    // TODO
+    // ensure committeeCount <= uint64(SHARD_COUNT)
+
+    // TODO ensure number of active validators > committeeCount for current, prev and next epoch
+    // NOTE: because committeeCount is calculated based on num active validators,
+    // we just need to ensure that some validators are active?
+    // based on zrnt validator.go CommitteeCount, we need to ensure number of active validators
+    // is greater than SLOTS_PER_EPOCH
+    /*
+    ffstate, err := phase0.InitState(state)
+    if err != nil {
+        // TODO not sure if this implies an invalid state
+        // Could avoid and call loadprecompute etc ourselves?
+        // NOTE this should not occur if correct == true, so fine to error here
+        return err
+    }
+
+    */
+
     /* Avoid division by zero in ProcessBlockHeader */
+    /*
     {
         epoch := ffstate.VersioningState.CurrentEpoch()
         committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
         offset := core.Shard(committeesPerSlot) * core.Shard(ffstate.Slot%core.SLOTS_PER_EPOCH)
         // TODO this typechecks but may not be correct/intended operation?
-        shardStatus := ffstate.ShardRotFeature.LoadStartShardStatus(epoch)
-        shard := (shardStatus.GetStartShard(epoch) + offset) % core.SHARD_COUNT
-        shuffleStatus := ffstate.LoadShufflingStatus()
-        firstCommittee := shuffleStatus.GetCrosslinkCommittee(epoch, shard)
+        // NOTE: InitState uses LoadStartShardStatus with currentEpoch - 20
+        // do we want this?
+        shard := (ffstate.GetStartShard(epoch) + offset) % core.SHARD_COUNT
+        firstCommittee := ffstate.ShufflingStatus.GetCrosslinkCommittee(epoch, shard)
         if len(firstCommittee) == 0 {
             if correct == false {
                 return errors.New("Empty firstCommittee")
             } else {
-                /* TODO correct */
+                // TODO correct
             }
         }
-    }
+    }*/
 
     return nil
 }
 
-func CorrectInvariants(state phase0.BeaconState) {
+func CorrectInvariants(state *phase0.BeaconState) {
     if err := CheckInvariants(state, true); err != nil {
-        panic("CheckInvariants failed")
+        panic(fmt.Sprintf("CorrectInvariants failed: %v", err))
     }
 }
 
-func AssertInvariants(state phase0.BeaconState) {
+func AssertInvariants(state *phase0.BeaconState) {
     if err := CheckInvariants(state, false); err != nil {
         panic(fmt.Sprintf("Invariant check failed: %v", err))
     }
@@ -306,6 +338,7 @@ func encodeOfType(src interface{}, sszType types.SSZ) []byte {
     var ret bytes.Buffer
     writer := bufio.NewWriter(&ret)
     // TODO can handle the number of bytes written if an error occurs?
+    // TODO does zssz.Encode want a pointer to the data, or just a copy?
     if _, err := zssz.Encode(writer, src, sszType); err != nil {
         panic("Cannot encode")
     }
@@ -325,7 +358,7 @@ func EncodeState(state phase0.BeaconState) []byte {
 }
 
 func EncodePoststate(state phase0.BeaconState) []byte {
-    AssertInvariants(state)
+    AssertInvariants(&state)
 
     return EncodeState(state)
 }
@@ -389,7 +422,8 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_ATTESTATION:
         input, err := DecodeAttestation(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
+            CorrectInvariants(&input.Pre)
+            // TODO should this be a pointer to the input?
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -397,7 +431,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_ATTESTER_SLASHING:
         input, err := DecodeAttesterSlashing(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
+            CorrectInvariants(&input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -405,8 +439,8 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_BLOCK_HEADER:
         input, err := DecodeBlockHeader(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
-            if err := CheckInvariants(input.Pre, false); err != nil {
+            CorrectInvariants(&input.Pre)
+            if err := CheckInvariants(&input.Pre, false); err != nil {
                 return 0
             }
 
@@ -422,7 +456,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_DEPOSIT:
         input, err := DecodeDeposit(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
+            CorrectInvariants(&input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -430,7 +464,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_TRANSFER:
         input, err := DecodeTransfer(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
+            CorrectInvariants(&input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -438,7 +472,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_VOLUNTARY_EXIT:
         input, err := DecodeVoluntaryExit(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
+            CorrectInvariants(&input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }
@@ -446,7 +480,7 @@ func SSZPreprocess(data []byte) int {
     case    INPUT_TYPE_PROPOSER_SLASHING:
         input, err := DecodeProposerSlashing(data, true)
         if err == nil {
-            CorrectInvariants(input.Pre)
+            CorrectInvariants(&input.Pre)
             g_return_data = Encode(input)
             return len(g_return_data)
         }

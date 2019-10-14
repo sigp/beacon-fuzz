@@ -3,6 +3,8 @@ package fuzz
 import (
     "github.com/protolambda/zrnt/eth2/phase0"
     "helper"
+    "fmt"
+    "os"
 )
 
 func init() {
@@ -10,13 +12,16 @@ func init() {
 }
 
 // Doesn't look like this makes use of the PreState files?
-func Fuzz(data []byte) []byte {
+func Fuzz(data []byte) (result []byte) {
+    // TODO remove
+    // helpers should never panic?
     input, err := helper.DecodeBlockHeader(data, false)
     if err != nil {
         return []byte{}
     }
     // Not needed if we make the Decode return a FullFeaturedState
     // Might want to use phase0.InitState instead?
+    // TODO requires more initialization - could try InitState, but need to catch the panic
     ffstate := phase0.NewFullFeaturedState(&input.Pre)
     blockHeader := (&input.Block).Header()
 

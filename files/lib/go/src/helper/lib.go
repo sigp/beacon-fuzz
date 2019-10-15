@@ -44,56 +44,75 @@ const INPUT_TYPE_BLOCK_WRAPPER InputType = 8
 var inputType InputType = INPUT_TYPE_INVALID
 
 // TODO should we have these as pointers instead?
+// convert from stateID + something to state + something?
+
+
+// TODO I hate having to copy paste all this, but no generic functions/types
+// is there 1 function I can do that will convert from these types to
+// types with states?
+// I think not, would have to return a more deeply embedded struct with similar members
+// which might not serialize in the same way?
+// or can I have them both serialize similarly?
+//type InputWrapper struct {
+//        StateID uint32
+//        Other interface{}
+//}
+
+// Input passed to implementations after preprocessing
 type InputAttestation struct {
-	Pre         phase0.BeaconState
-	Attestation attestations.Attestation
+    Pre         phase0.BeaconState
+    Attestation attestations.Attestation
 }
 
 type InputAttesterSlashing struct {
-	Pre                 phase0.BeaconState
-	AttesterSlashing    attslash.AttesterSlashing
+    Pre                 phase0.BeaconState
+    AttesterSlashing    attslash.AttesterSlashing
 }
 
 type InputBlockHeader struct {
-	Pre         phase0.BeaconState
-	Block       phase0.BeaconBlock
+    Pre               phase0.BeaconState
+    Block               phase0.BeaconBlock
 }
 
 type InputDeposit struct {
-	Pre         phase0.BeaconState
-	Deposit     deposits.Deposit
+    Pre         phase0.BeaconState
+    Deposit     deposits.Deposit
 }
 
 type InputTransfer struct {
-	Pre         phase0.BeaconState
-	Transfer    transfers.Transfer
+    Pre         phase0.BeaconState
+    Transfer    transfers.Transfer
 }
 
 type InputVoluntaryExit struct {
-	Pre             phase0.BeaconState
-	VoluntaryExit   exits.VoluntaryExit
+    Pre             phase0.BeaconState
+    VoluntaryExit   exits.VoluntaryExit
 }
 
 type InputProposerSlashing struct {
-	Pre                 phase0.BeaconState
-	ProposerSlashing    propslash.ProposerSlashing
+    Pre                 phase0.BeaconState
+    ProposerSlashing    propslash.ProposerSlashing
 }
 
 type InputBlockWrapper struct {
-	StateID             uint32
-	Block               phase0.BeaconBlock
+    StateID             uint32
+    Block               phase0.BeaconBlock
 }
 
-type InputStateBlock   struct {
-	State               phase0.BeaconState
-	Block               phase0.BeaconBlock
+type InputStateBlock struct {
+    State               phase0.BeaconState
+    Block               phase0.BeaconBlock
 }
 
-// TODO should this be a []phase0.FullFeaturedState instead?
+
+
 var PreloadedStates = make([]phase0.BeaconState, 0);
 
-var ssztype *types.SSZ
+// used internally by getSSZType
+var sszTypeCache = make(map[reflect.Type]types.SSZ)
+
 var blockWrapperSSZType types.SSZ
+// TODO what is this for? I think just caching/memoization
 var stateBlockSSZType types.SSZ
 
 func loadPrestates() {
@@ -134,21 +153,8 @@ func loadPrestates() {
 }
 
 func init() {
-    {
-        stateBlockSSZType_, err := types.SSZFactory(reflect.TypeOf(new(InputStateBlock)).Elem())
-        if err != nil {
-            panic("Could not create object from factory")
-        }
-        stateBlockSSZType = stateBlockSSZType_
-    }
-
-    {
-        blockWrapperSSZType_, err := types.SSZFactory(reflect.TypeOf(new(InputBlockWrapper)).Elem())
-        if err != nil {
-            panic("Could not create object from factory")
-        }
-        blockWrapperSSZType = blockWrapperSSZType_
-    }
+    stateBlockSSZType = zssz.GetSSZ((*InputStateBlock)(nil))
+    blockWrapperSSZType = zssz.GetSSZ((*InputBlockWrapper)(nil))
 
     loadPrestates()
 }
@@ -157,16 +163,24 @@ func SetInputType(inputType_ InputType) {
     inputType = inputType_
 }
 
-func getSSZType(dest interface{}) *types.SSZ {
-    if ssztype == nil {
-        ssztype_, err := types.SSZFactory(reflect.TypeOf(dest).Elem())
-        if err != nil {
-            panic("Could not create object from factory")
-        }
-        ssztype = &ssztype_
+// NOTE: as input types do not necessarily have a unique `String()` representation,
+// generally not an issue
+// TODO add checks to avoid corruption
+// thanks to https://stackoverflow.com/a/55321744
+// dest should be a pointer to a value we want the associated SSZ type for
+// NOTE: will panic if argument is not a pointer type
+func getSSZType(dest interface{}) types.SSZ {
+
+    t := reflect.TypeOf(dest).Elem()
+
+    r, set := sszTypeCache[t]
+    if set == true {
+        return r
     }
 
-    return ssztype
+    ssztyp := zssz.GetSSZ(dest)
+    sszTypeCache[t] = ssztyp
+    return ssztyp
 }
 
 // TODO should this be a pointer or are we actually meaning to pass a copy?
@@ -209,19 +223,11 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
     // we just need to ensure that some validators are active?
     // based on zrnt validator.go CommitteeCount, we need to ensure number of active validators
     // is greater than SLOTS_PER_EPOCH
-    /*
-    ffstate, err := phase0.InitState(state)
-    if err != nil {
-        // TODO not sure if this implies an invalid state
-        // Could avoid and call loadprecompute etc ourselves?
-        // NOTE this should not occur if correct == true, so fine to error here
-        return err
-    }
 
-    */
+    ffstate := phase0.NewFullFeaturedState(state)
+    ffstate.LoadPrecomputedData()
 
     /* Avoid division by zero in ProcessBlockHeader */
-    /*
     {
         epoch := ffstate.VersioningState.CurrentEpoch()
         committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
@@ -238,7 +244,7 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
                 // TODO correct
             }
         }
-    }*/
+    }
 
     return nil
 }
@@ -270,8 +276,11 @@ func decodeOfType(data []byte, dest interface{}, fuzzer bool, sszType types.SSZ)
     return nil
 }
 
+// TODO why is this not a pointer to the data? Copying slices around everywhere
+// but copying slices might be ok? - how does that compare to copying arrays?
 func Decode(data []byte, dest interface{}, fuzzer bool) error {
-    return decodeOfType(data, dest, fuzzer, *getSSZType(dest))
+    // TODO cache getSSZType?
+    return decodeOfType(data, dest, fuzzer, getSSZType(dest))
 }
 
 func DecodeAttestation(data []byte, fuzzer bool) (InputAttestation, error) {
@@ -316,7 +325,7 @@ func DecodeProposerSlashing(data []byte, fuzzer bool) (InputProposerSlashing, er
     return input, err
 }
 
-func decodeBlockWrapper(data []byte, fuzzer bool) (InputBlockWrapper, error) {
+func DecodeBlockWrapper(data []byte, fuzzer bool) (InputBlockWrapper, error) {
     var input InputBlockWrapper
     err := decodeOfType(data, &input, fuzzer, blockWrapperSSZType);
     return input, err
@@ -328,11 +337,6 @@ func DecodeStateBlock(data []byte, fuzzer bool) (InputStateBlock, error) {
     return input, err
 }
 
-func DecodeBlockWrapper(data []byte, fuzzer bool) (InputBlockWrapper, error) {
-    var input InputBlockWrapper
-    err := Decode(data, &input, fuzzer);
-    return input, err
-}
 
 func encodeOfType(src interface{}, sszType types.SSZ) []byte {
     var ret bytes.Buffer
@@ -350,9 +354,10 @@ func encodeOfType(src interface{}, sszType types.SSZ) []byte {
 }
 
 func Encode(src interface{}) []byte {
-    return encodeOfType(src, *getSSZType(src))
+    return encodeOfType(src, getSSZType(src))
 }
 
+// TODO why does this exist? to avoid having to call getSSZType?
 func EncodeState(state phase0.BeaconState) []byte {
     return encodeOfType(&state, phase0.BeaconStateSSZ)
 }
@@ -368,7 +373,7 @@ func EncodePoststate(state phase0.BeaconState) []byte {
 func GetStateByID(stateID uint32) (phase0.BeaconState, error) {
     var state phase0.BeaconState
     if stateID >= uint32(len(PreloadedStates)) {
-        return state, fmt.Errorf("Invalid prestate ID")
+        return state, fmt.Errorf("Invalid prestate ID: %v", stateID)
     }
 
     return PreloadedStates[stateID], nil
@@ -418,6 +423,7 @@ func SSZPreprocessGetReturnData(return_data []byte) {
 
 //export SSZPreprocess
 func SSZPreprocess(data []byte) int {
+    // returns relevant "unwrapped" type
     switch inputType {
     case    INPUT_TYPE_ATTESTATION:
         input, err := DecodeAttestation(data, true)
@@ -448,11 +454,12 @@ func SSZPreprocess(data []byte) int {
             {
                 input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, header.BeaconBlockHeaderSSZ)
             }
-
             g_return_data = Encode(input)
             return len(g_return_data)
         }
         return 0
+
+
     case    INPUT_TYPE_DEPOSIT:
         input, err := DecodeDeposit(data, true)
         if err == nil {
@@ -486,7 +493,7 @@ func SSZPreprocess(data []byte) int {
         }
         return 0
     case    INPUT_TYPE_BLOCK_WRAPPER:
-        blockWrapper, err := decodeBlockWrapper(data, true)
+        blockWrapper, err := DecodeBlockWrapper(data, true)
         if err != nil {
             return 0
         }
@@ -517,7 +524,7 @@ func SSZPreprocess(data []byte) int {
 func GetStateBlock(data []byte) (InputStateBlock, error) {
     var stateBlock InputStateBlock
 
-    blockWrapper, err := decodeBlockWrapper(data, true)
+    blockWrapper, err := DecodeBlockWrapper(data, true)
     if err != nil {
         return stateBlock, fmt.Errorf("Cannot decode blockwrapper")
     }

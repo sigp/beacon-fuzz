@@ -4,6 +4,7 @@
 #include <lib/go.h>
 #include <lib/rust.h>
 #include <cstring>
+#include <assert.h>
 
 #ifndef PYTHON_HARNESS_PATH
 #error PYTHON_HARNESS_PATH undefined
@@ -32,6 +33,9 @@ namespace fuzzing {
 
             input.resize(count);
 
+            // TODO N fix? - this uses size_t, where other impls use uint_64_t
+            // sizeof(size_t) == sizeof(uint64_t) does not hold on all architectures
+            assert(sizeof(size_t) == sizeof(uint64_t));
             /* input[0..count] = 0..count */
             for (size_t i = 0; i < count; i++) {
                 input[i] = i;

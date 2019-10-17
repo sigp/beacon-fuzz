@@ -6,7 +6,7 @@ from eth2spec.phase0 import spec
 from preset_loader import loader
 # TODO fix up so not hard-coded
 configs_path = '/eth2/eth2.0-specs/configs'
-presets = loader.load_presets(configs_path, 'minimal')
+presets = loader.load_presets(configs_path, 'mainnet')
 spec.apply_constants_preset(presets)
 
 from eth2spec.fuzzing.decoder import translate_typ, translate_value
@@ -23,7 +23,7 @@ class BlockTestCase(spec.Container):
 block_sedes = translate_typ(BlockTestCase)
 
 def FuzzerRunOne(fuzzer_input):
-    state_block = translate_value(state_block_sedes.deserialize(fuzzer_input), BlockTestCase)
+    state_block = translate_value(block_sedes.deserialize(fuzzer_input), BlockTestCase)
 
     try:
         poststate = spec.state_transition(state_block.pre, state_block.block, False)

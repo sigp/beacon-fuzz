@@ -23,7 +23,7 @@ func xxhash256(input []byte) [32]byte {
 }
 
 func init() {
-    helper.SetInputType(helper.INPUT_TYPE_BLOCK_WRAPPER)
+    helper.SetInputType(helper.INPUT_TYPE_BLOCK)
 
     /* Uncomment once PySpec can use xxhash */
     /*
@@ -36,26 +36,25 @@ func init() {
 }
 
 func Fuzz(data []byte) []byte {
-    blockWrapper, err := helper.DecodeBlockWrapper(data, false)
+    // TODO set fuzz to true here? or no, to keep consistent decoding
+    input, err := helper.DecodeBlock(data, false)
     if err != nil {
-        panic("Decoding failed")
+        // TODO return [] if decoding fails - should be fine for it to fail
+        // A sanity check to ensure preprocessing works
+        // Assumes preprocessing ensures data is decodable
+        panic("Decoding failed - bug in preprocessing.")
     }
-    state, err := helper.GetStateByID(blockWrapper.StateID)
-    if err != nil {
-        panic("Retrieving state failed")
-    }
-
-    // Not needed if we make the helper.GetStateByID return a FullFeaturedState
-    // Might want to use phase0.InitState instead?
-    ffstate := phase0.NewFullFeaturedState(&state)
-    blockProc := &phase0.BlockProcessFeature{}
+    ffstate := phase0.NewFullFeaturedState(&input.Pre)
+    ffstate.LoadPrecomputedData()
+    blockProc := new(phase0.BlockProcessFeature)
     blockProc.Meta = ffstate
-    blockProc.Block = &blockWrapper.Block
-    err = ffstate.StateTransition(blockProc, false)
-
-    if err != nil {
+    blockProc.Block = &input.Block
+    if err := ffstate.StateTransition(blockProc, false); err != nil {
         return []byte{}
     }
 
-    return helper.EncodeState(state)
+    // NOTE this will panic if the invariants aren't correct 
+    return helper.EncodePoststate(ffstate.BeaconState)
+    // equiv to
+    // return helper.EncodePoststate(&input.Pre)
 }

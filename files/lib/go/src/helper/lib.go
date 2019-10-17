@@ -39,7 +39,7 @@ const INPUT_TYPE_DEPOSIT InputType = 4
 const INPUT_TYPE_TRANSFER InputType = 5
 const INPUT_TYPE_VOLUNTARY_EXIT InputType = 6
 const INPUT_TYPE_PROPOSER_SLASHING InputType = 7
-const INPUT_TYPE_BLOCK_WRAPPER InputType = 8
+const INPUT_TYPE_BLOCK InputType = 8
 
 var inputType InputType = INPUT_TYPE_INVALID
 
@@ -54,9 +54,11 @@ var inputType InputType = INPUT_TYPE_INVALID
 // which might not serialize in the same way?
 // or can I have them both serialize similarly?
 //type InputWrapper struct {
-//        StateID uint32
+//        StateID uint16
 //        Other interface{}
 //}
+
+// TODO move types to separate file
 
 // Input passed to implementations after preprocessing
 type InputAttestation struct {
@@ -67,11 +69,6 @@ type InputAttestation struct {
 type InputAttesterSlashing struct {
     Pre                 phase0.BeaconState
     AttesterSlashing    attslash.AttesterSlashing
-}
-
-type InputBlockHeader struct {
-    Pre               phase0.BeaconState
-    Block               phase0.BeaconBlock
 }
 
 type InputDeposit struct {
@@ -94,17 +91,134 @@ type InputProposerSlashing struct {
     ProposerSlashing    propslash.ProposerSlashing
 }
 
+type InputBlockHeader struct {
+	Pre               phase0.BeaconState
+	Block               phase0.BeaconBlock
+}
+
+type InputBlock struct {
+	Pre               phase0.BeaconState
+	Block               phase0.BeaconBlock
+}
+
+
+// Types to be read from fuzzer
 type InputBlockWrapper struct {
-    StateID             uint32
-    Block               phase0.BeaconBlock
+	StateID             uint16
+	Block               phase0.BeaconBlock
 }
 
-type InputStateBlock struct {
-    State               phase0.BeaconState
-    Block               phase0.BeaconBlock
+// Same as for Block
+type InputBlockHeaderWrapper InputBlockWrapper
+
+type InputAttestationWrapper struct {
+	StateID             uint16
+	Attestation attestations.Attestation
+}
+
+type InputAttesterSlashingWrapper struct {
+	StateID             uint16
+	AttesterSlashing    attslash.AttesterSlashing
+}
+
+type InputDepositWrapper struct {
+	StateID             uint16
+	Deposit     deposits.Deposit
 }
 
 
+type InputTransferWrapper struct {
+	StateID             uint16
+	Transfer    transfers.Transfer
+}
+
+type InputVoluntaryExitWrapper struct {
+	StateID             uint16
+	VoluntaryExit   exits.VoluntaryExit
+}
+
+type InputProposerSlashingWrapper struct {
+	StateID             uint16
+	ProposerSlashing    propslash.ProposerSlashing
+}
+
+// NOTE I think we want to avoid embedding here to ensure consistent serialization,
+// so have all these functions
+
+// TODO change to pointers to avoid copying?
+// I think that might screw with current serialization etc
+func (w *InputBlockWrapper) unwrap() (*InputBlock, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        // Is nil fine here - converts to a *InputBlock?
+        return nil, err
+    }
+    return &InputBlock{Pre: state, Block: w.Block}, nil
+}
+
+func (w *InputBlockHeaderWrapper) unwrap() (*InputBlockHeader, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputBlockHeader{Pre: state, Block: w.Block}, nil
+}
+
+func (w *InputAttestationWrapper) unwrap() (*InputAttestation, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputAttestation{Pre: state, Attestation: w.Attestation}, nil
+}
+
+func (w *InputAttesterSlashingWrapper) unwrap() (*InputAttesterSlashing, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputAttesterSlashing{Pre: state, AttesterSlashing: w.AttesterSlashing}, nil
+}
+
+func (w *InputDepositWrapper) unwrap() (*InputDeposit, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputDeposit{Pre: state, Deposit: w.Deposit}, nil
+}
+
+func (w *InputTransferWrapper) unwrap() (*InputTransfer, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputTransfer{Pre: state, Transfer: w.Transfer}, nil
+}
+
+func (w *InputVoluntaryExitWrapper) unwrap() (*InputVoluntaryExit, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputVoluntaryExit{Pre: state, VoluntaryExit: w.VoluntaryExit}, nil
+}
+
+func (w *InputProposerSlashingWrapper) unwrap() (*InputProposerSlashing, error) {
+    state, err := GetStateByID(w.StateID)
+    if err != nil {
+        // TODO check this is how we want to return on an error
+        return nil, err
+    }
+    return &InputProposerSlashing{Pre: state, ProposerSlashing: w.ProposerSlashing}, nil
+}
 
 var PreloadedStates = make([]phase0.BeaconState, 0);
 
@@ -153,7 +267,7 @@ func loadPrestates() {
 }
 
 func init() {
-    stateBlockSSZType = zssz.GetSSZ((*InputStateBlock)(nil))
+    stateBlockSSZType = zssz.GetSSZ((*InputBlock)(nil))
     blockWrapperSSZType = zssz.GetSSZ((*InputBlockWrapper)(nil))
 
     loadPrestates()
@@ -278,63 +392,108 @@ func decodeOfType(data []byte, dest interface{}, fuzzer bool, sszType types.SSZ)
 
 // TODO why is this not a pointer to the data? Copying slices around everywhere
 // but copying slices might be ok? - how does that compare to copying arrays?
+// TODO confirm whether the interface needs to be a pointer to the data, or the data itself?
+// does the unsafe.Pointer allow it to be either?
 func Decode(data []byte, dest interface{}, fuzzer bool) error {
     // TODO cache getSSZType?
     return decodeOfType(data, dest, fuzzer, getSSZType(dest))
 }
 
-func DecodeAttestation(data []byte, fuzzer bool) (InputAttestation, error) {
+func DecodeAttestation(data []byte, fuzzer bool) (*InputAttestation, error) {
     var input InputAttestation
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeAttesterSlashing(data []byte, fuzzer bool) (InputAttesterSlashing, error) {
+func DecodeAttesterSlashing(data []byte, fuzzer bool) (*InputAttesterSlashing, error) {
     var input InputAttesterSlashing
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeBlockHeader(data []byte, fuzzer bool) (InputBlockHeader, error) {
+func DecodeBlockHeader(data []byte, fuzzer bool) (*InputBlockHeader, error) {
     var input InputBlockHeader
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeDeposit(data []byte, fuzzer bool) (InputDeposit, error) {
+func DecodeDeposit(data []byte, fuzzer bool) (*InputDeposit, error) {
     var input InputDeposit
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeTransfer(data []byte, fuzzer bool) (InputTransfer, error) {
+func DecodeTransfer(data []byte, fuzzer bool) (*InputTransfer, error) {
     var input InputTransfer
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeVoluntaryExit(data []byte, fuzzer bool) (InputVoluntaryExit, error) {
+func DecodeVoluntaryExit(data []byte, fuzzer bool) (*InputVoluntaryExit, error) {
     var input InputVoluntaryExit
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeProposerSlashing(data []byte, fuzzer bool) (InputProposerSlashing, error) {
+func DecodeProposerSlashing(data []byte, fuzzer bool) (*InputProposerSlashing, error) {
     var input InputProposerSlashing
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
 }
 
-func DecodeBlockWrapper(data []byte, fuzzer bool) (InputBlockWrapper, error) {
-    var input InputBlockWrapper
-    err := decodeOfType(data, &input, fuzzer, blockWrapperSSZType);
-    return input, err
-}
-
-func DecodeStateBlock(data []byte, fuzzer bool) (InputStateBlock, error) {
-    var input InputStateBlock
+func DecodeBlock(data []byte, fuzzer bool) (*InputBlock, error) {
+    var input InputBlock
     err := Decode(data, &input, fuzzer);
-    return input, err
+    return &input, err
+}
+
+// Wrapper Decoding
+func DecodeBlockWrapper(data []byte, fuzzer bool) (*InputBlockWrapper, error) {
+    var input InputBlockWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeBlockHeaderWrapper(data []byte, fuzzer bool) (*InputBlockHeaderWrapper, error) {
+    var input InputBlockHeaderWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeAttestationWrapper(data []byte, fuzzer bool) (*InputAttestationWrapper, error) {
+    var input InputAttestationWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeAttesterSlashingWrapper(data []byte, fuzzer bool) (*InputAttesterSlashingWrapper, error) {
+    var input InputAttesterSlashingWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeDepositWrapper(data []byte, fuzzer bool) (*InputDepositWrapper, error) {
+    var input InputDepositWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeTransferWrapper(data []byte, fuzzer bool) (*InputTransferWrapper, error) {
+    var input InputTransferWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeVoluntaryExitWrapper(data []byte, fuzzer bool) (*InputVoluntaryExitWrapper, error) {
+    var input InputVoluntaryExitWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
+}
+
+func DecodeProposerSlashingWrapper(data []byte, fuzzer bool) (*InputProposerSlashingWrapper, error) {
+    var input InputProposerSlashingWrapper
+    err := Decode(data, &input, fuzzer);
+    return &input, err
 }
 
 
@@ -353,26 +512,21 @@ func encodeOfType(src interface{}, sszType types.SSZ) []byte {
     return ret.Bytes()
 }
 
-func Encode(src interface{}) []byte {
-    return encodeOfType(src, getSSZType(src))
+func Encode(srcPtr interface{}) []byte {
+    return encodeOfType(srcPtr, getSSZType(srcPtr))
 }
 
-// TODO why does this exist? to avoid having to call getSSZType?
-func EncodeState(state phase0.BeaconState) []byte {
-    return encodeOfType(&state, phase0.BeaconStateSSZ)
-}
+func EncodePoststate(state *phase0.BeaconState) []byte {
+    AssertInvariants(state)
 
-func EncodePoststate(state phase0.BeaconState) []byte {
-    AssertInvariants(&state)
-
-    return EncodeState(state)
+    return Encode(state)
 }
 
 // TODO should this return a pointer to the state, or are we wanting a new copy
 // created?
-func GetStateByID(stateID uint32) (phase0.BeaconState, error) {
+func GetStateByID(stateID uint16) (phase0.BeaconState, error) {
     var state phase0.BeaconState
-    if stateID >= uint32(len(PreloadedStates)) {
+    if stateID >= uint16(len(PreloadedStates)) {
         return state, fmt.Errorf("Invalid prestate ID: %v", stateID)
     }
 
@@ -391,7 +545,7 @@ func randomlyValid(valid []byte, random []byte, chance float32) {
 	}
 }
 
-func correctBlock(state phase0.BeaconState, block *phase0.BeaconBlock) {
+func correctBlock(state *phase0.BeaconState, block *phase0.BeaconBlock) {
     {
         block.Slot = state.Slot + (block.Slot % 10)
     }
@@ -416,6 +570,8 @@ func correctBlock(state phase0.BeaconState, block *phase0.BeaconBlock) {
 
 var g_return_data = make([]byte, 0);
 
+// TODO move external/"exported" functions to their own file
+
 //export SSZPreprocessGetReturnData
 func SSZPreprocessGetReturnData(return_data []byte) {
     copy(return_data, g_return_data)
@@ -426,118 +582,135 @@ func SSZPreprocess(data []byte) int {
     // returns relevant "unwrapped" type
     switch inputType {
     case    INPUT_TYPE_ATTESTATION:
-        input, err := DecodeAttestation(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            // TODO should this be a pointer to the input?
-            g_return_data = Encode(input)
-            return len(g_return_data)
+        wrapped, err := DecodeAttestationWrapper(data, true)
+        if err != nil {
+            return 0
         }
-        return 0
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            // TODO is this checking necessary if we have trusted state inputs?
+            return 0
+        }
+        g_return_data = Encode(input)
+        return len(g_return_data)
     case    INPUT_TYPE_ATTESTER_SLASHING:
-        input, err := DecodeAttesterSlashing(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            g_return_data = Encode(input)
-            return len(g_return_data)
+        wrapped, err := DecodeAttesterSlashingWrapper(data, true)
+        if err != nil {
+            return 0
         }
-        return 0
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
+        g_return_data = Encode(input)
+        return len(g_return_data)
     case    INPUT_TYPE_BLOCK_HEADER:
-        input, err := DecodeBlockHeader(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            if err := CheckInvariants(&input.Pre, false); err != nil {
-                return 0
-            }
-
-            /* BlockHeader-specific invariants */
-            {
-                input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, header.BeaconBlockHeaderSSZ)
-            }
-            g_return_data = Encode(input)
-            return len(g_return_data)
+        wrapped, err := DecodeBlockHeaderWrapper(data, true)
+        if err != nil {
+            return 0
         }
-        return 0
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
 
+        /* BlockHeader-specific invariants */
+        {
+            input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, header.BeaconBlockHeaderSSZ)
+        }
 
+        g_return_data = Encode(input)
+        return len(g_return_data)
     case    INPUT_TYPE_DEPOSIT:
-        input, err := DecodeDeposit(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            g_return_data = Encode(input)
-            return len(g_return_data)
+        wrapped, err := DecodeDepositWrapper(data, true)
+        if err != nil {
+            return 0
         }
-        return 0
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
+        g_return_data = Encode(input)
+        return len(g_return_data)
     case    INPUT_TYPE_TRANSFER:
-        input, err := DecodeTransfer(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            g_return_data = Encode(input)
-            return len(g_return_data)
+        wrapped, err := DecodeTransferWrapper(data, true)
+        if err != nil {
+            return 0
         }
-        return 0
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
+        g_return_data = Encode(input)
+        return len(g_return_data)
     case    INPUT_TYPE_VOLUNTARY_EXIT:
-        input, err := DecodeVoluntaryExit(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            g_return_data = Encode(input)
-            return len(g_return_data)
+        wrapped, err := DecodeVoluntaryExitWrapper(data, true)
+        if err != nil {
+            return 0
         }
-        return 0
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
+        g_return_data = Encode(input)
+        return len(g_return_data)
     case    INPUT_TYPE_PROPOSER_SLASHING:
-        input, err := DecodeProposerSlashing(data, true)
-        if err == nil {
-            CorrectInvariants(&input.Pre)
-            g_return_data = Encode(input)
-            return len(g_return_data)
-        }
-        return 0
-    case    INPUT_TYPE_BLOCK_WRAPPER:
-        blockWrapper, err := DecodeBlockWrapper(data, true)
+        wrapped, err := DecodeProposerSlashingWrapper(data, true)
         if err != nil {
             return 0
         }
-
-        state, err := GetStateByID(blockWrapper.StateID)
+        input, err := wrapped.unwrap()
         if err != nil {
             return 0
         }
-
-        /*
-        var stateBlock InputStateBlock
-
-        stateBlock.State = state
-        stateBlock.Block = blockWrapper.Block
-
-        correctBlock(stateBlock.State, &stateBlock.Block)
-
-        g_return_data = encodeOfType(stateBlock, stateBlockSSZType)
-        */
-        correctBlock(state, &blockWrapper.Block)
-        g_return_data = encodeOfType(blockWrapper, blockWrapperSSZType)
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
+        g_return_data = Encode(input)
+        return len(g_return_data)
+    case    INPUT_TYPE_BLOCK:
+        wrapped, err := DecodeBlockWrapper(data, true)
+        if err != nil {
+            return 0
+        }
+        input, err := wrapped.unwrap()
+        if err != nil {
+            return 0
+        }
+        CorrectInvariants(&input.Pre)
+        if err := CheckInvariants(&input.Pre, false); err != nil {
+            return 0
+        }
+        correctBlock(&input.Pre, &input.Block)
+        g_return_data = Encode(input)
         return len(g_return_data)
     default:
         panic("Invalid type configured")
     }
 }
 
-func GetStateBlock(data []byte) (InputStateBlock, error) {
-    var stateBlock InputStateBlock
-
-    blockWrapper, err := DecodeBlockWrapper(data, true)
-    if err != nil {
-        return stateBlock, fmt.Errorf("Cannot decode blockwrapper")
-    }
-
-    state, err := GetStateByID(blockWrapper.StateID)
-    if err != nil {
-        return stateBlock, fmt.Errorf("Cannot decode blockwrapper")
-    }
-
-    stateBlock.State = state
-    stateBlock.Block = blockWrapper.Block
-
-    correctBlock(stateBlock.State, &stateBlock.Block)
-
-    return stateBlock, nil
-}

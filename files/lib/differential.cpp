@@ -19,6 +19,9 @@ void Differential::Run(const std::vector<uint8_t> data) const {
         auto cur = module->Run(data);
 
         if ( cur == std::nullopt ) {
+            // TODO N discuss - want to differentiate between an error response
+            // a bug? this won't detect a difference when 1 impl gives no response and another gives some
+            // depends what std:nullopt "means" wrt the diff fuzzer interface 
             continue;
         }
 

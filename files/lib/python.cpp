@@ -51,7 +51,7 @@ namespace fuzzing {
 
             {
                 wchar_t *program = Py_DecodeLocale(argv0.c_str(), nullptr);
-                // TODO add have this as the venv folder and append /bin/python
+                // TODO N have this as the venv folder and append /bin/python
                 Py_SetProgramName(program);
             }
 
@@ -114,6 +114,8 @@ namespace fuzzing {
         PyObject *pArgs, *pValue;
 
         pArgs = PyTuple_New(1);
+        // TODO N check that data.data() is not nullptr?
+        // if this is possible pValue can hold uninitialized data
         pValue = PyBytes_FromStringAndSize((const char*)data.data(), data.size());
         PyTuple_SetItem(pArgs, 0, pValue);
 
@@ -125,6 +127,7 @@ namespace fuzzing {
             abort();
         }
 
+        // TODO N handle return None?
         if ( PyBytes_Check(pValue) ) {
             /* Retrieve output */
 
@@ -133,6 +136,7 @@ namespace fuzzing {
             if ( PyBytes_AsStringAndSize(pValue, (char**)&output, &outputSize) != -1) {
                 /* Return output */
                 ret = std::vector<uint8_t>(output, output + outputSize);
+                // TODO N isn't this irrelevant?
                 goto end;
             } else {
                 /* TODO this should not happen */

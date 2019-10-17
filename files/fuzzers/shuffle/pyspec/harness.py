@@ -2,6 +2,7 @@ import struct
 
 from eth2spec.phase0 import spec
 
+# TODO N why are we disabling hash caching here?
 # monkey patch to revert hash caching
 spec.hash = spec._hash
 

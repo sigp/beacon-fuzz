@@ -1,0 +1,98 @@
+default_language_version:
+    python: python3.7
+repos:
+
+# Python
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+        name: python-black
+
+  - repo: https://github.com/asottile/seed-isort-config
+    rev: v1.9.3
+    hooks:
+      - id: seed-isort-config
+        name: seed-isort-config
+
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v4.3.21
+    hooks:
+      - id: isort
+        name: python-isort
+        additional_dependencies: [toml]
+
+# Rust
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: master
+    hooks:
+      - id: fmt
+        name: rust-fmt
+# TODO currently doesn't work if Cargo.toml isn't in the root directory
+# Can have a hook that takes in Cargo.toml files and uses manifest-path for each
+#     - id: cargo-check
+#       files: Cargo.toml
+#       types: [toml]
+
+# Go
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: master
+    hooks:
+        # Not necessary with go-imports
+        #- id: go-fmt
+        #args: ['./...']
+      - id: go-imports
+        args: ['./...']
+        additional_dependencies: ['golang.org/x/tools/cmd/goimports']
+        # - id: go-vet
+        #   args: ['./...']
+
+# TODO resolve "Running error: context loading failed:"
+# Would like to have some linting that doesn't require all dependencies to be installed
+# - repo: https://github.com/golangci/golangci-lint
+#   rev: v1.21.0
+#   hooks:
+#       - id: golangci-lint
+
+# go-vet doesn't work without building and installing dependencies
+# "cannot find package ..."
+# could be used for CI, but not pre-commit as it stands
+# - repo: git://github.com/doublify/pre-commit-go
+#   rev: master
+#   hooks:
+#   - id: vet
+#     # TODO remove once go-vet "./..." works for dnephin hook
+#     name: go-vet
+#     args: ['./...']
+
+# Shell
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 1.11.0
+    hooks:
+        # These need external installation
+        # TODO specify via additional_dependencies ?
+      - id: shellcheck
+      - id: shfmt
+        args: ['-l', '-i', '4', '-ci', '-d']
+
+# Makefile
+# TODO checkmake doesn't allow usage like "checkmake f1 f2 f3" to provide
+# multiple files at once
+# - repo: https://github.com/Lucas-C/pre-commit-hooks-go
+#   rev: v1.0.0
+#   hooks:
+#     - id: checkmake
+#       pass_filenames: false
+#       files: '.*'
+#       types: [makefile]
+
+# Misc/General
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: debug-statements
+      - id: check-merge-conflict
+
+# TODO clangformat?

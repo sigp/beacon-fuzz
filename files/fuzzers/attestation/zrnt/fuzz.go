@@ -1,25 +1,28 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/beacon/block_processing"
-    "helper"
+	"github.com/protolambda/zrnt/eth2/phase0"
+	"helper"
 )
 
 func init() {
-    helper.SetInputType(helper.INPUT_TYPE_ATTESTATION)
+	helper.SetInputType(helper.INPUT_TYPE_ATTESTATION)
 }
 
 func Fuzz(data []byte) []byte {
-    input, err := helper.DecodeAttestation(data, false)
-    if err != nil {
-        return []byte{}
-    }
+	input, err := helper.DecodeAttestation(data, false)
+	if err != nil {
+		// Assumes preprocessing ensures data is decodable
+		// TODO N discuss - if preprocess encodes it, we should be able to decode it?
+		panic("Decoding failed - bug in preprocessing.")
+	}
 
-    helper.CorrectInvariants(input.Pre)
+	ffstate := phase0.NewFullFeaturedState(&input.Pre)
+	ffstate.LoadPrecomputedData()
 
-    if err := block_processing.ProcessAttestation(&input.Pre, &input.Attestation); err != nil {
-        return []byte{}
-    }
+	if err := ffstate.ProcessAttestation(&input.Attestation); err != nil {
+		return []byte{}
+	}
 
-    return helper.EncodePoststate(input.Pre)
+	return helper.EncodePoststate(&input.Pre)
 }

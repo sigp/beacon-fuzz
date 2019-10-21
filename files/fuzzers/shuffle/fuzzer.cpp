@@ -66,7 +66,7 @@ std::unique_ptr<fuzzing::Differential> differential = nullptr;
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     differential = std::make_unique<fuzzing::Differential>();
 
-    
+
     // if the program name is the path to a python binary in a venv containing relevant dependencies,
     // these dependencies will be accessible
     differential->AddModule(

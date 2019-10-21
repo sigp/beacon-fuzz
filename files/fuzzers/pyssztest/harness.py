@@ -1,12 +1,17 @@
+from eth2spec.fuzzing.decoder import translate_typ, translate_value
 from eth2spec.phase0 import spec as spec
 from preset_loader import loader
 from ssz.exceptions import DeserializationError
-presets = loader.load_presets('/home/jhg/eth-2019/x/eth2.0-fuzzing/files/fuzzers/block/eth2.0-specs/configs', 'minimal')
+
+presets = loader.load_presets(
+    "/home/jhg/eth-2019/x/eth2.0-fuzzing/files/fuzzers/block/eth2.0-specs/configs",
+    "minimal",
+)
 spec.apply_constants_preset(presets)
 
-from eth2spec.fuzzing.decoder import translate_typ, translate_value
 
 block_sedes = translate_typ(spec.BeaconBlock)
+
 
 def FuzzerRunOne(FuzzerInput):
     try:

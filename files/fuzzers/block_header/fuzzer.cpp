@@ -61,12 +61,6 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     return 0;
 }
 
-typedef struct { void *data; long long len; long long cap; } GoSlice;
-extern "C" {
-    size_t BlockHeaderPreprocess(GoSlice);
-    void BlockHeaderPreprocessGetReturnData(GoSlice);
-}
-
 extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size) {
     auto v = fuzzing::SSZPreprocess(data, size);
     if ( v.empty() ) {

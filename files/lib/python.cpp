@@ -90,7 +90,7 @@ namespace fuzzing {
             pModule = PyModule_New("fuzzermod");
             PyModule_AddStringConstant(pModule, "__file__", "");
             pLocal = PyModule_GetDict(pModule);
-            // TODO pLocal is used for *globals 
+            // TODO pLocal is used for *globals
             pValue = PyRun_String(code.c_str(), Py_file_input, pLocal, pLocal);
 
             if ( pValue == nullptr ) {

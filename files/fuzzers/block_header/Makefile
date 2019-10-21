@@ -9,8 +9,6 @@ zrnt.a : zrnt/fuzz.go
 	test $(GO_FUZZ_BUILD_PATH)
 	cd zrnt && $(GO_FUZZ_BUILD_PATH) -tags preset_mainnet -libfuzzer-prefix=block_header_ -libfuzzer-ex -o ../zrnt.a .
 
-# TODO N consistent presets?!
-
 lighthouse.a : lighthouse/
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/
@@ -18,8 +16,8 @@ lighthouse.a : lighthouse/
 	cargo build \
 		--target-dir=lighthouse_out \
 		--manifest-path=lighthouse/Cargo.toml \
-		--release 
-	# TODO N pass llvm args 
+		--release
+	# TODO N pass llvm args
 	# -Cpasses=sancov -Cllvm-args="-sanitizer-coverage-trace-pc-guard -sanitizer-coverage-trace-compares=1 -sanitizer-coverage-trace-geps=1 -sanitizer-coverage-trace-divs=1"
 	cp lighthouse_out/release/deps/libblock_header_fuzzer-*.a lighthouse.a
 

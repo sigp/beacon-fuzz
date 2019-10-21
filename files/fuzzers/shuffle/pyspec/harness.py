@@ -6,6 +6,7 @@ from eth2spec.phase0 import spec
 # monkey patch to revert hash caching
 spec.hash = spec._hash
 
+
 def FuzzerRunOne(fuzzer_input):
     if len(fuzzer_input) < 2 + 32:
         return None
@@ -14,5 +15,5 @@ def FuzzerRunOne(fuzzer_input):
     res = [spec.compute_shuffled_index(i, count, seed) for i in range(count)]
     ret = bytes()
     for r in res:
-        ret += struct.pack('<Q', r)
+        ret += struct.pack("<Q", r)
     return ret

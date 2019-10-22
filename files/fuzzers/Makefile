@@ -1,5 +1,6 @@
 CPYTHON_LIB_PATH := $(CPYTHON_INSTALL_PATH)/lib/python3.8
 CPYTHON_LIB_DYNLOAD_PATH := $(CPYTHON_LIB_PATH)/lib-dynload
+CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
 
 # (paths to) dynamic libraries needed at runtime need to be linked into the binary
 # See also: https://stackoverflow.com/questions/11842920/undefined-symbol-pyexc-importerror-when-embedding-python-in-c

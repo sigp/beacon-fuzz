@@ -7,11 +7,12 @@ lighthouse_dir_contents := $(shell find $(SHUFFLE_ROOT)/lighthouse | sed 's/ /\\
 
 all: fuzzer
 
-lighthouse.a : lighthouse $(lighthouse_dir_contents)
-	# TODO add coverage flags, llvm args to Rust build
+lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/
 	mkdir lighthouse_out/
+	# NOTE: we can't pass coverage flags via RUSTFLAGS, so rely on a custom .cargo/config
+	# until https://github.com/rust-lang/cargo/issues/6139 is resolved
 	cargo build \
 		--target-dir=lighthouse_out \
 		--manifest-path=lighthouse/Cargo.toml \
@@ -22,10 +23,10 @@ zrnt.a : zrnt/fuzz.go
 	test $(GO_FUZZ_BUILD_PATH)
 	cd zrnt && "$(GO_FUZZ_BUILD_PATH)" -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../zrnt.a .
 
-# might not actually need to depend on the python harness here as interpreted?
 # TODO would optimally want this rebuilt if the env var values changed
 # https://stackoverflow.com/questions/11647859/make-targets-depend-on-variables
-fuzzer : fuzzer.cpp zrnt.a pyspec/harness.py lighthouse.a
+fuzzer : fuzzer.cpp zrnt.a lighthouse.a
+	test $(SHUFFLE_ROOT)
 	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" -DPYTHON_HARNESS_BIN="\"$(PY_SPEC_BIN_PATH)\"" fuzzer.cpp zrnt.a lighthouse.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
 
 clean:

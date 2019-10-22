@@ -2,7 +2,7 @@ lighthouse_dir_contents := $(shell find $(SHUFFLE_ROOT)/lighthouse | sed 's/ /\\
 
 all: fuzzer
 
-lighthouse.a : lighthouse $(lighthouse_dir_contents)
+lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/
 	mkdir lighthouse_out/
@@ -10,8 +10,8 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents)
 		--target-dir=lighthouse_out \
 		--manifest-path=lighthouse/Cargo.toml \
 		--release
-	# TODO N pass llvm args
-	# -Cpasses=sancov -Cllvm-args="-sanitizer-coverage-trace-pc-guard -sanitizer-coverage-trace-compares=1 -sanitizer-coverage-trace-geps=1 -sanitizer-coverage-trace-divs=1"
+	# NOTE: we can't pass coverage flags via RUSTFLAGS, so rely on a custom .cargo/config
+	# until https://github.com/rust-lang/cargo/issues/6139 is resolved
 	cp lighthouse_out/release/deps/libattestation_fuzzer-*.a lighthouse.a
 
 zrnt.a : zrnt/fuzz.go

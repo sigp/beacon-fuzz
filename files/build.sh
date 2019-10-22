@@ -54,7 +54,7 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 cd /eth2/lib || exit
 # NOTE this doesn't depend on any GOPATH
 # TODO || exit if make fails?
-make
+make "-j$(nproc)"
 cd /eth2 || exit
 
 # Set env variables for using Golang
@@ -127,7 +127,7 @@ export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"
 cd /eth2/fuzzers || exit
 # Recursively make all fuzzers
 # TODO or exit?
-make all
+make all "-j$(nproc)"
 
 # Find fuzzers, copy them over
 #find . -type f ! -name '*.*' -executable -exec cp {} /eth2/out \;

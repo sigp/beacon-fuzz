@@ -1,7 +1,7 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/beacon/block_processing"
+	"github.com/protolambda/zrnt/eth2/phase0"
 	"helper"
 )
 
@@ -12,12 +12,14 @@ func init() {
 func Fuzz(data []byte) []byte {
 	input, err := helper.DecodeAttesterSlashing(data, false)
 	if err != nil {
+		panic("Decoding failed - bug in preprocessing.")
+	}
+	ffstate := phase0.NewFullFeaturedState(&input.Pre)
+	ffstate.LoadPrecomputedData()
+
+	if err := ffstate.ProcessAttesterSlashing(&input.AttesterSlashing); err != nil {
 		return []byte{}
 	}
 
-	if err := block_processing.ProcessAttesterSlashing(&input.Pre, &input.AttesterSlashing); err != nil {
-		return []byte{}
-	}
-
-	return helper.EncodePoststate(input.Pre)
+	return helper.EncodePoststate(&input.Pre)
 }

@@ -13,7 +13,7 @@ CXXFLAGS+=-I $(realpath ..)
 LDFLAGS+=-L $(realpath ../lib) -leth2fuzz
 export
 
-#TARGETS := py-go-test shuffle deposit block_header attestation transfer voluntary_exit attester_slashing proposer_slashing zssz pyssztest block
+#TARGETS := py-go-test shuffle deposit block_header attestation voluntary_exit attester_slashing proposer_slashing zssz pyssztest block
 TARGETS := block shuffle block_header attestation
 .PHONY: $(TARGETS)
 

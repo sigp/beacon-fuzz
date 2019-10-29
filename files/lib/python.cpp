@@ -111,23 +111,38 @@ namespace fuzzing {
     std::optional<std::vector<uint8_t>> Python::Run(const std::vector<uint8_t>& data) {
         std::optional<std::vector<uint8_t>> ret = std::nullopt;
 
+        if (data.empty()) {
+            // Ensure data is not empty. Otherwise:
+            //
+            // "If size() is 0, data() may or may not return a null pointer."
+            // https://en.cppreference.com/w/cpp/container/vector/data
+            //
+            // if nullptr, the pValue contains uninitialized data:
+            // "If v is NULL, the contents of the bytes object are uninitialized."
+            // https://docs.python.org/3/c-api/bytes.html?highlight=pybytes_check#c.PyBytes_FromStringAndSize
+            return ret;
+        }
+
         PyObject *pArgs, *pValue;
 
         pArgs = PyTuple_New(1);
-        // TODO N check that data.data() is not nullptr?
-        // if this is possible pValue can hold uninitialized data
         pValue = PyBytes_FromStringAndSize((const char*)data.data(), data.size());
         PyTuple_SetItem(pArgs, 0, pValue);
 
         pValue = PyObject_CallObject(static_cast<PyObject*>(pFunc), pArgs);
 
         if ( pValue == nullptr ) {
-            /* Abort on unhandled exception */
+            // Abort on unhandled exception.
+            // Indicates an error in the Python code.
+            // E.g. Eth2 Py spec only specifies behaviour for AssertionError and IndexError
+            // https://github.com/ethereum/eth2.0-specs/blob/dev/specs/core/0_beacon-chain.md#beacon-chain-state-transition-function
+            //
+            // Any expected exceptions that indicate failure (but not a bug) should be caught by the target function,
+            // and None returned.
             PyErr_PrintEx(1);
             abort();
         }
 
-        // TODO N handle return None?
         if ( PyBytes_Check(pValue) ) {
             /* Retrieve output */
 
@@ -135,14 +150,19 @@ namespace fuzzing {
             Py_ssize_t outputSize;
             if ( PyBytes_AsStringAndSize(pValue, (char**)&output, &outputSize) != -1) {
                 /* Return output */
-                ret = std::vector<uint8_t>(output, output + outputSize);
-                // TODO N isn't this irrelevant?
+                ret.emplace(output, output + outputSize);
+                // TODO N isn't this goto irrelevant?
                 goto end;
             } else {
-                /* TODO this should not happen */
+                printf("Fatal: Returning Python bytes failed - this should not happen.\n");
+                abort();
             }
 
+        } else if (pValue != Py_None) {
+            printf("Fatal: unexpected return type. Should return a bytes or None");
+            abort();
         }
+        // We returned None
 
 end:
         Py_DECREF(pValue);

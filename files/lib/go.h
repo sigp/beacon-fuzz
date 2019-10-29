@@ -39,18 +39,18 @@ class Go : public Base {
         std::optional<std::vector<uint8_t>> Run(const std::vector<uint8_t>& data) override {
             GO_LLVMFuzzerTestOneInput(data.data(), data.size());
 
-            std::vector<uint8_t> ret;
-
             const int retSize = GO_get_return_size();
 
             if ( retSize == 0 ) {
                 /* No point in retrieving data from go */
-                return ret;
+                // TODO distinguish between returning empty and nullopt
+                // would need to change go-fuzz-build interface to allow for this
+                return std::nullopt;
             }
 
-            ret.resize(retSize);
+            auto ret = std::make_optional<std::vector<uint8_t>>(retSize);
 
-            GoSlice slice {ret.data(), (long long)(ret.size()), (long long)(ret.size())};
+            GoSlice slice {ret->data(), (long long)(ret->size()), (long long)(ret->size())};
 
             GO_get_return_data(slice);
 

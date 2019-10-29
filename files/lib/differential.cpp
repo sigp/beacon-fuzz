@@ -1,6 +1,24 @@
 #include <stdio.h>
 #include <cstdlib>
+#include<utility>
 #include "differential.h"
+
+namespace {
+
+void prettyPrintOptBytes(const std::optional<std::vector<uint8_t>>& data) {
+
+    if (data) {
+        printf("0x");
+        for (const auto i: data.value()) {
+            printf(" %02X", i);
+        }
+    } else {
+        printf("nullopt");
+    }
+    printf("\n");
+}
+
+}
 
 namespace fuzzing {
 
@@ -16,22 +34,28 @@ void Differential::Run(const std::vector<uint8_t> data) const {
     bool first = true;
 
     for (const auto& module : modules) {
-        auto cur = module->Run(data);
+        std::optional<std::vector<uint8_t>> cur = module->Run(data);
 
-        if ( cur == std::nullopt ) {
-            // TODO N discuss - want to differentiate between an error response
-            // a bug? this won't detect a difference when 1 impl gives no response and another gives some
-            // depends what std:nullopt "means" wrt the diff fuzzer interface
-            continue;
+        if (cur && cur.value().empty()) {
+            // Workaround equating an empty vector and a nullopt
+            // preferable to ignoring empty values
+            // Necessary until go-fuzz targets can return a "None/nullopt" equivalent
+            // TODO remove when go can return a nullopt equiv
+            cur = std::nullopt;
         }
 
         if ( first == false && cur != prev ) {
+            // NOTE: an empty list is different to a nullopt
             printf("Difference detected\n");
+            printf("Prev:\n\t");
+            prettyPrintOptBytes(prev);
+            printf("Cur:\n\t");
+            prettyPrintOptBytes(cur);
             abort();
         }
 
         first = false;
-        prev = cur;
+        prev = std::move(cur);
     }
 }
 

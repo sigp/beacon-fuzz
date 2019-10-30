@@ -2,7 +2,7 @@
 name = "attestation_fuzzer"
 version = "0.1.0"
 # TODO?
-authors = ["Guido Vranken <guido.vranken@ethereum.org>", "Paul Hauner <paul@sigmaprime.io>"]
+authors = ["Nathaniel Jensen <nathaniel@sigmaprime.io>"]
 edition = "2018"
 
 [dependencies]

@@ -48,7 +48,7 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
 }
 
 #[no_mangle]
-pub fn attestation_c(
+pub fn attester_slashing_c(
     input_ptr: *mut u8,
     input_size: usize,
     output_ptr: *mut u8,

@@ -14,7 +14,7 @@ LDFLAGS+=-L $(realpath ../lib) -leth2fuzz
 export
 
 #TARGETS := py-go-test shuffle deposit block_header attestation transfer voluntary_exit attester_slashing proposer_slashing zssz pyssztest block
-TARGETS := attester_slashing attestation block_header block shuffle
+TARGETS := shuffle
 .PHONY: $(TARGETS)
 
 $(TARGETS):

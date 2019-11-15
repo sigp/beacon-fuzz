@@ -19,6 +19,8 @@
 #define GO_get_return_size CONCAT(GO_FUZZ_PREFIX, get_return_size)
 #define GO_get_return_data CONCAT(GO_FUZZ_PREFIX, get_return_data)
 
+// TODO need a separate endpoint for prism fuzz prefix
+
 namespace fuzzing {
 
 typedef struct { void *data; long long len; long long cap; } GoSlice;

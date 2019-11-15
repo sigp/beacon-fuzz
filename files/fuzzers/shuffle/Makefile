@@ -5,12 +5,10 @@ PY_SPEC_HARNESS_PATH := $(SHUFFLE_ROOT)/pyspec/harness.py
 
 lighthouse_dir_contents := $(shell find $(SHUFFLE_ROOT)/lighthouse | sed 's/ /\\ /g')
 
+zrnt_prefix := shuffle_
+prysm_prefix := prysm_shuffle_
+
 all: fuzzer
-
-prysm.a: prysm/fuzz.go
-	test $(GO_FUZZ_BUILD_PATH)
-	cd prysm && "$(GO_FUZZ_BUILD_PATH)" -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../prysm.a .
-
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a
@@ -24,15 +22,21 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 		--release
 	cp lighthouse_out/release/deps/libswap_or_not_shuffle_fuzzer-*.a lighthouse.a
 
+prysm.a : export GO_PATH := $(COMMON_GOPATH):$(PRYSM_GOPATH)
+prysm.a: prysm/fuzz.go
+	test $(GO_FUZZ_BUILD_PATH)
+	cd prysm && "$(GO_FUZZ_BUILD_PATH)" -libfuzzer-prefix=$(prysm_prefix) -libfuzzer-ex -o ../prysm.a .
+
+zrnt.a : export GO_PATH := $(COMMON_GOPATH):$(ZRNT_GOPATH)
 zrnt.a : zrnt/fuzz.go
 	test $(GO_FUZZ_BUILD_PATH)
-	cd zrnt && "$(GO_FUZZ_BUILD_PATH)" -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../zrnt.a .
+	cd zrnt && "$(GO_FUZZ_BUILD_PATH)" -tags preset_mainnet -libfuzzer-prefix=$(zrnt_prefix) -libfuzzer-ex -o ../zrnt.a .
 
 # TODO would optimally want this rebuilt if the env var values changed
 # https://stackoverflow.com/questions/11647859/make-targets-depend-on-variables
 fuzzer : fuzzer.cpp zrnt.a lighthouse.a prysm.a
 	test $(SHUFFLE_ROOT)
-	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" -DPYTHON_HARNESS_BIN="\"$(PY_SPEC_BIN_PATH)\"" fuzzer.cpp zrnt.a lighthouse.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
+	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 -DPYTHON_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" -DPYTHON_HARNESS_BIN="\"$(PY_SPEC_BIN_PATH)\"" -DPRYSM_FUZZ_PREFIX=$(prysm_prefix) -DGO_FUZZ_PREFIX=$(zrnt_prefix) fuzzer.cpp zrnt.a lighthouse.a $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
 
 clean:
 	rm -rf fuzzer zrnt.a pyspec/eth2_specs lighthouse_out

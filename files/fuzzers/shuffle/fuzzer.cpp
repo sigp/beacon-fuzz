@@ -1,7 +1,7 @@
-#define GO_FUZZ_PREFIX shuffle_
 #include <lib/python.h>
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/prysm.h>
 #include <lib/rust.h>
 #include <cstring>
 #include <assert.h>
@@ -58,7 +58,8 @@ namespace fuzzing {
 } /* namespace fuzzing */
 
 std::shared_ptr<fuzzing::Python> pyspec = nullptr;
-std::shared_ptr<fuzzing::Go> go = nullptr;
+std::shared_ptr<fuzzing::Go> gospec = nullptr;
+std::shared_ptr<fuzzing::Prysm> prysm = nullptr;
 std::shared_ptr<fuzzing::Lighthouse_Shuffle> lighthouse = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
@@ -74,11 +75,15 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     );
 
     differential->AddModule(
-            go = std::make_shared<fuzzing::Go>()
+            gospec = std::make_shared<fuzzing::Go>()
     );
 
     differential->AddModule(
             lighthouse = std::make_shared<fuzzing::Lighthouse_Shuffle>()
+    );
+
+    differential->AddModule(
+            prysm = std::make_shared<fuzzing::Prysm>()
     );
 
     return 0;

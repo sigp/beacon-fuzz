@@ -64,7 +64,7 @@ export PATH="$GOROOT/bin:$PATH"
 export GO111MODULE="off" # not supported by go-fuzz, keep it off unless explicitly enabled
 
 # Get and configure zrnt
-ZRNT_GOPATH="/eth2/zrnt_gopath/"
+export ZRNT_GOPATH="/eth2/zrnt_gopath/"
 ZRNT_TMP="/eth2/zrnt_tmp/"
 # TODO choose to error or remove if these paths already exist?
 rm -rf "$ZRNT_GOPATH"
@@ -88,37 +88,32 @@ rm -rf vendor
 mkdir -p "$ZRNT_GOPATH"/src/github.com/protolambda
 cd .. || exit
 mv zrnt "$ZRNT_GOPATH"/src/github.com/protolambda/
+# Now ZRNT_GOPATH contains (only) zrnt and all its dependencies.
 
 cd /eth2 || exit
 rm -rf $ZRNT_TMP
 
+# Build prysm go_path
+# TODO remove fork
+# git clone --depth 1 https://github.com/prysmaticlabs/prysm.git
+git clone --depth 1 --branch go_path_rules https://github.com/gnattishness/prysm.git
+export PRYSM_ROOT="/eth2/prysm"
+cd $PRYSM_ROOT || exit
 
-PRYSM_GOPATH="/eth2/prysm_gopath"
-PRYSM_TMP="/eth2/prysm_tmp"
-mkdir -p "$PRYSM_TMP"/src/
-cd "$PRYSM_TMP" || exit
-git clone --depth 1 https://github.com/prysmaticlabs/prysm.git
-cd prysm
-
-GO111MODULE="on" go mod vendor
-mkdir -p "$PRYSM_GOPATH"
-mv vendor/*/ "$PRYSM_GOPATH"/src/
-rm -rf vendor
-mkdir -p "$PRYSM_GOPATH"/src/github.com/prysmaticlabs
-cd .. || exit
-mv prysm "$PRYSM_GOPATH"/src/github.com/prysmaticlabs/
+bazel build --define ssz=mainnet --jobs=auto "//beacon-chain:beacon-chain-path"
+# TODO workaround for libsecp256k1 go wrapper (currently not included in path)
+PRYSM_GOPATH="$(realpath -e ./bazel-bin/beacon-chain/beacon-chain-path)"
+export PRYSM_GOPATH
 
 cd /eth2 || exit
-rm -rf $PRYSM_TMP
-# Now ZRNT_GOPATH contains (only) zrnt and all its dependencies.
 
-export GOPATH="$GOROOT"/packages
-mkdir "$GOPATH"
-export PATH="$GOPATH/bin:$PATH"
+COMMON_GOPATH="$GOROOT"/packages
+mkdir "$COMMON_GOPATH"
+export PATH="$COMMON_GOPATH/bin:$PATH"
 
 # Get custom go-fuzz
-mkdir -p "$GOPATH"/src/github.com/dvyukov
-cd "$GOPATH"/src/github.com/dvyukov || exit
+mkdir -p "$COMMON_GOPATH"/src/github.com/dvyukov
+cd "$COMMON_GOPATH"/src/github.com/dvyukov || exit
 git clone https://github.com/guidovranken/go-fuzz.git
 cd go-fuzz || exit
 git checkout libfuzzer-extensions
@@ -128,35 +123,32 @@ cd /eth2 || exit
 # TODO should this be in a ZRNT specific spot or common fuzzer?
 # common $GOPATH for now
 go get github.com/cespare/xxhash
-# TODO what is packages used for?
 go get golang.org/x/tools/go/packages
 go build github.com/dvyukov/go-fuzz/go-fuzz-build
-GO_FUZZ_BUILD_PATH=$(realpath go-fuzz-build)
+GO_FUZZ_BUILD_PATH=$(realpath -e go-fuzz-build)
 export GO_FUZZ_BUILD_PATH
 
-mkdir -p "$GOPATH"/src/github.com/protolambda
+#mkdir -p "$GOPATH"/src/github.com/protolambda
+#
+## TODO why is eth2.0-specs in protolambda? TODO delete?
+#cd "$GOPATH"/src/github.com/protolambda || exit
+#git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs
+#cd /eth2 || exit
 
-# TODO why is eth2.0-specs in protolambda?
-cd "$GOPATH"/src/github.com/protolambda || exit
-git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs
-cd /eth2 || exit
-
-export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"
-export GOPATH="$GOPATH:$PRYSM_GOPATH"
-
+# TO be combined with implementation-specific GOPATHs
+export COMMON_GOPATH="$COMMON_GOPATH:/eth2/lib/go"
 
 echo "Saving exported env to /eth2/exported_env.sh"
 export -p >/eth2/exported_env.sh
 
 cd /eth2/fuzzers || exit
 # Recursively make all fuzzers
-# TODO or exit?
 
-env > /eth2/env1.txt
+env >/eth2/env1.txt
 
 make all "-j$(nproc)"
 
-env > /eth2/env2.txt
+env >/eth2/env2.txt
 
 # Find fuzzers, copy them over
 #find . -type f ! -name '*.*' -executable -exec cp {} /eth2/out \;

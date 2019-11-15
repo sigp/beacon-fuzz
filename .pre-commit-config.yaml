@@ -73,7 +73,7 @@ repos:
         # TODO specify via additional_dependencies ?
       - id: shellcheck
       - id: shfmt
-        args: ['-l', '-i', '4', '-ci', '-d']
+        args: ['-l', '-i', '4', '-ci', '-w']
 
 # Makefile
 # TODO checkmake doesn't allow usage like "checkmake f1 f2 f3" to provide

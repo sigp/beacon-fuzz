@@ -8,7 +8,7 @@ RUN git clone https://github.com/guidovranken/cpython.git
 RUN cd cpython && git checkout fuzzing
 
 RUN wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
-RUN tar zxvf go1.12.linux-amd64.tar.gz
+RUN tar -zxf go1.12.linux-amd64.tar.gz
 
 RUN git clone --depth 1 https://github.com/sigp/lighthouse lighthouse
 

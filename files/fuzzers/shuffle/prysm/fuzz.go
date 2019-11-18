@@ -3,6 +3,7 @@ package fuzz
 import (
 	"encoding/binary"
 	"github.com/prysmaticlabs/prysm/beacon-chain/core/helpers"
+        "fmt"
 )
 
 func Fuzz(data []byte) []byte {
@@ -16,13 +17,12 @@ func Fuzz(data []byte) []byte {
 
 	input := make([]uint64, count)
 	for i := 0; i < count; i++ {
-		input[i] = helpers.ValidatorIndex(i)
+		input[i] = uint64(i)
 	}
 
-        // TODO is this ShuffleList or UnshuffleList for prysm?
 	input, err:= helpers.ShuffleList(input, seed)
 	if err != nil {
-		panic("Unshuffling failed with: %v", err)
+		panic(fmt.Sprintf("Unshuffling failed with: %v", err))
 	}
 
 	ret := make([]byte, count*8)

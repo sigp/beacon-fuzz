@@ -11,7 +11,7 @@ export CXX=clang++-6.0
 
 # CPython
 mkdir cpython-install
-CPYTHON_INSTALL_PATH="$(realpath cpython-install)"
+CPYTHON_INSTALL_PATH="$(realpath cpython-install)" || exit
 export CPYTHON_INSTALL_PATH
 cd cpython || exit
 # TODO worth adding --enable-optimizations?
@@ -25,7 +25,7 @@ cd /eth2 || exit
 # Get eth2.0-specs
 git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs.git
 # TODO quote here?
-ETH2_SPECS_PATH=$(realpath eth2.0-specs/)
+ETH2_SPECS_PATH=$(realpath eth2.0-specs/) || exit
 export ETH2_SPECS_PATH
 # TODO create an env.sh as part of build?
 
@@ -58,7 +58,7 @@ make "-j$(nproc)"
 cd /eth2 || exit
 
 # Set env variables for using Golang
-GOROOT=$(realpath go)
+GOROOT=$(realpath go) || exit
 export GOROOT
 export PATH="$GOROOT/bin:$PATH"
 export GO111MODULE="off" # not supported by go-fuzz, keep it off unless explicitly enabled
@@ -77,8 +77,6 @@ cd zrnt || exit
 
 # hacky way to use module dependencies with go fuzz
 # see https://github.com/dvyukov/go-fuzz/issues/195#issuecomment-523526736
-# TODO avoid a single GOPATH passed everywhere
-# TODO have a zrnt go dependency section
 # turn GO111MODULE on in case it was set off or auto in go v1.12
 GO111MODULE="on" go mod vendor
 mkdir -p "$ZRNT_GOPATH"/src/
@@ -101,8 +99,9 @@ export PRYSM_ROOT="/eth2/prysm"
 cd $PRYSM_ROOT || exit
 
 bazel build --define ssz=mainnet --jobs=auto "//beacon-chain:beacon-chain-path"
-# TODO workaround for libsecp256k1 go wrapper (currently not included in path)
-PRYSM_GOPATH="$(realpath -e ./bazel-bin/beacon-chain/beacon-chain-path)"
+PRYSM_GOPATH="$(realpath -e ./bazel-bin/beacon-chain/beacon-chain-path)" || exit
+# Add link to main directory, so easier for interactive use
+ln -s "$PRYSM_GOPATH" /eth2/prysm_gopath
 export PRYSM_GOPATH
 
 cd /eth2 || exit
@@ -120,20 +119,19 @@ git checkout libfuzzer-extensions
 
 cd /eth2 || exit
 
+export GOPATH="$COMMON_GOPATH"
 # TODO should this be in a ZRNT specific spot or common fuzzer?
 # common $GOPATH for now
 go get github.com/cespare/xxhash
 go get golang.org/x/tools/go/packages
 go build github.com/dvyukov/go-fuzz/go-fuzz-build
-GO_FUZZ_BUILD_PATH=$(realpath -e go-fuzz-build)
+
+GO_FUZZ_BUILD_PATH=$(realpath -e go-fuzz-build) || exit
 export GO_FUZZ_BUILD_PATH
 
-#mkdir -p "$GOPATH"/src/github.com/protolambda
-#
-## TODO why is eth2.0-specs in protolambda? TODO delete?
-#cd "$GOPATH"/src/github.com/protolambda || exit
-#git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs
-#cd /eth2 || exit
+# to ensure that later go calls use an appropriate combination of
+# COMMON and implementation GOPATHs
+unset GOPATH
 
 # TO be combined with implementation-specific GOPATHs
 export COMMON_GOPATH="$COMMON_GOPATH:/eth2/lib/go"
@@ -144,11 +142,7 @@ export -p >/eth2/exported_env.sh
 cd /eth2/fuzzers || exit
 # Recursively make all fuzzers
 
-env >/eth2/env1.txt
-
 make all "-j$(nproc)"
-
-env >/eth2/env2.txt
 
 # Find fuzzers, copy them over
 #find . -type f ! -name '*.*' -executable -exec cp {} /eth2/out \;

@@ -1,7 +1,6 @@
 [package]
 name = "block_fuzzer"
 version = "0.1.0"
-# TODO N update?
 authors = ["Guido Vranken <guido.vranken@ethereum.org>", "Paul Hauner <paul@sigmaprime.io>"]
 edition = "2018"
 
@@ -26,3 +25,4 @@ tree_hash_derive = { path = "../../../lighthouse/eth2/utils/tree_hash_derive" }
 eth2_ssz = { path = "../../../lighthouse/eth2/utils/ssz" }
 eth2_ssz_derive = { path = "../../../lighthouse/eth2/utils/ssz_derive" }
 eth2_ssz_types = { path = "../../../lighthouse/eth2/utils/ssz_types" }
+eth2_hashing = { path = "../../../lighthouse/eth2/utils/eth2_hashing" }

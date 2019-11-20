@@ -1,4 +1,9 @@
-lighthouse_dir_contents := $(shell find $(SHUFFLE_ROOT)/lighthouse | sed 's/ /\\ /g')
+attestation_root := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+lighthouse_dir_contents := $(shell find $(attestation_root)/lighthouse | sed 's/ /\\ /g')
+
+zrnt_prefix := shuffle_
+prysm_prefix := prysm_shuffle_
 
 all: fuzzer
 

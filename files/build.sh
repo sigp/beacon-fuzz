@@ -98,8 +98,8 @@ git clone --depth 1 --branch go_path_rules https://github.com/gnattishness/prysm
 export PRYSM_ROOT="/eth2/prysm"
 cd $PRYSM_ROOT || exit
 
-bazel build --define ssz=mainnet --jobs=auto "//beacon-chain:beacon-chain-path"
-PRYSM_GOPATH="$(realpath -e ./bazel-bin/beacon-chain/beacon-chain-path)" || exit
+bazel build --define ssz=mainnet --jobs=auto "//beacon-chain:go_path"
+PRYSM_GOPATH="$(realpath -e ./bazel-bin/beacon-chain/go_path)" || exit
 # Add link to main directory, so easier for interactive use
 ln -s "$PRYSM_GOPATH" /eth2/prysm_gopath
 export PRYSM_GOPATH

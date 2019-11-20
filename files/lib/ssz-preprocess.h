@@ -1,11 +1,11 @@
 #pragma once
 
-#include <lib/go.h>
-
 #include <cstdint>
 #include <cstddef>
 #include <vector>
 #include <optional>
+
+#include "go.h"
 
 namespace fuzzing {
     extern "C" {

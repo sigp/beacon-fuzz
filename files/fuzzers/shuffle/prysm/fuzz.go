@@ -20,7 +20,7 @@ func Fuzz(data []byte) []byte {
 		input[i] = uint64(i)
 	}
 
-	input, err:= helpers.ShuffleList(input, seed)
+	input, err:= helpers.UnshuffleList(input, seed)
 	if err != nil {
 		panic(fmt.Sprintf("Unshuffling failed with: %v", err))
 	}

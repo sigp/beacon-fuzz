@@ -2,4 +2,4 @@
 multi_line_output=3
 include_trailing_comma=true
 line_length=88
-known_third_party = ["eth2spec", "preset_loader", "ssz"]
+known_third_party = ["eth2", "eth2spec", "eth_utils", "preset_loader", "ssz"]

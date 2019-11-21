@@ -6,13 +6,19 @@
 #include <lib/ssz-preprocess.h>
 #include <cstring>
 
-#ifndef PYTHON_HARNESS_PATH
-#error PYTHON_HARNESS_PATH undefined
+#ifndef PY_SPEC_HARNESS_PATH
+#error PY_SPEC_HARNESS_PATH undefined
 #endif
-
-#ifndef PYTHON_HARNESS_BIN
+#ifndef PY_SPEC_HARNESS_BIN
 // python binary to use as the name
-#error PYTHON_HARNESS_BIN undefined
+#error PY_SPEC_HARNESS_BIN undefined
+#endif
+#ifndef TRINITY_HARNESS_PATH
+#error TRINITY_HARNESS_PATH undefined
+#endif
+#ifndef TRINITY_HARNESS_BIN
+// python binary to use as the name
+#error TRINITY_HARNESS_BIN undefined
 #endif
 
 extern "C" bool block_c(uint8_t* input_ptr, size_t input_size, uint8_t* output_ptr, size_t* output_size);
@@ -39,6 +45,7 @@ namespace fuzzing {
 
 std::shared_ptr<fuzzing::Go> go = nullptr;
 std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
+std::shared_ptr<fuzzing::Python> trinity = nullptr;
 std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
@@ -47,10 +54,13 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     differential = std::make_unique<fuzzing::Differential>();
 
     differential->AddModule(
-        pyspec = std::make_shared<fuzzing::Python>(PYTHON_HARNESS_BIN, PYTHON_HARNESS_PATH)
+        go = std::make_shared<fuzzing::Go>()
     );
     differential->AddModule(
-        go = std::make_shared<fuzzing::Go>()
+        pyspec = std::make_shared<fuzzing::Python>(PY_SPEC_HARNESS_BIN, PY_SPEC_HARNESS_PATH)
+    );
+    differential->AddModule(
+            trinity = std::make_shared<fuzzing::Python>(TRINITY_HARNESS_BIN, TRINITY_HARNESS_PATH)
     );
     differential->AddModule(
             lighthouse = std::make_shared<fuzzing::Lighthouse>()

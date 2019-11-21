@@ -51,6 +51,17 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 # as any modifications to the pyspec occur at runtime (monkey patching), its
 # ok to have a centralized pyspec codebase for all fuzzing targets
 
+# TODO specify Trinity tag/branch
+git clone --depth 1 https://github.com/ethereum/trinity.git /eth2/trinity
+cd /eth2/trinity || exit
+export TRINITY_VENV_PATH="/eth2/trinity_venv"
+rm -rf "$TRINITY_VENV_PATH"
+"$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$TRINITY_VENV_PATH"
+"$TRINITY_VENV_PATH"/bin/pip install --upgrade pip
+"$TRINITY_VENV_PATH"/bin/pip install .
+# Now any script run with the python executable below will have access to trinity
+export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
+
 cd /eth2/lib || exit
 # NOTE this doesn't depend on any GOPATH
 # TODO || exit if make fails?
@@ -130,6 +141,7 @@ export -p >/eth2/exported_env.sh
 cd /eth2/fuzzers || exit
 # Recursively make all fuzzers
 # TODO or exit?
+
 make all "-j$(nproc)"
 
 # Find fuzzers, copy them over

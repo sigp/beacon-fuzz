@@ -7,9 +7,11 @@ CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
 DYNLOAD_LIBS := _hashlib _sha3 _blake2 _struct binascii math pyexpat _random _socket select _decimal
 DYNLOAD_LIBS_PATHS := $(addsuffix *.so,$(addprefix $(CPYTHON_LIB_DYNLOAD_PATH)/,$(DYNLOAD_LIBS)))
 
-PYTHON_LD_FLAGS := "$(CPYTHON_INSTALL_PATH)/lib/libpython3.8.a" -lutil -lpthread $(DYNLOAD_LIBS_PATHS)
+PYTHON_LD_FLAGS := $(shell $(CPYTHON_INSTALL_PATH)/bin/python3-config --ldflags) lpython3.8 -Xlinker -export-dynamic
 
-CXXFLAGS+=-I $(realpath ..)
+#PYTHON_LD_FLAGS := "$(CPYTHON_INSTALL_PATH)/lib/libpython3.8.a" -lutil -lpthread $(DYNLOAD_LIBS_PATHS)
+
+CXXFLAGS+=-I $(realpath ..) -I$(CPYTHON_INSTALL_PATH)/include/python3.8
 LDFLAGS+=-L $(realpath ../lib) -leth2fuzz
 export
 

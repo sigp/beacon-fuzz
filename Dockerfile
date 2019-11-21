@@ -3,8 +3,10 @@ WORKDIR /eth2
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y build-essential clang-6.0 git zlib1g-dev libssl-dev libboost-all-dev wget locales curl python3-pip
+# For trinity
+RUN apt-get install -y libleveldb1v5 libleveldb-dev
 
-RUN git clone --branch fuzzing --depth 1 https://github.com/guidovranken/cpython.git
+RUN git clone --branch fuzzing --depth 1 https://github.com/gnattishness/cpython.git
 
 RUN wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
 RUN tar -zxf go1.12.linux-amd64.tar.gz

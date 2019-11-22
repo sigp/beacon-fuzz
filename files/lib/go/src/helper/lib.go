@@ -42,9 +42,6 @@ const INPUT_TYPE_BLOCK InputType = 8
 
 var inputType InputType = INPUT_TYPE_INVALID
 
-// TODO should we have these as pointers instead?
-// convert from stateID + something to state + something?
-
 // TODO I hate having to copy paste all this, but no generic functions/types
 // is there 1 function I can do that will convert from these types to
 // types with states?
@@ -141,13 +138,11 @@ type InputProposerSlashingWrapper struct {
 // NOTE I think we want to avoid embedding here to ensure consistent serialization,
 // so have all these functions
 
-// TODO change to pointers to avoid copying?
+// TODO change to pointers to avoid copying? e.g. InputBlock struct { ... *phase0.BeaconBlock }
 // I think that might screw with current serialization etc
 func (w *InputBlockWrapper) unwrap() (*InputBlock, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
-		// Is nil fine here - converts to a *InputBlock?
 		return nil, err
 	}
 	return &InputBlock{Pre: state, Block: w.Block}, nil
@@ -156,7 +151,6 @@ func (w *InputBlockWrapper) unwrap() (*InputBlock, error) {
 func (w *InputBlockHeaderWrapper) unwrap() (*InputBlockHeader, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputBlockHeader{Pre: state, Block: w.Block}, nil
@@ -165,7 +159,6 @@ func (w *InputBlockHeaderWrapper) unwrap() (*InputBlockHeader, error) {
 func (w *InputAttestationWrapper) unwrap() (*InputAttestation, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputAttestation{Pre: state, Attestation: w.Attestation}, nil
@@ -174,7 +167,6 @@ func (w *InputAttestationWrapper) unwrap() (*InputAttestation, error) {
 func (w *InputAttesterSlashingWrapper) unwrap() (*InputAttesterSlashing, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputAttesterSlashing{Pre: state, AttesterSlashing: w.AttesterSlashing}, nil
@@ -183,7 +175,6 @@ func (w *InputAttesterSlashingWrapper) unwrap() (*InputAttesterSlashing, error) 
 func (w *InputDepositWrapper) unwrap() (*InputDeposit, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputDeposit{Pre: state, Deposit: w.Deposit}, nil
@@ -192,7 +183,6 @@ func (w *InputDepositWrapper) unwrap() (*InputDeposit, error) {
 func (w *InputTransferWrapper) unwrap() (*InputTransfer, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputTransfer{Pre: state, Transfer: w.Transfer}, nil
@@ -201,7 +191,6 @@ func (w *InputTransferWrapper) unwrap() (*InputTransfer, error) {
 func (w *InputVoluntaryExitWrapper) unwrap() (*InputVoluntaryExit, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputVoluntaryExit{Pre: state, VoluntaryExit: w.VoluntaryExit}, nil
@@ -210,7 +199,6 @@ func (w *InputVoluntaryExitWrapper) unwrap() (*InputVoluntaryExit, error) {
 func (w *InputProposerSlashingWrapper) unwrap() (*InputProposerSlashing, error) {
 	state, err := GetStateByID(w.StateID)
 	if err != nil {
-		// TODO check this is how we want to return on an error
 		return nil, err
 	}
 	return &InputProposerSlashing{Pre: state, ProposerSlashing: w.ProposerSlashing}, nil
@@ -220,11 +208,6 @@ var PreloadedStates = make([]phase0.BeaconState, 0)
 
 // used internally by getSSZType
 var sszTypeCache = make(map[reflect.Type]types.SSZ)
-
-var blockWrapperSSZType types.SSZ
-
-// TODO what is this for? I think just caching/memoization
-var stateBlockSSZType types.SSZ
 
 func loadPrestates() {
 	stateCorpusPath := os.Getenv("ETH2_FUZZER_STATE_CORPUS_PATH")
@@ -263,9 +246,6 @@ func loadPrestates() {
 }
 
 func init() {
-	stateBlockSSZType = zssz.GetSSZ((*InputBlock)(nil))
-	blockWrapperSSZType = zssz.GetSSZ((*InputBlockWrapper)(nil))
-
 	loadPrestates()
 }
 
@@ -293,8 +273,6 @@ func getSSZType(dest interface{}) types.SSZ {
 	return ssztyp
 }
 
-// TODO should this be a pointer or are we actually meaning to pass a copy?
-// TODO remove
 // NOTE we couldn't actually correct/modify any changes if passing a copy of the struct
 func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 	if correct == true {
@@ -310,7 +288,6 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 		if correct == false {
 			return fmt.Errorf("Balances/ValidatorRegistry length mismatch (%v and %v)", len(state.RegistryState.Balances), len(state.RegistryState.Validators))
 		}
-		// TODO check go for loop vs while?
 		for len(state.RegistryState.Balances) < len(state.RegistryState.Validators) {
 			state.RegistryState.Balances = append(state.RegistryState.Balances, 0)
 		}
@@ -319,11 +296,6 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 			state.RegistryState.Validators = append(state.RegistryState.Validators, &tmp)
 		}
 	}
-
-	// TODO is this how its supposed to work?
-	// perhaps use phase0.InitState instead? (in genesis)
-	// not sure if we want to use a full init state from genesis
-	// this precomputes data, and loads startshardstatus etc
 
 	// TODO
 	// ensure committeeCount <= uint64(SHARD_COUNT)
@@ -343,8 +315,6 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 		committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
 		offset := core.Shard(committeesPerSlot) * core.Shard(ffstate.Slot%core.SLOTS_PER_EPOCH)
 		// TODO this typechecks but may not be correct/intended operation?
-		// NOTE: InitState uses LoadStartShardStatus with currentEpoch - 20
-		// do we want this?
 		shard := (ffstate.GetStartShard(epoch) + offset) % core.SHARD_COUNT
 		firstCommittee := ffstate.ShufflingStatus.GetCrosslinkCommittee(epoch, shard)
 		if len(firstCommittee) == 0 {
@@ -386,13 +356,8 @@ func decodeOfType(data []byte, dest interface{}, fuzzer bool, sszType types.SSZ)
 	return nil
 }
 
-// TODO why is this not a pointer to the data? Copying slices around everywhere
-// but copying slices might be ok? - how does that compare to copying arrays?
-// TODO confirm whether the interface needs to be a pointer to the data, or the data itself?
-// does the unsafe.Pointer allow it to be either?
-func Decode(data []byte, dest interface{}, fuzzer bool) error {
-	// TODO cache getSSZType?
-	return decodeOfType(data, dest, fuzzer, getSSZType(dest))
+func Decode(data []byte, destPtr interface{}, fuzzer bool) error {
+	return decodeOfType(data, destPtr, fuzzer, getSSZType(destPtr))
 }
 
 func DecodeAttestation(data []byte, fuzzer bool) (*InputAttestation, error) {
@@ -496,7 +461,6 @@ func encodeOfType(src interface{}, sszType types.SSZ) []byte {
 	var ret bytes.Buffer
 	writer := bufio.NewWriter(&ret)
 	// TODO can handle the number of bytes written if an error occurs?
-	// TODO does zssz.Encode want a pointer to the data, or just a copy?
 	if _, err := zssz.Encode(writer, src, sszType); err != nil {
 		panic("Cannot encode")
 	}

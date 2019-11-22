@@ -124,6 +124,9 @@ cd /eth2 || exit
 
 export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"
 
+echo "Saving exported env to /eth2/exported_env.sh"
+export -p >/eth2/exported_env.sh
+
 cd /eth2/fuzzers || exit
 # Recursively make all fuzzers
 # TODO or exit?

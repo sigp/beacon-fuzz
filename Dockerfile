@@ -4,13 +4,13 @@ WORKDIR /eth2
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y build-essential clang-6.0 git zlib1g-dev libssl-dev libboost-all-dev wget locales curl python3-pip
 
-RUN git clone https://github.com/guidovranken/cpython.git
-RUN cd cpython && git checkout fuzzing
+RUN git clone --branch fuzzing --depth 1 https://github.com/guidovranken/cpython.git
 
 RUN wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
 RUN tar -zxf go1.12.linux-amd64.tar.gz
 
-RUN git clone --depth 1 https://github.com/sigp/lighthouse lighthouse
+# Should be at b7a0feb7253965b1d5e622b6247736ca29e1a254
+RUN git clone --branch v0.8.3 --depth 1 https://github.com/sigp/lighthouse lighthouse
 
 ADD files /eth2
 

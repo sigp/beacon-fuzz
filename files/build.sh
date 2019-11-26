@@ -6,8 +6,9 @@ source "$HOME"/.cargo/env
 
 cd /eth2 || exit
 
-export CC=clang-6.0
-export CXX=clang++-6.0
+export CC=clang-8
+export CXX=clang++-8
+#export LDLIBS
 
 # CPython
 mkdir cpython-install
@@ -26,24 +27,27 @@ cd /eth2 || exit
 git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs.git
 # TODO quote here?
 ETH2_SPECS_PATH=$(realpath eth2.0-specs/)
+# TODO do we care about this?
 export ETH2_SPECS_PATH
-# TODO create an env.sh as part of build?
 
 # Build pyspec and dependencies
 cd "$ETH2_SPECS_PATH" || exit
 make pyspec
 export PY_SPEC_VENV_PATH="$ETH2_SPECS_PATH"/venv
+# TODO still delete and start from scratch?
 rm -rf "$PY_SPEC_VENV_PATH"
 "$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$PY_SPEC_VENV_PATH"
 "$PY_SPEC_VENV_PATH"/bin/pip install --upgrade pip
 cd "$ETH2_SPECS_PATH"/test_libs/pyspec || exit
 # don't need to use requirements.py as the setup.py contains pinned dependencies
-"$PY_SPEC_VENV_PATH/bin/pip" install -e .
+# TODO use editable install "-e ." once editable venvs are supported
+"$PY_SPEC_VENV_PATH/bin/pip" install .
 cd "$ETH2_SPECS_PATH"/test_libs/config_helpers || exit
 # dodgy hack to adjust dependencies until we are working with a spec version that includes
 # https://github.com/ethereum/eth2.0-specs/pull/1426
 sed -i 's/ruamel\.yaml==0\.15\.96/ruamel\.yaml==0.16.5/g' setup.py
-"$PY_SPEC_VENV_PATH"/bin/pip install -e .
+# TODO use editable install "-e ." once editable venvs are supported
+"$PY_SPEC_VENV_PATH"/bin/pip install .
 
 # Now any script run with the python executable below will have access to pyspec
 export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
@@ -52,9 +56,11 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 # ok to have a centralized pyspec codebase for all fuzzing targets
 
 # TODO specify Trinity tag/branch
+# must be greater than a64c0c4122bfd0612ddfad6c81a33ea6736b3493
 git clone --depth 1 https://github.com/ethereum/trinity.git /eth2/trinity
 cd /eth2/trinity || exit
-export TRINITY_VENV_PATH="/eth2/trinity_venv"
+export TRINITY_VENV_PATH="/eth2/trinity/venv"
+# TODO still delete and start from scratch?
 rm -rf "$TRINITY_VENV_PATH"
 "$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$TRINITY_VENV_PATH"
 "$TRINITY_VENV_PATH"/bin/pip install --upgrade pip

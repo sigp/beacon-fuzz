@@ -9,16 +9,16 @@
 #ifndef PY_SPEC_HARNESS_PATH
 #error PY_SPEC_HARNESS_PATH undefined
 #endif
-#ifndef PY_SPEC_HARNESS_BIN
-// python binary to use as the name
-#error PY_SPEC_HARNESS_BIN undefined
+#ifndef PY_SPEC_VENV_PATH
+// python venv containing dependencies
+#error PY_SPEC_VENV_PATH undefined
 #endif
 #ifndef TRINITY_HARNESS_PATH
 #error TRINITY_HARNESS_PATH undefined
 #endif
-#ifndef TRINITY_HARNESS_BIN
-// python binary to use as the name
-#error TRINITY_HARNESS_BIN undefined
+#ifndef TRINITY_VENV_PATH
+// python venv containing dependencies
+#error TRINITY_VENV_PATH undefined
 #endif
 
 extern "C" bool shuffle_list_c(uint64_t* input_ptr, size_t input_size, uint8_t* seed_ptr);
@@ -75,13 +75,13 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
     differential = std::make_unique<fuzzing::Differential>();
 
     differential->AddModule(
-            pyspec = std::make_shared<fuzzing::Python>(PY_SPEC_HARNESS_BIN, PY_SPEC_HARNESS_PATH)
+            pyspec = std::make_shared<fuzzing::Python>((*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt, PY_SPEC_VENV_PATH)
     );
     differential->AddModule(
             go = std::make_shared<fuzzing::Go>()
     );
     differential->AddModule(
-            trinity = std::make_shared<fuzzing::Python>(TRINITY_HARNESS_BIN, TRINITY_HARNESS_PATH)
+            trinity = std::make_shared<fuzzing::Python>((*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH)
     );
     differential->AddModule(
             lighthouse = std::make_shared<fuzzing::Lighthouse_Shuffle>()

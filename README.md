@@ -152,6 +152,10 @@ TODO disabling BLS verification?
 
 TODO
 
+## Known bugs/limitations
+
+- Python editable installs in Venvs aren't detected.
+
 ## License
 
 MIT - see [LICENSE](./LICENSE)

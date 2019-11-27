@@ -70,6 +70,8 @@ $ export ETH2_FUZZER_STATE_CORPUS_PATH="/eth2/beacon-fuzz-corpora/0-8-3/mainnet/
 $ /eth2/fuzzers/attestation/fuzzer /eth2/beacon-fuzz-corpora/0-8-3/mainnet/attestation
 ```
 
+Use `jobs=N` to run N simultaneous jobs (by default in `num_cpu_cores/2` processes).
+
 Use `help=1` for more arguments (see also [libfuzzer docs](https://llvm.org/docs/LibFuzzer.html))
 
 

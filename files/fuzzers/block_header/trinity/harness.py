@@ -1,37 +1,42 @@
-import ssz
-from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
-from eth2.beacon.types.block_headers import BeaconBlockHeader
-from eth2.beacon.types.states import BeaconState
+import typing
 
-# TODO confirm SERENITY_CONFIG is equiv to mainnet
+import ssz
+from eth2.beacon.state_machines.forks.serenity.block_processing import (
+    process_block_header,
+)
+from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
+from eth2.beacon.types.blocks import BeaconBlock
+from eth2.beacon.types.states import BeaconState
+from eth_utils import ValidationError
 
 # TODO disable bls?
 
 
 class BlockHeaderTestCase(ssz.Serializable):
-    pre: spec.BeaconState
-    block: spec.BeaconBlock
+
+    fields = [("pre", BeaconState), ("block", BeaconBlock)]
+
+    def __init__(self, *, pre: BeaconState, block: BeaconBlock) -> None:
+        super().__init__(pre=pre, block=block)
+
+    def __str__(self) -> str:
+        return f"pre={self.pre}, block={self.block}"
 
 
-block_header_sedes = translate_typ(BlockHeaderTestCase)
+def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
+    # TODO(gnattishness) ensure abort if deserialize fails
+    test_case = ssz.decode(input_data, BlockHeaderTestCase)
 
-
-def FuzzerRunOne(input_data):
-    # looks like verify happens at the end of process
-    test_case = translate_value(
-        block_header_sedes.deserialize(input_data), BlockHeaderTestCase
-    )
-
-    # TODO N this returns None on failure - should it return bytes()?
-
+    # TODO(gnattishness) any other relevant exceptions to catch?
+    # TODO(gnattishness) do we validate signatures or not here?
     try:
-        # modifies state in place
-        spec.process_block_header(test_case.pre, test_case.block)
-        # TODO N still need to verify block signature?
-        # NOTE - signature verification should do nothing with bls disabled
-        # The proposer signature is verified at the end of process_block_header
-        return serialize(test_case.pre)
-    except AssertionError as e:
-        pass
-    except IndexError:
-        pass
+        post = process_block_header(
+            state=test_case.pre,
+            block=test_case.block,
+            config=SERENITY_CONFIG,
+            check_proposer_signature=False,
+        )
+    except ValidationError as e:
+        return None
+    # TODO(gnattishness) is this right?
+    return ssz.encode(post)

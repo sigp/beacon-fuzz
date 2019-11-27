@@ -18,22 +18,22 @@ spec.apply_constants_preset(presets)
 bls.bls_active = False
 
 
-class BlockHeaderTestCase(spec.Container):
+class ProposerSlashingTestCase(spec.Container):
     pre: spec.BeaconState
-    block: spec.BeaconBlock
+    proposer_slashing: spec.ProposerSlashing
 
 
-block_header_sedes = translate_typ(BlockHeaderTestCase)
+proposer_slashing_sedes = translate_typ(ProposerSlashingTestCase)
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
     test_case = translate_value(
-        block_header_sedes.deserialize(input_data), BlockHeaderTestCase
+        proposer_slashing_sedes.deserialize(input_data), ProposerSlashingTestCase
     )
 
     try:
         # modifies state in place
-        spec.process_block_header(test_case.pre, test_case.block)
+        spec.process_proposer_slashing(test_case.pre, test_case.proposer_slashing)
         # NOTE - signature verification should do nothing with bls disabled
         return serialize(test_case.pre)
     except AssertionError as e:

@@ -1,10 +1,11 @@
-block_root := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+here := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-lighthouse_dir_contents := $(shell find $(block_root)/lighthouse | sed 's/ /\\ /g')
+lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
-PY_SPEC_HARNESS_PATH := $(block_root)/pyspec/harness.py
-TRINITY_HARNESS_PATH := $(block_header_root)/trinity/harness.py
+PY_SPEC_HARNESS_PATH := $(here)/pyspec/harness.py
+TRINITY_HARNESS_PATH := $(here)/trinity/harness.py
 
+.PHONY: all
 all: fuzzer
 
 zrnt.a : zrnt/fuzz.go
@@ -25,15 +26,16 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 
 
 fuzzer : fuzzer.cpp zrnt.a lighthouse.a
-	test -x $(TRINITY_BIN_PATH)
-	test -x $(PY_SPEC_BIN_PATH)
+	test -d $(TRINITY_VENV_PATH)
+	test -d $(PY_SPEC_VENV_PATH)
 	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
 	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
-	    -DPY_SPEC_HARNESS_BIN="\"$(PY_SPEC_BIN_PATH)\"" \
+	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
-	    -DTRINITY_HARNESS_BIN="\"$(TRINITY_BIN_PATH)\"" \
+	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 	    fuzzer.cpp zrnt.a lighthouse.a \
-	    $(LDFLAGS) $(PYTHON_LD_FLAGS) -o fuzzer
+	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LD_FLAGS) -o fuzzer
 
+.PHONY: clean
 clean:
 	rm -rf fuzzer zrnt.a lighthouse.a lighthouse_out

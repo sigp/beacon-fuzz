@@ -26,7 +26,7 @@ extern "C" bool shuffle_list_c(uint64_t *input_ptr, size_t input_size,
                                uint8_t *seed_ptr);
 
 namespace fuzzing {
-class Lighthouse_Shuffle : public Rust {
+class Lighthouse : public Rust {
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
     std::vector<size_t> input;
@@ -72,22 +72,21 @@ class Lighthouse_Shuffle : public Rust {
 std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 std::shared_ptr<fuzzing::Python> trinity = nullptr;
 std::shared_ptr<fuzzing::Go> go = nullptr;
-std::shared_ptr<fuzzing::Lighthouse_Shuffle> lighthouse = nullptr;
+std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   differential = std::make_unique<fuzzing::Differential>();
 
+  differential->AddModule(go = std::make_shared<fuzzing::Go>());
   differential->AddModule(
       pyspec = std::make_shared<fuzzing::Python>(
           (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt, PY_SPEC_VENV_PATH));
-  differential->AddModule(go = std::make_shared<fuzzing::Go>());
   differential->AddModule(
       trinity = std::make_shared<fuzzing::Python>(
           (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
-  differential->AddModule(lighthouse =
-                              std::make_shared<fuzzing::Lighthouse_Shuffle>());
+  differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
 
   return 0;
 }

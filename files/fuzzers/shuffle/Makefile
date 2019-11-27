@@ -1,10 +1,11 @@
-shuffle_root := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+here := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-PY_SPEC_HARNESS_PATH := $(shuffle_root)/pyspec/harness.py
-TRINITY_HARNESS_PATH := $(shuffle_root)/trinity/harness.py
+PY_SPEC_HARNESS_PATH := $(here)/pyspec/harness.py
+TRINITY_HARNESS_PATH := $(here)/trinity/harness.py
 
-lighthouse_dir_contents := $(shell find $(shuffle_root)/lighthouse | sed 's/ /\\ /g')
+lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
+.PHONY: all
 all: fuzzer
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
@@ -28,8 +29,8 @@ zrnt.a : zrnt/fuzz.go
 # TODO move LDFLAGS before and use LDLIBS for all -llibname flags
 # TODO how to split up the PYTHON_LD_FLAGS?
 fuzzer : fuzzer.cpp zrnt.a lighthouse.a
-	test -x $(TRINITY_BIN_PATH)
-	test -x $(PY_SPEC_BIN_PATH)
+	test -d $(TRINITY_VENV_PATH)
+	test -d $(PY_SPEC_VENV_PATH)
 	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
 	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
 	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
@@ -38,5 +39,6 @@ fuzzer : fuzzer.cpp zrnt.a lighthouse.a
 	    fuzzer.cpp zrnt.a lighthouse.a \
 	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LD_FLAGS) -o fuzzer
 
+.PHONY: clean
 clean:
-	rm -rf fuzzer zrnt.a pyspec/eth2_specs lighthouse_out
+	rm -rf fuzzer zrnt.a lighthouse.a lighthouse_out

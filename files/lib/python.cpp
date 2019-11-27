@@ -2,12 +2,9 @@
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <libgen.h>
 
-#include <climits>
 #include <filesystem>
 #include <fstream>
-#include <iomanip>  // TODO(gnattishness) remove?
 #include <sstream>
 
 #include "python_coverage.h"

@@ -104,6 +104,8 @@ Use [pre-commit](https://pre-commit.com/)
 ```console
 $ pre-commit install
 ```
+(see also [.pre-commit-config.yaml](./.pre-commit-config.yaml))
+
 If build fails, comment the `RUN /eth2/build.sh` in `Dockerfile`, and run it manually from within the container.
 Can adjust Makefiles as needed.
 

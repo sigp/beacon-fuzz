@@ -23,4 +23,3 @@ func Fuzz(data []byte) []byte {
 
 	return helper.EncodePoststate(&input.Pre)
 }
- 

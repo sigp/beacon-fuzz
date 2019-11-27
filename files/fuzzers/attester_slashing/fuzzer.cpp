@@ -3,28 +3,32 @@
 #include <lib/go.h>
 #include <lib/rust.h>
 #include <lib/ssz-preprocess.h>
+
 #include <cstring>
 
-extern "C" bool attester_slashing_c(uint8_t* input_ptr, size_t input_size, uint8_t* output_ptr, size_t* output_size);
+extern "C" bool attester_slashing_c(uint8_t* input_ptr, size_t input_size,
+                                    uint8_t* output_ptr, size_t* output_size);
 
 namespace fuzzing {
-    class Lighthouse : public Rust {
-        std::optional<std::vector<uint8_t>> run(const std::vector<uint8_t>& _data) override {
-            /* Copy because attester_slashing_c wants a non-const pointer */
-            std::vector<uint8_t> data(_data.data(), _data.data() + _data.size());
+class Lighthouse : public Rust {
+  std::optional<std::vector<uint8_t>> run(
+      const std::vector<uint8_t>& _data) override {
+    /* Copy because attester_slashing_c wants a non-const pointer */
+    std::vector<uint8_t> data(_data.data(), _data.data() + _data.size());
 
-            size_t output_size = data.size() * 4;
-            std::vector<uint8_t> ret(output_size);
+    size_t output_size = data.size() * 4;
+    std::vector<uint8_t> ret(output_size);
 
-            if ( attester_slashing_c(data.data(), data.size(), ret.data(), &output_size) == false ) {
-                return std::nullopt;
-            }
+    if (attester_slashing_c(data.data(), data.size(), ret.data(),
+                            &output_size) == false) {
+      return std::nullopt;
+    }
 
-            ret.resize(output_size);
+    ret.resize(output_size);
 
-            return ret;
-        }
-    };
+    return ret;
+  }
+};
 } /* namespace fuzzing */
 
 std::shared_ptr<fuzzing::Go> go = nullptr;
@@ -32,27 +36,23 @@ std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
-extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
-    differential = std::make_unique<fuzzing::Differential>();
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  differential = std::make_unique<fuzzing::Differential>();
 
-    differential->AddModule(
-            go = std::make_shared<fuzzing::Go>()
-    );
+  differential->AddModule(go = std::make_shared<fuzzing::Go>());
 
-    differential->AddModule(
-            lighthouse = std::make_shared<fuzzing::Lighthouse>()
-    );
+  differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
 
-    return 0;
+  return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size) {
-    auto v = fuzzing::SSZPreprocess(data, size);
-    if ( v.empty() ) {
-        return 0;
-    }
-
-    differential->Run(v);
-
+extern "C" int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
+  auto v = fuzzing::SSZPreprocess(data, size);
+  if (v.empty()) {
     return 0;
+  }
+
+  differential->Run(v);
+
+  return 0;
 }

@@ -75,6 +75,16 @@ repos:
       - id: shfmt
         args: ['-l', '-i', '4', '-ci', '-w']
 
+# C, C++ etc
+  - repo: https://gitlab.com/daverona-env/pre-commit-cpp
+    rev: 0.6.0          # use the most recent version
+    hooks:
+    - id: clang-format  # formatter of C/C++ code based on a style guide: LLVM, Google, Chromium, Mozilla, and WebKit available
+    - id: cpplint       # linter (or style-error checker) for Google C++ Style Guide
+      args: ['--filter=-legal,-build/include_subdir,-runtime/int']
+    - id: cppcheck      # static analyzer of C/C++ code
+
+
 # Makefile
 # TODO checkmake doesn't allow usage like "checkmake f1 f2 f3" to provide
 # multiple files at once
@@ -94,5 +104,3 @@ repos:
       - id: end-of-file-fixer
       - id: debug-statements
       - id: check-merge-conflict
-
-# TODO clangformat?

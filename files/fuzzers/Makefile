@@ -11,9 +11,10 @@ export
 
 #TARGETS := py-go-test shuffle deposit block_header attestation transfer voluntary_exit attester_slashing proposer_slashing zssz pyssztest block
 TARGETS := shuffle block block_header attestation attester_slashing
-.PHONY: $(TARGETS)
 
-$(TARGETS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
-
+.PHONY: all clean
 all clean: $(TARGETS)
+
+.PHONY: $(TARGETS)
+$(TARGETS):
+	$(MAKE) -C $@ $(filter-out $@,$(MAKECMDGOALS))

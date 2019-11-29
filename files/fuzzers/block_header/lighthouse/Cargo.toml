@@ -14,6 +14,9 @@ libc = "0.2"
 [lib]
 crate-type = ["staticlib"]
 
+[features]
+fake_crypto = ["state_processing/fake_crypto"]
+
 [patch]
 [patch.crates-io]
 # Needed to provide paths to some relevant dependencies

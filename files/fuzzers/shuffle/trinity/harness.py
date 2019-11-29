@@ -1,8 +1,12 @@
 import struct
 
+import eth2._utils.bls as bls
 from eth2.beacon.committee_helpers import compute_shuffled_index
 from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
 from eth_utils import ValidationError
+
+# TODO(gnattishness) check that this works
+bls.Eth2BLS.use_noop_backend()
 
 
 def FuzzerRunOne(fuzzer_input):

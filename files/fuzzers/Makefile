@@ -1,5 +1,7 @@
 CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
 
+# TODO(gnattishness bls enable/disable option)
+
 # NOTE this is both LD_FLAGS and LDLIBS for Python-related stuff
 PYTHON_LD_FLAGS := $(shell $(CPYTHON_INSTALL_PATH)/bin/python3-config --ldflags) -lpython3.8 -Xlinker -export-dynamic
 

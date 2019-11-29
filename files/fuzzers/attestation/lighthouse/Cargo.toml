@@ -1,7 +1,6 @@
 [package]
 name = "attestation_fuzzer"
 version = "0.1.0"
-# TODO?
 authors = ["Nathaniel Jensen <nathaniel@sigmaprime.io>"]
 edition = "2018"
 
@@ -14,6 +13,9 @@ libc = "0.2"
 
 [lib]
 crate-type = ["staticlib"]
+
+[features]
+fake_crypto = ["state_processing/fake_crypto"]
 
 [patch]
 [patch.crates-io]

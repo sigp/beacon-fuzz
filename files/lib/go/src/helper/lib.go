@@ -9,13 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/protolambda/zrnt/eth2/beacon/attestations"
-	"github.com/protolambda/zrnt/eth2/beacon/crosslinks"
 	"github.com/protolambda/zrnt/eth2/beacon/deposits"
 	"github.com/protolambda/zrnt/eth2/beacon/exits"
 	"github.com/protolambda/zrnt/eth2/beacon/header"
 	"github.com/protolambda/zrnt/eth2/beacon/slashings/attslash"
 	"github.com/protolambda/zrnt/eth2/beacon/slashings/propslash"
-	"github.com/protolambda/zrnt/eth2/beacon/transfers"
 	"github.com/protolambda/zrnt/eth2/beacon/validator"
 	"github.com/protolambda/zrnt/eth2/core"
 	"github.com/protolambda/zrnt/eth2/phase0"
@@ -28,19 +26,20 @@ import (
 	"reflect"
 )
 
-type InputType uint64
+type inputType uint64
 
-const INPUT_TYPE_INVALID InputType = 0
-const INPUT_TYPE_ATTESTATION InputType = 1
-const INPUT_TYPE_ATTESTER_SLASHING InputType = 2
-const INPUT_TYPE_BLOCK_HEADER InputType = 3
-const INPUT_TYPE_DEPOSIT InputType = 4
-const INPUT_TYPE_TRANSFER InputType = 5
-const INPUT_TYPE_VOLUNTARY_EXIT InputType = 6
-const INPUT_TYPE_PROPOSER_SLASHING InputType = 7
-const INPUT_TYPE_BLOCK InputType = 8
+const (
+    INPUT_TYPE_INVALID inputType = iota
+    INPUT_TYPE_ATTESTATION
+    INPUT_TYPE_ATTESTER_SLASHING
+    INPUT_TYPE_BLOCK_HEADER
+    INPUT_TYPE_DEPOSIT
+    INPUT_TYPE_VOLUNTARY_EXIT
+    INPUT_TYPE_PROPOSER_SLASHING
+    INPUT_TYPE_BLOCK
+)
 
-var inputType InputType = INPUT_TYPE_INVALID
+var curInputType inputType = INPUT_TYPE_INVALID
 
 // TODO I hate having to copy paste all this, but no generic functions/types
 // is there 1 function I can do that will convert from these types to
@@ -69,11 +68,6 @@ type InputAttesterSlashing struct {
 type InputDeposit struct {
 	Pre     phase0.BeaconState
 	Deposit deposits.Deposit
-}
-
-type InputTransfer struct {
-	Pre      phase0.BeaconState
-	Transfer transfers.Transfer
 }
 
 type InputVoluntaryExit struct {
@@ -118,11 +112,6 @@ type InputAttesterSlashingWrapper struct {
 type InputDepositWrapper struct {
 	StateID uint16
 	Deposit deposits.Deposit
-}
-
-type InputTransferWrapper struct {
-	StateID  uint16
-	Transfer transfers.Transfer
 }
 
 type InputVoluntaryExitWrapper struct {
@@ -178,14 +167,6 @@ func (w *InputDepositWrapper) unwrap() (*InputDeposit, error) {
 		return nil, err
 	}
 	return &InputDeposit{Pre: state, Deposit: w.Deposit}, nil
-}
-
-func (w *InputTransferWrapper) unwrap() (*InputTransfer, error) {
-	state, err := GetStateByID(w.StateID)
-	if err != nil {
-		return nil, err
-	}
-	return &InputTransfer{Pre: state, Transfer: w.Transfer}, nil
 }
 
 func (w *InputVoluntaryExitWrapper) unwrap() (*InputVoluntaryExit, error) {
@@ -249,8 +230,8 @@ func init() {
 	loadPrestates()
 }
 
-func SetInputType(inputType_ InputType) {
-	inputType = inputType_
+func SetInputType(inputType_ inputType) {
+	curInputType = inputType_
 }
 
 // NOTE: as input types do not necessarily have a unique `String()` representation,
@@ -306,17 +287,31 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 	// based on zrnt validator.go CommitteeCount, we need to ensure number of active validators
 	// is greater than SLOTS_PER_EPOCH
 
+    /*
+    // NOTE: Not currently used
 	ffstate := phase0.NewFullFeaturedState(state)
 	ffstate.LoadPrecomputedData()
+    */
 
-	/* Avoid division by zero in ProcessBlockHeader */
+    /*
+    // TODO(gnattishness) check whether any of this is worth using
+    // not useful while we use trusted states as input
+    // relied on GetCrosslinkCommitee (not present in 0.9.x), but can't
+    // see any division by 0 that this would resolve
+
+    // I think unnecessary:
+    // get_beacon_proposer_index used to call get_crosslink_committee and `%` by its length
+    // resulting in div by 0, where now (0.9.1) compute_proposer_index checks the length
+
+	// Avoid division by zero in ProcessBlockHeader
 	{
 		epoch := ffstate.VersioningState.CurrentEpoch()
 		committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
 		offset := core.Shard(committeesPerSlot) * core.Shard(ffstate.Slot%core.SLOTS_PER_EPOCH)
 		// TODO this typechecks but may not be correct/intended operation?
 		shard := (ffstate.GetStartShard(epoch) + offset) % core.SHARD_COUNT
-		firstCommittee := ffstate.ShufflingStatus.GetCrosslinkCommittee(epoch, shard)
+        // TODO now takes in a slot and index
+		firstCommittee := ffstate.ShufflingStatus.GetBeaconCommitee(epoch, shard)
 		if len(firstCommittee) == 0 {
 			if correct == false {
 				return errors.New("Empty firstCommittee")
@@ -325,6 +320,7 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 			}
 		}
 	}
+    */
 
 	return nil
 }
@@ -384,12 +380,6 @@ func DecodeDeposit(data []byte, fuzzer bool) (*InputDeposit, error) {
 	return &input, err
 }
 
-func DecodeTransfer(data []byte, fuzzer bool) (*InputTransfer, error) {
-	var input InputTransfer
-	err := Decode(data, &input, fuzzer)
-	return &input, err
-}
-
 func DecodeVoluntaryExit(data []byte, fuzzer bool) (*InputVoluntaryExit, error) {
 	var input InputVoluntaryExit
 	err := Decode(data, &input, fuzzer)
@@ -435,12 +425,6 @@ func DecodeAttesterSlashingWrapper(data []byte, fuzzer bool) (*InputAttesterSlas
 
 func DecodeDepositWrapper(data []byte, fuzzer bool) (*InputDepositWrapper, error) {
 	var input InputDepositWrapper
-	err := Decode(data, &input, fuzzer)
-	return &input, err
-}
-
-func DecodeTransferWrapper(data []byte, fuzzer bool) (*InputTransferWrapper, error) {
-	var input InputTransferWrapper
 	err := Decode(data, &input, fuzzer)
 	return &input, err
 }
@@ -515,16 +499,6 @@ func correctBlock(state *phase0.BeaconState, block *phase0.BeaconBlock) {
 		prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, header.BeaconBlockHeaderSSZ)
 		randomlyValid(prevRoot[:], block.ParentRoot[:], 0.9)
 	}
-
-	{
-		for i := 0; i < len(block.Body.Attestations); i++ {
-			data := &block.Body.Attestations[i].Data
-			if data.Crosslink.Shard < core.Shard(len(state.CurrentCrosslinks)) {
-				previousCrosslinkRoot := zrnt_ssz.HashTreeRoot(state.CurrentCrosslinks[data.Crosslink.Shard], crosslinks.CrosslinkSSZ)
-				randomlyValid(previousCrosslinkRoot[:], data.Crosslink.ParentRoot[:], 0.9)
-			}
-		}
-	}
 }
 
 var g_return_data = make([]byte, 0)
@@ -539,7 +513,7 @@ func SSZPreprocessGetReturnData(return_data []byte) {
 //export SSZPreprocess
 func SSZPreprocess(data []byte) int {
 	// returns relevant "unwrapped" type
-	switch inputType {
+	switch curInputType {
 	case INPUT_TYPE_ATTESTATION:
 		wrapped, err := DecodeAttestationWrapper(data, true)
 		if err != nil {
@@ -594,21 +568,6 @@ func SSZPreprocess(data []byte) int {
 		return len(g_return_data)
 	case INPUT_TYPE_DEPOSIT:
 		wrapped, err := DecodeDepositWrapper(data, true)
-		if err != nil {
-			return 0
-		}
-		input, err := wrapped.unwrap()
-		if err != nil {
-			return 0
-		}
-		CorrectInvariants(&input.Pre)
-		if err := CheckInvariants(&input.Pre, false); err != nil {
-			return 0
-		}
-		g_return_data = Encode(input)
-		return len(g_return_data)
-	case INPUT_TYPE_TRANSFER:
-		wrapped, err := DecodeTransferWrapper(data, true)
 		if err != nil {
 			return 0
 		}

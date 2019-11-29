@@ -4,8 +4,6 @@ import (
 	"github.com/cespare/xxhash"
 	"github.com/protolambda/zrnt/eth2/phase0"
 	"helper"
-	//"github.com/protolambda/zrnt/eth2/util/hashing"
-	//"github.com/protolambda/zrnt/eth2/util/ssz"
 )
 
 func xxhash256(input []byte) [32]byte {
@@ -39,7 +37,6 @@ func Fuzz(data []byte) []byte {
 	// TODO set fuzz to true here? or no, to keep consistent decoding
 	input, err := helper.DecodeBlock(data, false)
 	if err != nil {
-		// TODO return [] if decoding fails - should be fine for it to fail
 		// A sanity check to ensure preprocessing works
 		// Assumes preprocessing ensures data is decodable
 		panic("Decoding failed - bug in preprocessing.")
@@ -49,7 +46,9 @@ func Fuzz(data []byte) []byte {
 	blockProc := new(phase0.BlockProcessFeature)
 	blockProc.Meta = ffstate
 	blockProc.Block = &input.Block
-	if err := ffstate.StateTransition(blockProc, false); err != nil {
+    // NOTE bool = state root verification flag
+    // TODO(gnattishness) allow configurable at compile time
+	if err := ffstate.StateTransition(blockProc, true); err != nil {
 		return []byte{}
 	}
 

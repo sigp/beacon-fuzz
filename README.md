@@ -18,15 +18,15 @@ This project and its inner workings are subject to change.
 
 ## Current Status
 
-Currently fuzzes against Eth2 `v0.8.3` python or Go executable specs
-([pyspec](https://github.com/ethereum/eth2.0-specs/tree/v0.8.3/test_libs/pyspec) or [zrnt](https://github.com/protolambda/zrnt/tree/v0.8.3))
+Currently fuzzes against Eth2 `v0.9.1` python or Go executable specs
+([pyspec](https://github.com/ethereum/eth2.0-specs/tree/v0.9.1/test_libs/pyspec) or [zrnt](https://github.com/protolambda/zrnt/tree/v0.9.1))
 
 
 ### Implementations
 
-* [Lighthouse](https://github.com/sigp/lighthouse/)/rust
-* [pyspec](https://github.com/ethereum/eth2.0-specs/tree/dev/test_libs/pyspec)/python
-* [zrnt](https://github.com/protolambda/zrnt/)/go
+* [Lighthouse](https://github.com/sigp/lighthouse/) (rust)
+* [pyspec](https://github.com/ethereum/eth2.0-specs/tree/dev/test_libs/pyspec) (python)
+* [zrnt](https://github.com/protolambda/zrnt/) (go)
 
 ### Operational Fuzz Targets:
 

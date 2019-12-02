@@ -2,10 +2,15 @@
 #include <assert.h>
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/nim.h>
 #include <lib/python.h>
 #include <lib/rust.h>
+#include <lib/util.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <numeric>
 
 #ifndef PY_SPEC_HARNESS_PATH
 #error PY_SPEC_HARNESS_PATH undefined
@@ -29,29 +34,31 @@ namespace fuzzing {
 class Lighthouse : public Rust {
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
-    std::vector<size_t> input;
-    uint16_t count;
     // TODO(gnattishness) use c new instead of malloc?
+    // any reason not to have this point to the existing vector.data?
+    // no need to malloc right?
+    // this currently leaks
     uint8_t *seed = reinterpret_cast<uint8_t *>(malloc(32));
+    uint16_t count;
 
     if (data.size() < sizeof(count) + 32) {
+      // data is too small
       return std::nullopt;
     }
 
-    memcpy(&count, data.data(), sizeof(count));
-    count %= 100;
+    // NOTE: this ensures a little-endian interpretation on all systems
+    count = (data[0] | data[1] << 8) % 100;
+    assert(sizeof(count) == 2);  // sanity check to protect against later bugs
+
     memcpy(seed, data.data() + sizeof(count), 32);
 
-    input.resize(count);
+    std::vector<size_t> input(count);
+    std::iota(input.begin(), input.end(), 0);  // input = [0...count-1]
 
-    // TODO(gnattishness) N fix? - this uses size_t, where other impls use
-    // uint_64_t sizeof(size_t) == sizeof(uint64_t) does not hold on all
-    // architectures
+    // NOTE: this uses size_t, where other impls use uint_64_t.
+    // `sizeof(size_t) == sizeof(uint64_t)` does not hold on all
+    // architectures, but lighthouse only supports 64bit systems.
     assert(sizeof(size_t) == sizeof(uint64_t));
-    /* input[0..count] = 0..count */
-    for (size_t i = 0; i < count; i++) {
-      input[i] = i;
-    }
 
     /* Call Lighthouse shuffle function */
     if (shuffle_list_c(input.data(), input.size(), seed) == false) {
@@ -60,11 +67,43 @@ class Lighthouse : public Rust {
       return std::nullopt;
     }
 
-    /* std::vector<size_t> -> std::vector<uint8_t> */
-    std::vector<uint8_t> ret(input.size() * sizeof(size_t));
-    memcpy(ret.data(), input.data(), input.size() * sizeof(size_t));
+    return util::VecToLittleEndianBytes(input);
+  }
+};
 
-    return ret;
+class Nimbus : public Nim {
+  std::optional<std::vector<uint8_t>> run(
+      const std::vector<uint8_t> &data) override {
+    // TODO(gnattishness) use c new instead of malloc?
+    // any reason not to have this point to the existing vector.data?
+    // no need to malloc right?
+    uint8_t *seed = reinterpret_cast<uint8_t *>(malloc(32));
+    uint16_t count;
+
+    if (data.size() < sizeof(count) + 32) {
+      // data is too small
+      return std::nullopt;
+    }
+
+    memcpy(seed, data.data() + sizeof(count), 32);
+
+    // NOTE: this ensures a little-endian interpretation on all systems
+    count = (data[0] | data[1] << 8) % 100;
+    assert(sizeof(count) == 2);  // sanity check to protect against later bugs
+
+    std::vector<uint64_t> output(count);
+
+    // Call Nimbus shuffle function
+    // NOTE: this doesn't shuffle an arbitrary array input, assumes output
+    // buffer is initially zeroed but produces output assuming an initial input
+    // of 0..N
+    if (nfuzz_shuffle(seed, output.data(), output.size()) == false) {
+      // Nimbus shuffle function failed
+
+      return std::nullopt;
+    }
+
+    return util::VecToLittleEndianBytes(output);
   }
 };
 } /* namespace fuzzing */
@@ -73,6 +112,7 @@ std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 std::shared_ptr<fuzzing::Python> trinity = nullptr;
 std::shared_ptr<fuzzing::Go> go = nullptr;
 std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
+std::shared_ptr<fuzzing::Nimbus> nimbus = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -87,6 +127,7 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
       trinity = std::make_shared<fuzzing::Python>(
           (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
   differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
+  differential->AddModule(nimbus = std::make_shared<fuzzing::Nimbus>());
 
   return 0;
 }

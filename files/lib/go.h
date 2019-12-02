@@ -4,6 +4,7 @@
 #error You must define GO_FUZZ_PREFIX
 #endif
 
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>

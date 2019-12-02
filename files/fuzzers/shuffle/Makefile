@@ -5,6 +5,17 @@ TRINITY_HARNESS_PATH := $(here)/trinity/harness.py
 
 lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
+# TODO move to parent Makefile?
+ifndef NIM_CPPFLAGS
+$(error NIM_CPPFLAGS is not set)
+endif
+ifndef NIM_LDFLAGS
+$(error NIM_LDFLAGS is not set)
+endif
+ifndef NIM_LDLIBS
+$(error NIM_LDLIBS is not set)
+endif
+
 .PHONY: all
 all: fuzzer
 
@@ -32,17 +43,21 @@ zrnt.a : zrnt/fuzz.go
 # TODO would optimally want this rebuilt if the env var values changed
 # https://stackoverflow.com/questions/11647859/make-targets-depend-on-variables
 # TODO move LDFLAGS before and use LDLIBS for all -llibname flags
-# TODO how to split up the PYTHON_LD_FLAGS?
+# TODO how to split up the PYTHON_LDFLAGS?
+
+fuzzer : CPPFLAGS += $(NIM_CPPFLAGS)
+fuzzer : LDFLAGS += $(NIM_LDFLAGS)
+fuzzer : LDLIBS += $(NIM_LDLIBS)
 fuzzer : fuzzer.cpp zrnt.a lighthouse.a
 	test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)
-	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
 	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
 	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 	    fuzzer.cpp zrnt.a lighthouse.a \
-	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LD_FLAGS) -o fuzzer
+	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LDFLAGS) -o fuzzer
 
 .PHONY: clean
 clean:

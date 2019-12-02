@@ -5,7 +5,10 @@
 #include <lib/rust.h>
 #include <lib/ssz-preprocess.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <optional>
 
 #ifndef PY_SPEC_HARNESS_PATH
 #error PY_SPEC_HARNESS_PATH undefined

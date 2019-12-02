@@ -3,8 +3,10 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <sstream>
 
 #include "python_coverage.h"

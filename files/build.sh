@@ -65,6 +65,13 @@ rm -rf "$TRINITY_VENV_PATH"
 # Now any script run with the python executable below will have access to trinity
 export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 
+# Nimbus
+
+git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
+cd /eth2/nim-beacon-chain || exit
+make build-system-checks
+make libnfuzz.a || exit
+
 cd /eth2/lib || exit
 # NOTE this doesn't depend on any GOPATH
 # TODO || exit if make fails?

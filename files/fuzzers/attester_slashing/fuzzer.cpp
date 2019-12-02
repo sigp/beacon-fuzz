@@ -5,6 +5,8 @@
 #include <lib/rust.h>
 #include <lib/ssz-preprocess.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 #ifndef PY_SPEC_HARNESS_PATH

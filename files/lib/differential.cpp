@@ -1,7 +1,5 @@
 #include "differential.h"
 
-#include <bits/stdint-uintn.h>
-
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>

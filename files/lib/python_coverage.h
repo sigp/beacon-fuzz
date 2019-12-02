@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+
 #define COVERAGE_ARRAY_SIZE 65536
 
 extern "C" {

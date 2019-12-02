@@ -32,7 +32,7 @@ Currently fuzzes against Eth2 `v0.9.1` python or Go executable specs
 
 (and their relevant spec function)
 
-All currently use the "mainnet" config: https://github.com/ethereum/eth2.0-specs/blob/v0.8.3/configs/mainnet.yaml
+All currently use the "mainnet" config: https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/configs/mainnet.yaml
 
 * `attestation` - [`process_attestation`](https://github.com/ethereum/eth2.0-specs/blob/v0.8.3/specs/core/0_beacon-chain.md#attestations)
 * `attester_slashing` - [`process_attester_slashing`](https://github.com/ethereum/eth2.0-specs/blob/v0.8.3/specs/core/0_beacon-chain.md#attester-slashings)

@@ -33,7 +33,7 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
 
     try:
         # modifies state in place
-        spec.process_block_header(test_case.pre, test_case.block)
+        spec.process_block_header(state=test_case.pre, block=test_case.block)
         # NOTE - signature verification should do nothing with bls disabled
         return serialize(test_case.pre)
     except AssertionError as e:

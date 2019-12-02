@@ -1,5 +1,6 @@
 import typing
 
+import eth2._utils.bls as bls
 import ssz
 from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
 from eth2.beacon.state_machines.forks.serenity.operation_processing import (
@@ -9,7 +10,8 @@ from eth2.beacon.types.attestations import Attestation
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-# TODO disable bls?
+# TODO(gnattishness) check that this works
+bls.Eth2BLS.use_noop_backend()
 
 
 class AttestationTestCase(ssz.Serializable):
@@ -33,7 +35,6 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
     dummy_block.body.attestations = [test_case.attestation]
 
     # TODO(gnattishness) any other relevant exceptions to catch?
-    # TODO(gnattishness) do we validate signatures or not here?
     try:
         post = process_attestations(
             state=test_case.pre, block=dummy_block, config=SERENITY_CONFIG

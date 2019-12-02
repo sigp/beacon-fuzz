@@ -14,9 +14,10 @@ RUN tar -zxf go1.12.linux-amd64.tar.gz
 ADD https://api.github.com/repos/gnattishness/cpython/git/refs/heads/fuzzing meta/cpython_version.json
 RUN git clone --branch fuzzing --depth 1 https://github.com/gnattishness/cpython.git
 
-# Should be at b7a0feb7253965b1d5e622b6247736ca29e1a254
+# TODO use tag when possible
 # This is a tag, so fine to always cache
-RUN git clone --branch v0.8.3 --depth 1 https://github.com/sigp/lighthouse lighthouse
+#RUN git clone --branch v0.8.3 --depth 1 https://github.com/sigp/lighthouse lighthouse
+RUN git clone --branch master https://github.com/sigp/lighthouse lighthouse && cd lighthouse && git checkout c04026d073d12a98499c9cebd6d6134fc75355a9
 
 # TODO(gnattishness) add other git clones here so they get cached
 

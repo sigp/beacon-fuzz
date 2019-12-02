@@ -30,7 +30,10 @@ def FuzzerRunOne(fuzzer_input):
     state_block = translate_value(block_sedes.deserialize(fuzzer_input), BlockTestCase)
 
     try:
-        poststate = spec.state_transition(state_block.pre, state_block.block, False)
+        # NOTE we don't validate state root here
+        poststate = spec.state_transition(
+            state=state_block.pre, block=state_block.block, validate_state_root=True
+        )
         return serialize(poststate)
     except AssertionError as e:
         pass

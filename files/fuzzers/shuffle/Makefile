@@ -8,6 +8,9 @@ lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 .PHONY: all
 all: fuzzer
 
+# NOTE bls disable not necessary here
+# worth putting a dummy in for a consistent makefile?
+
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a
 	rm -rf lighthouse_out/
@@ -23,6 +26,8 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 zrnt.a : zrnt/fuzz.go
 	test -x $(GO_FUZZ_BUILD_PATH)
 	cd zrnt && "$(GO_FUZZ_BUILD_PATH)" -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../zrnt.a .
+
+# TODO(gnattishness) make fuzzer rule only link/load, so theres a fuzzer.o rule
 
 # TODO would optimally want this rebuilt if the env var values changed
 # https://stackoverflow.com/questions/11647859/make-targets-depend-on-variables

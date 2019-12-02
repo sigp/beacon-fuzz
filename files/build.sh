@@ -24,7 +24,7 @@ make install
 
 cd /eth2 || exit
 # Get eth2.0-specs
-git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs.git
+git clone --depth 1 --branch v0.9.1 https://github.com/ethereum/eth2.0-specs.git
 # TODO quote here?
 ETH2_SPECS_PATH=$(realpath eth2.0-specs/)
 # TODO do we care about this?
@@ -41,11 +41,8 @@ rm -rf "$PY_SPEC_VENV_PATH"
 cd "$ETH2_SPECS_PATH"/test_libs/pyspec || exit
 # don't need to use requirements.py as the setup.py contains pinned dependencies
 # TODO use editable install "-e ." once editable venvs are supported
-"$PY_SPEC_VENV_PATH/bin/pip" install .
+"$PY_SPEC_VENV_PATH"/bin/pip install .
 cd "$ETH2_SPECS_PATH"/test_libs/config_helpers || exit
-# dodgy hack to adjust dependencies until we are working with a spec version that includes
-# https://github.com/ethereum/eth2.0-specs/pull/1426
-sed -i 's/ruamel\.yaml==0\.15\.96/ruamel\.yaml==0.16.5/g' setup.py
 # TODO use editable install "-e ." once editable venvs are supported
 "$PY_SPEC_VENV_PATH"/bin/pip install .
 
@@ -56,9 +53,9 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 # ok to have a centralized pyspec codebase for all fuzzing targets
 
 # TODO specify Trinity tag/branch
-# must be greater than a64c0c4122bfd0612ddfad6c81a33ea6736b3493
-git clone --depth 1 https://github.com/ethereum/trinity.git /eth2/trinity
+git clone --branch master https://github.com/ethereum/trinity.git /eth2/trinity
 cd /eth2/trinity || exit
+git checkout f48529a29c24d6e33ae945693f31fae22955bcc3 || exit
 export TRINITY_VENV_PATH="/eth2/trinity/venv"
 # TODO still delete and start from scratch?
 rm -rf "$TRINITY_VENV_PATH"
@@ -88,7 +85,7 @@ rm -rf "$ZRNT_GOPATH"
 rm -rf "$ZRNT_TMP"
 mkdir -p "$ZRNT_TMP"
 cd "$ZRNT_TMP" || exit
-git clone --depth 1 --branch v0.8.3 https://github.com/protolambda/zrnt.git
+git clone --depth 1 --branch v0.9.1 https://github.com/protolambda/zrnt.git
 cd zrnt || exit
 # TODO variables for relevant spec release and tags - a manifest file?
 
@@ -131,13 +128,6 @@ go get golang.org/x/tools/go/packages
 go build github.com/dvyukov/go-fuzz/go-fuzz-build
 GO_FUZZ_BUILD_PATH=$(realpath go-fuzz-build)
 export GO_FUZZ_BUILD_PATH
-
-mkdir -p "$GOPATH"/src/github.com/protolambda
-
-# TODO why is eth2.0-specs in protolambda?
-cd "$GOPATH"/src/github.com/protolambda || exit
-git clone --depth 1 --branch v0.8.3 https://github.com/ethereum/eth2.0-specs
-cd /eth2 || exit
 
 export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"
 

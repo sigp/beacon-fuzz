@@ -24,7 +24,7 @@ impl<T: EthSpec> BlockHeaderTestCase<T> {
             &mut self.pre,
             &self.block,
             None,
-            VerifySignatures::True,
+            VerifySignatures::False,
             &spec,
         )?;
 

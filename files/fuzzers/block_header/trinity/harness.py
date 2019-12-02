@@ -1,5 +1,6 @@
 import typing
 
+import eth2._utils.bls as bls
 import ssz
 from eth2.beacon.state_machines.forks.serenity.block_processing import (
     process_block_header,
@@ -9,7 +10,8 @@ from eth2.beacon.types.blocks import BeaconBlock
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-# TODO disable bls?
+# TODO(gnattishness) check that this works
+bls.Eth2BLS.use_noop_backend()
 
 
 class BlockHeaderTestCase(ssz.Serializable):

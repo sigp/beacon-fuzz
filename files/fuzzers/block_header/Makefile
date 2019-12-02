@@ -11,7 +11,7 @@ all: fuzzer
 # TODO N depend on lib or GO_FUZZ_BUILD_PATH?
 zrnt.a : zrnt/fuzz.go
 	test -x $(GO_FUZZ_BUILD_PATH)
-	cd zrnt && $(GO_FUZZ_BUILD_PATH) -tags preset_mainnet -libfuzzer-prefix=block_header_ -libfuzzer-ex -o ../zrnt.a .
+	cd zrnt && $(GO_FUZZ_BUILD_PATH) -tags 'preset_mainnet bls_off' -libfuzzer-prefix=block_header_ -libfuzzer-ex -o ../zrnt.a .
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a
@@ -22,6 +22,7 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	cargo build \
 		--target-dir=lighthouse_out \
 		--manifest-path=lighthouse/Cargo.toml \
+		--features fake_crypto \
 		--release
 	cp lighthouse_out/release/deps/libblock_header_fuzzer-*.a lighthouse.a
 

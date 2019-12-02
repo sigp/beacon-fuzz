@@ -20,10 +20,11 @@ impl<T: EthSpec> AttesterSlashingTestCase<T> {
     fn process_attester_slashing(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
         let spec = T::default_spec();
 
+        // TODO(gnattishness) allow signature verification to be enabled/disabled at compile-time
         process_attester_slashings(
             &mut self.pre,
             &[self.attester_slashing],
-            VerifySignatures::True,
+            VerifySignatures::False,
             &spec,
         )?;
 

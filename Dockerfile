@@ -7,7 +7,7 @@ RUN apt-get install -y build-essential clang-8 git zlib1g-dev libssl-dev libboos
 # TODO trinity has cmake in its dockerfile, needed?
 RUN apt-get install -y libleveldb1v5 libleveldb-dev libgmp3-dev libsnappy-dev
 
-RUN wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
+RUN wget -q https://dl.google.com/go/go1.12.linux-amd64.tar.gz
 RUN tar -zxf go1.12.linux-amd64.tar.gz
 
 # To clear cache when branch updates

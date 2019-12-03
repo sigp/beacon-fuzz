@@ -36,12 +36,13 @@ zrnt.a : zrnt/fuzz.go
 fuzzer : fuzzer.cpp zrnt.a lighthouse.a
 	test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)
+	test -r $(NIM_LIB)
 	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
 	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
 	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
-	    fuzzer.cpp zrnt.a lighthouse.a \
+	    fuzzer.cpp zrnt.a lighthouse.a $(NIM_LIB) \
 	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LD_FLAGS) -o fuzzer
 
 .PHONY: clean

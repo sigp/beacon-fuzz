@@ -70,7 +70,19 @@ export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
 cd /eth2/nim-beacon-chain || exit
 make build-system-checks
-make libnfuzz.a || exit
+# Nim staticlib call uses llvm-ar and I can't see how to change it
+EXTRA_NIM_PATH=/eth2/_nim_path
+rm -r $EXTRA_NIM_PATH
+mkdir -p $EXTRA_NIM_PATH
+ln -s "$(command -v llvm-ar-8)" "$EXTRA_NIM_PATH"/llvm-ar
+# TODO(gnattishness) use variables to keep this automatically consistent with other clang invocations?
+# TODO(gnattishness) if we use a static lib, no linking happens right? so don't need to pass load flags
+PATH="$EXTRA_NIM_PATH:$PATH" \
+    NIMFLAGS="--cc:clang --clang.exe:$CC --passC:'-fsanitize=fuzzer-no-link'" \
+    make libnfuzz.a || exit
+# TODO(gnattishness) add a load path an use -lnfuzz instead?
+export NIM_LIB=/eth2/nim-beacon-chain/build/libnfuzz.a
+export NIM_INCLUDE=/eth2/nim-beacon-chain/nfuzz
 
 cd /eth2/lib || exit
 # NOTE this doesn't depend on any GOPATH

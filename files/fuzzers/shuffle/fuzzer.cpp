@@ -25,13 +25,19 @@
 extern "C" bool shuffle_list_c(uint64_t *input_ptr, size_t input_size,
                                uint8_t *seed_ptr);
 
+extern "C" bool nfuzz_shuffle(uint8_t *seed_ptr, uint64_t *output_ptr,
+                              size_t output_size);
+
 namespace fuzzing {
 class Lighthouse : public Rust {
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
-    std::vector<size_t> input;
+    // std::vector<size_t> input;
     uint16_t count;
     // TODO(gnattishness) use c new instead of malloc?
+    // any reason not to have this point to the existing vector.data?
+    // no need to malloc right?
+    // this currently leaks
     uint8_t *seed = reinterpret_cast<uint8_t *>(malloc(32));
 
     if (data.size() < sizeof(count) + 32) {
@@ -67,12 +73,52 @@ class Lighthouse : public Rust {
     return ret;
   }
 };
+
+class Nimbus : public Nim {
+  std::optional<std::vector<uint8_t>> run(
+      const std::vector<uint8_t> &data) override {
+    uint16_t count;
+    // TODO(gnattishness) use c new instead of malloc?
+    // any reason not to have this point to the existing vector.data?
+    // no need to malloc right?
+    uint8_t *seed = reinterpret_cast<uint8_t *>(malloc(32));
+
+    if (data.size() < sizeof(count) + 32) {
+      return std::nullopt;
+    }
+
+    memcpy(&count, data.data(), sizeof(count));
+    count %= 100;
+    memcpy(seed, data.data() + sizeof(count), 32);
+
+    std::vector<uint64_t> input(count);
+
+    /* input[0..count] = 0..count */
+    for (size_t i = 0; i < count; i++) {
+      input[i] = i;
+    }
+
+    /* Call Nimbus shuffle function */
+    if (nfuzz_shuffle(seed, input.data(), input.size()) == false) {
+      /* Nimbus shuffle function failed */
+
+      return std::nullopt;
+    }
+
+    /* std::vector<size_t> -> std::vector<uint8_t> */
+    std::vector<uint8_t> ret(input.size() * sizeof(size_t));
+    memcpy(ret.data(), input.data(), input.size() * sizeof(size_t));
+
+    return ret;
+  }
+}
 } /* namespace fuzzing */
 
 std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 std::shared_ptr<fuzzing::Python> trinity = nullptr;
 std::shared_ptr<fuzzing::Go> go = nullptr;
 std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
+std::shared_ptr<fuzzing::Nimbus> nimbus = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -89,6 +135,7 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
           (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
   */
   differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
+  differential->AddModule(nimbus = std::make_shared<fuzzing::Nimbus>());
 
   return 0;
 }

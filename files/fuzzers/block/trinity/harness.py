@@ -8,6 +8,7 @@ from eth2.beacon.state_machines.forks.serenity.state_transitions import (
     SerenityStateTransition,
 )
 from eth2.beacon.state_machines.forks.serenity.states import SerenityBeaconState
+from eth2.beacon.tools.misc.ssz_vector import override_lengths
 from eth_utils import ValidationError
 
 VALIDATE_STATE_ROOT = True
@@ -15,8 +16,9 @@ VALIDATE_STATE_ROOT = True
 if VALIDATE_STATE_ROOT:
     from eth2._utils.ssz import validate_imported_block_unchanged
 
-# TODO(gnattishness) check that this works
 bls.Eth2BLS.use_noop_backend()
+# TODO allow a runtime init instead of setting globally
+override_lengths(SERENITY_CONFIG)
 
 st_instance = SerenityStateTransition(SERENITY_CONFIG)
 

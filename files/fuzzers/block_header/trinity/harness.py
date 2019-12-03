@@ -5,20 +5,22 @@ import ssz
 from eth2.beacon.state_machines.forks.serenity.block_processing import (
     process_block_header,
 )
+from eth2.beacon.state_machines.forks.serenity.blocks import SerenityBeaconBlock
 from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
-from eth2.beacon.types.blocks import BeaconBlock
-from eth2.beacon.types.states import BeaconState
+from eth2.beacon.state_machines.forks.serenity.states import SerenityBeaconState
+from eth2.beacon.tools.misc.ssz_vector import override_lengths
 from eth_utils import ValidationError
 
-# TODO(gnattishness) check that this works
 bls.Eth2BLS.use_noop_backend()
+# TODO allow a runtime init to change the config instead of setting globally
+override_lengths(SERENITY_CONFIG)
 
 
 class BlockHeaderTestCase(ssz.Serializable):
 
-    fields = [("pre", BeaconState), ("block", BeaconBlock)]
+    fields = [("pre", SerenityBeaconState), ("block", SerenityBeaconBlock)]
 
-    def __init__(self, *, pre: BeaconState, block: BeaconBlock) -> None:
+    def __init__(self, *, pre: SerenityBeaconState, block: SerenityBeaconBlock) -> None:
         super().__init__(pre=pre, block=block)
 
     def __str__(self) -> str:
@@ -26,11 +28,9 @@ class BlockHeaderTestCase(ssz.Serializable):
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
-    # TODO(gnattishness) ensure abort if deserialize fails
-    test_case = ssz.decode(input_data, BlockHeaderTestCase)
+    test_case = ssz.decode(input_data, sedes=BlockHeaderTestCase)
 
     # TODO(gnattishness) any other relevant exceptions to catch?
-    # TODO(gnattishness) do we validate signatures or not here?
     try:
         post = process_block_header(
             state=test_case.pre,
@@ -40,5 +40,4 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
         )
     except ValidationError as e:
         return None
-    # TODO(gnattishness) is this right?
     return ssz.encode(post)

@@ -1,5 +1,6 @@
 import typing
 
+import eth2._utils.bls as bls
 import ssz
 from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
 from eth2.beacon.state_machines.forks.serenity.operation_processing import (
@@ -9,7 +10,7 @@ from eth2.beacon.types.proposer_slashings import ProposerSlashing
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-# TODO disable bls?
+bls.Eth2BLS.use_noop_backend()
 
 
 class ProposerSlashingTestCase(ssz.Serializable):

@@ -55,7 +55,7 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 # TODO specify Trinity tag/branch
 git clone --branch master https://github.com/ethereum/trinity.git /eth2/trinity
 cd /eth2/trinity || exit
-git checkout f48529a29c24d6e33ae945693f31fae22955bcc3 || exit
+git checkout fcea7124effca010db62bd41a24dd7975825ba90 || exit
 export TRINITY_VENV_PATH="/eth2/trinity/venv"
 # TODO still delete and start from scratch?
 rm -rf "$TRINITY_VENV_PATH"

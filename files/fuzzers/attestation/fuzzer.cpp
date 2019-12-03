@@ -61,11 +61,9 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   differential->AddModule(
       pyspec = std::make_shared<fuzzing::Python>(
           (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt, PY_SPEC_VENV_PATH));
-  /*
   differential->AddModule(
       trinity = std::make_shared<fuzzing::Python>(
           (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
-  */
   differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
 
   return 0;

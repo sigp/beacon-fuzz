@@ -6,12 +6,21 @@ from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
 from eth2.beacon.state_machines.forks.serenity.operation_processing import (
     process_attestations,
 )
+from eth2.beacon.tools.misc.ssz_vector import override_lengths
 from eth2.beacon.types.attestations import Attestation
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-# TODO(gnattishness) check that this works
 bls.Eth2BLS.use_noop_backend()
+# TODO allow a runtime init instead of setting globally
+override_lengths(SERENITY_CONFIG)
+
+# TODO do we have to override lengths for the AttestationTestCase?
+# I don't think so - only when there are dynamic lengthed items
+
+
+class Dummy:
+    pass
 
 
 class AttestationTestCase(ssz.Serializable):

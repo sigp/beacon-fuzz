@@ -17,6 +17,8 @@ spec.apply_constants_preset(presets)
 
 bls.bls_active = False
 
+VALIDATE_STATE_ROOT = True
+
 
 class BlockTestCase(spec.Container):
     pre: spec.BeaconState
@@ -32,7 +34,9 @@ def FuzzerRunOne(fuzzer_input):
     try:
         # NOTE we don't validate state root here
         poststate = spec.state_transition(
-            state=state_block.pre, block=state_block.block, validate_state_root=True
+            state=state_block.pre,
+            block=state_block.block,
+            validate_state_root=VALIDATE_STATE_ROOT,
         )
         return serialize(poststate)
     except AssertionError as e:

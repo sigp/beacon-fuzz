@@ -6,6 +6,9 @@ import (
 	"helper"
 )
 
+// TODO(gnattishness) allow configurable at compile time
+const VALIDATE_STATE_ROOT bool = true
+
 func xxhash256(input []byte) [32]byte {
 	var ret [32]byte
 	hash := xxhash.Sum64(input)
@@ -46,9 +49,7 @@ func Fuzz(data []byte) []byte {
 	blockProc := new(phase0.BlockProcessFeature)
 	blockProc.Meta = ffstate
 	blockProc.Block = &input.Block
-    // NOTE bool = state root verification flag
-    // TODO(gnattishness) allow configurable at compile time
-	if err := ffstate.StateTransition(blockProc, true); err != nil {
+	if err := ffstate.StateTransition(blockProc, VALIDATE_STATE_ROOT); err != nil {
 		return []byte{}
 	}
 

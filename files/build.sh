@@ -70,19 +70,30 @@ export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
 cd /eth2/nim-beacon-chain || exit
 make build-system-checks
-# Nim staticlib call uses llvm-ar and I can't see how to change it
-EXTRA_NIM_PATH=/eth2/_nim_path
-rm -r $EXTRA_NIM_PATH
-mkdir -p $EXTRA_NIM_PATH
-ln -s "$(command -v llvm-ar-8)" "$EXTRA_NIM_PATH"/llvm-ar
-# TODO(gnattishness) use variables to keep this automatically consistent with other clang invocations?
+# Nim staticlib call uses llvm-ar and doesn't look like it can be changed
+# https://github.com/nim-lang/Nim/blob/7e747d11c66405f08cc7c69e5afc18348663275e/compiler/extccomp.nim#L128
+# This works at least for Ubuntu 18.04 with clang-8 installed, but likely less than portable:
+EXTRA_NIM_PATH="$(dirname "$(realpath "$(command -v clang-8)")")"
+# equiv to EXTRA_NIM_PATH=/usr/lib/llvm-8/bin/
+# should contain clang, clang++, llvm-ar executables
+
+# Uncomment for more portable solution
+#EXTRA_NIM_PATH=/eth2/_nim_path
+#rm -r $EXTRA_NIM_PATH
+#mkdir -p $EXTRA_NIM_PATH
+#ln -s "$(command -v llvm-ar-8)" "$EXTRA_NIM_PATH"/llvm-ar
+## Could use --clang.exe:$CC, but might as well link clang-8->clang as we're already linking llvm-ar
+#ln -s "$(command -v clang-8)" "$EXTRA_NIM_PATH"/clang
+#ln -s "$(command -v clang++-8)" "$EXTRA_NIM_PATH"/clang++
 # TODO(gnattishness) if we use a static lib, no linking happens right? so don't need to pass load flags
 PATH="$EXTRA_NIM_PATH:$PATH" \
-    NIMFLAGS="--cc:clang --clang.exe:$CC --passC:'-fsanitize=fuzzer-no-link'" \
+    NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link'" \
     make libnfuzz.a || exit
 # TODO(gnattishness) add a load path an use -lnfuzz instead?
-export NIM_LIB=/eth2/nim-beacon-chain/build/libnfuzz.a
-export NIM_INCLUDE=/eth2/nim-beacon-chain/nfuzz
+export NIM_LDFLAGS="-L/eth2/nim-beacon-chain/build/"
+export NIM_LDLIBS="-lnfuzz -lrocksdb -lpcre"
+# TODO(gnattishness) why use nfuzz/libnfuzz.h over nimcache/libnfuzz_static/libnfuzz.h (generated via --header)?
+export NIM_CPPFLAGS="-I/eth2/nim-beacon-chain/nfuzz"
 
 cd /eth2/lib || exit
 # NOTE this doesn't depend on any GOPATH

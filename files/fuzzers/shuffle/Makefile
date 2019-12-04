@@ -32,7 +32,7 @@ zrnt.a : zrnt/fuzz.go
 # TODO would optimally want this rebuilt if the env var values changed
 # https://stackoverflow.com/questions/11647859/make-targets-depend-on-variables
 # TODO move LDFLAGS before and use LDLIBS for all -llibname flags
-# TODO how to split up the PYTHON_LD_FLAGS?
+# TODO how to split up the PYTHON_LDFLAGS?
 fuzzer : fuzzer.cpp zrnt.a lighthouse.a
 	test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)
@@ -43,7 +43,7 @@ fuzzer : fuzzer.cpp zrnt.a lighthouse.a
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 	    fuzzer.cpp zrnt.a lighthouse.a $(NIM_LIB) \
-	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LD_FLAGS) -o fuzzer
+	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LDFLAGS) -o fuzzer
 
 .PHONY: clean
 clean:

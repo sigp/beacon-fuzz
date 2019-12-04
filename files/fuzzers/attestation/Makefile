@@ -34,7 +34,7 @@ fuzzer : fuzzer.cpp zrnt.a lighthouse.a
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 	    fuzzer.cpp zrnt.a lighthouse.a \
-	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LD_FLAGS) -o fuzzer
+	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LDFLAGS) -o fuzzer
 
 .PHONY: clean
 clean:

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/nim.h>
 #include <lib/python.h>
 #include <lib/rust.h>
 
@@ -25,14 +26,10 @@
 extern "C" bool shuffle_list_c(uint64_t *input_ptr, size_t input_size,
                                uint8_t *seed_ptr);
 
-extern "C" bool nfuzz_shuffle(uint8_t *seed_ptr, uint64_t *output_ptr,
-                              size_t output_size);
-
 namespace fuzzing {
 class Lighthouse : public Rust {
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
-    // std::vector<size_t> input;
     uint16_t count;
     // TODO(gnattishness) use c new instead of malloc?
     // any reason not to have this point to the existing vector.data?
@@ -48,7 +45,7 @@ class Lighthouse : public Rust {
     count %= 100;
     memcpy(seed, data.data() + sizeof(count), 32);
 
-    input.resize(count);
+    std::vector<size_t> input(count);
 
     // TODO(gnattishness) N fix? - this uses size_t, where other impls use
     // uint_64_t sizeof(size_t) == sizeof(uint64_t) does not hold on all
@@ -111,7 +108,7 @@ class Nimbus : public Nim {
 
     return ret;
   }
-}
+};
 } /* namespace fuzzing */
 
 std::shared_ptr<fuzzing::Python> pyspec = nullptr;

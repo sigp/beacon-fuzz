@@ -85,9 +85,10 @@ EXTRA_NIM_PATH="$(dirname "$(realpath "$(command -v clang-8)")")"
 ## Could use --clang.exe:$CC, but might as well link clang-8->clang as we're already linking llvm-ar
 #ln -s "$(command -v clang-8)" "$EXTRA_NIM_PATH"/clang
 #ln -s "$(command -v clang++-8)" "$EXTRA_NIM_PATH"/clang++
+# TODO(gnattishness) other relevant build flags
 # TODO(gnattishness) if we use a static lib, no linking happens right? so don't need to pass load flags
 PATH="$EXTRA_NIM_PATH:$PATH" \
-    NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link'" \
+    NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link' -d:const_preset=mainnet" \
     make libnfuzz.a || exit
 # TODO(gnattishness) add a load path an use -lnfuzz instead?
 export NIM_LDFLAGS="-L/eth2/nim-beacon-chain/build/"

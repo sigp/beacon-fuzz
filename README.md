@@ -51,23 +51,23 @@ See [corpora](https://github.com/sigp/beacon-fuzz-corpora) for examples and expl
 
 Quickstart:
 
-```bash
+```console
 $ git clone --depth 1 https://github.com/sigp/beacon-fuzz.git
 $ git clone --depth 1 https://github.com/sigp/beacon-fuzz-corpora.git
 $ cd beacon-fuzz
-$ ./runfuzzer.sh block_header ../beacon-fuzz-corpora/0-8-3/mainnet/block_header/ ../beacon-fuzz-corpora/0-8-3/mainnet/beaconstate
+$ sudo ./runfuzzer.sh block_header ../beacon-fuzz-corpora/0-9-1/mainnet/block_header/ ../beacon-fuzz-corpora/0-9-1/mainnet/beaconstate
 ```
 
 Interactive usage:
 
-```bash
+```console
 $ git clone --depth 1 https://github.com/sigp/beacon-fuzz.git
 $ cd beacon-fuzz
 $ sudo docker build . -t beacon_fuzz
 $ sudo docker run -it beacon_fuzz bash
-$ git clone --depth 1 https://github.com/sigp/beacon-fuzz-corpora.git
-$ export ETH2_FUZZER_STATE_CORPUS_PATH="/eth2/beacon-fuzz-corpora/0-8-3/mainnet/beaconstate"
-$ /eth2/fuzzers/attestation/fuzzer /eth2/beacon-fuzz-corpora/0-8-3/mainnet/attestation
+# git clone --depth 1 https://github.com/sigp/beacon-fuzz-corpora.git
+# export ETH2_FUZZER_STATE_CORPUS_PATH="/eth2/beacon-fuzz-corpora/0-9-1/mainnet/beaconstate"
+# /eth2/fuzzers/attestation/fuzzer /eth2/beacon-fuzz-corpora/0-9-1/mainnet/attestation
 ```
 
 Use `jobs=N` to run N simultaneous jobs (by default in `num_cpu_cores/2` processes).

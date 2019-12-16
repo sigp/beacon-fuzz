@@ -12,8 +12,9 @@ differential.o : differential.cpp differential.h base.h
 
 python.o : python.cpp python.h base.h
 	test $(CPYTHON_INSTALL_PATH)
-	$(CXX) $(CXXFLAGS) -c -o python.o -I $(CPYTHON_INSTALL_PATH)/include/python3.8 python.cpp
+	$(CXX) $(CXXFLAGS) -c -o python.o -I"$(CPYTHON_INSTALL_PATH)/include/python3.8" python.cpp
 
+# NOTE: if python.o is used, you also need to link the python lib
 libeth2fuzz.a : base.o differential.o python.o
 	ar rcs libeth2fuzz.a base.o differential.o python.o
 	ranlib libeth2fuzz.a

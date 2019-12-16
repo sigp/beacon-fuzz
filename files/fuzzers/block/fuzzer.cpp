@@ -1,10 +1,15 @@
 #define GO_FUZZ_PREFIX block_
+#define NIM_FUZZ_HANDLE nfuzz_block
+
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/nim_operation.h>
 #include <lib/python.h>
 #include <lib/rust.h>
 #include <lib/ssz-preprocess.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 #ifndef PY_SPEC_HARNESS_PATH
@@ -29,9 +34,10 @@ namespace fuzzing {
 class Lighthouse : public Rust {
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t>& _data) override {
-    /* Copy because block_c wants a non-const pointer */
+    // Copy because block_c wants a non-const pointer
     std::vector<uint8_t> data(_data.data(), _data.data() + _data.size());
 
+    // Give it a heap of space
     size_t output_size = data.size() * 4;
     std::vector<uint8_t> ret(output_size);
 
@@ -44,12 +50,13 @@ class Lighthouse : public Rust {
     return ret;
   }
 };
-} /* namespace fuzzing */
+}  // namespace fuzzing
 
 std::shared_ptr<fuzzing::Go> go = nullptr;
 std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
 std::shared_ptr<fuzzing::Python> trinity = nullptr;
 std::shared_ptr<fuzzing::Python> pyspec = nullptr;
+std::shared_ptr<fuzzing::NimOp> nimbus = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -66,6 +73,7 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
           (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
   */
   differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
+  differential->AddModule(nimbus = std::make_shared<fuzzing::NimOp>());
 
   return 0;
 }

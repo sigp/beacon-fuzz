@@ -1,6 +1,6 @@
 # To update revisions, use `pre-commit autoupdate`
 default_language_version:
-    python: python3.7
+    python: python3
 repos:
 
 # Python
@@ -69,7 +69,7 @@ repos:
 
 # Shell
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 1.11.0
+    rev: 1.11.2
     hooks:
         # These need external installation
         # TODO specify via additional_dependencies ?

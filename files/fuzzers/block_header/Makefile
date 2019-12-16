@@ -5,7 +5,18 @@ TRINITY_HARNESS_PATH := $(here)/trinity/harness.py
 
 lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
-.PHONY: all
+# TODO(gnattishness) uncomment when nimbus harness is implemented for this target
+#ifndef NIM_CPPFLAGS
+#$(error NIM_CPPFLAGS is not set)
+#endif
+#ifndef NIM_LDFLAGS
+#$(error NIM_LDFLAGS is not set)
+#endif
+#ifndef NIM_LDLIBS
+#$(error NIM_LDLIBS is not set)
+#endif
+
+.PHONY: all clean
 all: fuzzer
 
 # TODO N depend on lib or GO_FUZZ_BUILD_PATH?
@@ -26,18 +37,24 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 		--release
 	cp lighthouse_out/release/deps/libblock_header_fuzzer-*.a lighthouse.a
 
-# TODO N depend on lib/*.h etc?
-fuzzer : fuzzer.cpp zrnt.a lighthouse.a
+fuzzer.o : CPPFLAGS += $(NIM_CPPFLAGS)
+fuzzer.o : fuzzer.cpp
 	test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)
-	$(CXX) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS)\
 	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
 	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
-	    fuzzer.cpp zrnt.a lighthouse.a \
+		-c fuzzer.cpp -o fuzzer.o
+
+#fuzzer : LDFLAGS += $(NIM_LDFLAGS)
+#fuzzer : LDLIBS += $(NIM_LDLIBS)
+fuzzer : fuzzer.o zrnt.a lighthouse.a
+	$(CXX) -fsanitize=fuzzer \
+	    fuzzer.o zrnt.a lighthouse.a \
 	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LDFLAGS) -o fuzzer
 
 .PHONY: clean
 clean:
-	rm -rf fuzzer zrnt.a lighthouse.a lighthouse_out
+	rm -rf fuzzer *.a *.o lighthouse_out

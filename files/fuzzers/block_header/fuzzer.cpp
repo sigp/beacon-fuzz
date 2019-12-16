@@ -1,6 +1,9 @@
 #define GO_FUZZ_PREFIX block_header_
+#define NIM_FUZZ_HANDLE nfuzz_block_header
+
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/nim_operation.h>
 #include <lib/python.h>
 #include <lib/rust.h>
 #include <lib/ssz-preprocess.h>
@@ -54,6 +57,7 @@ std::shared_ptr<fuzzing::Python> pyspec = nullptr;
 std::shared_ptr<fuzzing::Python> trinity = nullptr;
 std::shared_ptr<fuzzing::Go> go = nullptr;
 std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
+std::shared_ptr<fuzzing::NimOp> nimbus = nullptr;
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -68,6 +72,7 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
       trinity = std::make_shared<fuzzing::Python>(
           (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
   differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
+  differential->AddModule(nimbus = std::make_shared<fuzzing::NimOp>());
 
   return 0;
 }

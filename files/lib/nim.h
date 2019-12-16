@@ -24,4 +24,4 @@ class Nim : public Base {
   };
 };
 
-} /* namespace fuzzing */
+}  // namespace fuzzing

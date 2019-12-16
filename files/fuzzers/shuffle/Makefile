@@ -5,7 +5,6 @@ TRINITY_HARNESS_PATH := $(here)/trinity/harness.py
 
 lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
-# TODO move to parent Makefile?
 ifndef NIM_CPPFLAGS
 $(error NIM_CPPFLAGS is not set)
 endif
@@ -16,7 +15,7 @@ ifndef NIM_LDLIBS
 $(error NIM_LDLIBS is not set)
 endif
 
-.PHONY: all
+.PHONY: all clean
 all: fuzzer
 
 # NOTE bls disable not necessary here
@@ -38,27 +37,32 @@ zrnt.a : zrnt/fuzz.go
 	test -x $(GO_FUZZ_BUILD_PATH)
 	cd zrnt && "$(GO_FUZZ_BUILD_PATH)" -tags preset_mainnet -libfuzzer-prefix=shuffle_ -libfuzzer-ex -o ../zrnt.a .
 
-# TODO(gnattishness) make fuzzer rule only link/load, so theres a fuzzer.o rule
+fuzzer.o : CPPFLAGS += $(NIM_CPPFLAGS)
+fuzzer.o : fuzzer.cpp
+	test -d $(TRINITY_VENV_PATH)
+	test -d $(PY_SPEC_VENV_PATH)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS)\
+	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
+	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
+	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
+	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
+		-c fuzzer.cpp -o fuzzer.o
 
 # TODO would optimally want this rebuilt if the env var values changed
 # https://stackoverflow.com/questions/11647859/make-targets-depend-on-variables
 # TODO move LDFLAGS before and use LDLIBS for all -llibname flags
 # TODO how to split up the PYTHON_LDFLAGS?
+#
+# TODO N depend on lib/*.h etc?
+# NOTE: its not nice to have the python `-L` flags after LDLIBS,
+# but -leth2fuzz depends on -lpython, so we have to link -lpython after
 
-fuzzer : CPPFLAGS += $(NIM_CPPFLAGS)
 fuzzer : LDFLAGS += $(NIM_LDFLAGS)
 fuzzer : LDLIBS += $(NIM_LDLIBS)
-fuzzer : fuzzer.cpp zrnt.a lighthouse.a
-	test -d $(TRINITY_VENV_PATH)
-	test -d $(PY_SPEC_VENV_PATH)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fsanitize=fuzzer -std=c++17 \
-	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
-	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
-	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
-	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
-	    fuzzer.cpp zrnt.a lighthouse.a \
+fuzzer : fuzzer.o zrnt.a lighthouse.a
+	$(CXX) -fsanitize=fuzzer \
+	    fuzzer.o zrnt.a lighthouse.a \
 	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LDFLAGS) -o fuzzer
 
-.PHONY: clean
 clean:
-	rm -rf fuzzer zrnt.a lighthouse.a lighthouse_out
+	rm -rf fuzzer *.a *.o lighthouse_out

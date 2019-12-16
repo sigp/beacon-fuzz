@@ -7,6 +7,8 @@
 #include <lib/rust.h>
 #include <lib/util.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <numeric>
 

@@ -1,7 +1,7 @@
 #include "differential.h"
 
-#include <stdio.h>
-
+#include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <utility>
 

@@ -64,7 +64,10 @@ impl<T: EthSpec> BlockTestCase<T> {
 fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
     let test_case = match BlockTestCase::from_ssz_bytes(&ssz_bytes) {
         Ok(test_case) => test_case,
-        _ => return Err(()),
+        Err(e) => panic!(
+            "rs deserialization failed. Preproc should ensure decodable: {:?}",
+            e.to_string()
+        ),
     };
 
     // TODO(gnattishness) allow validate_state_root to be enabled/disabled at compile time

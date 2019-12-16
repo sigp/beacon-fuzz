@@ -41,7 +41,10 @@ impl<T: EthSpec> AttestationTestCase<T> {
 fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
     let test_case = match AttestationTestCase::from_ssz_bytes(&ssz_bytes) {
         Ok(test_case) => test_case,
-        _ => return Err(()),
+        Err(e) => panic!(
+            "rs deserialization failed. Preproc should ensure decodable: {:?}",
+            e
+        ),
     };
 
     let post_state: BeaconState<T> = match test_case.process_attestation() {

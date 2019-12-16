@@ -37,7 +37,10 @@ impl<T: EthSpec> BlockHeaderTestCase<T> {
 fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
     let test_case = match BlockHeaderTestCase::from_ssz_bytes(&ssz_bytes) {
         Ok(test_case) => test_case,
-        _ => return Err(()),
+        Err(e) => panic!(
+            "rs deserialization failed. Preproc should ensure decodable: {:?}",
+            e
+        ),
     };
 
     let post_state: BeaconState<T> = match test_case.process_header() {
@@ -61,7 +64,9 @@ pub fn block_header_c(
     if let Ok(output_bytes) = fuzz::<MainnetEthSpec>(input_bytes) {
         unsafe {
             if output_bytes.len() > *output_size {
-                return false;
+                // Likely indicates an issue with the fuzzer, we should halt here
+                // This is different to a processing failure, so we panic to differentiate.
+                panic!("Output buffer not large enough.")
             }
             ptr::copy_nonoverlapping(output_bytes.as_ptr(), output_ptr, output_bytes.len());
             *output_size = output_bytes.len();

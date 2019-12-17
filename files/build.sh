@@ -67,7 +67,8 @@ export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 
 # Nimbus
 
-git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
+#git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
+git clone --branch libnfuzz_update https://github.com/gnattishness/nim-beacon-chain.git /eth2/nim-beacon-chain
 cd /eth2/nim-beacon-chain || exit
 make build-system-checks
 # Nim staticlib call uses llvm-ar and doesn't look like it can be changed
@@ -87,10 +88,10 @@ EXTRA_NIM_PATH="$(dirname "$(realpath "$(command -v clang-8)")")"
 #ln -s "$(command -v clang++-8)" "$EXTRA_NIM_PATH"/clang++
 # TODO(gnattishness) other relevant build flags
 # TODO(gnattishness) if we use a static lib, no linking happens right? so don't need to pass load flags
+# NOTE: -d:release should be fine currently, looks like it mainly turns on optimizations, shouldn't disable checks
 PATH="$EXTRA_NIM_PATH:$PATH" \
-    NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link' -d:const_preset=mainnet" \
+    NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link' -d:chronicles_log_level=ERROR -d:release -d:const_preset=mainnet --lineTrace:on --opt:speed" \
     make libnfuzz.a || exit
-# TODO(gnattishness) add a load path an use -lnfuzz instead?
 export NIM_LDFLAGS="-L/eth2/nim-beacon-chain/build/"
 export NIM_LDLIBS="-lnfuzz -lrocksdb -lpcre"
 # TODO(gnattishness) why use nfuzz/libnfuzz.h over nimcache/libnfuzz_static/libnfuzz.h (generated via --header)?

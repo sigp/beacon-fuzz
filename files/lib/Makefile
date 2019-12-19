@@ -7,6 +7,9 @@ all : libeth2fuzz.a
 base.o : base.cpp base.h
 	$(CXX) $(CXXFLAGS) -c -o base.o base.cpp
 
+util.o : util.cpp util.h
+	$(CXX) $(CXXFLAGS) -c -o util.o util.cpp
+
 differential.o : differential.cpp differential.h base.h
 	$(CXX) $(CXXFLAGS) -c -o differential.o differential.cpp
 
@@ -15,8 +18,8 @@ python.o : python.cpp python.h base.h
 	$(CXX) $(CXXFLAGS) -c -o python.o -I"$(CPYTHON_INSTALL_PATH)/include/python3.8" python.cpp
 
 # NOTE: if python.o is used, you also need to link the python lib
-libeth2fuzz.a : base.o differential.o python.o
-	ar rcs libeth2fuzz.a base.o differential.o python.o
+libeth2fuzz.a : base.o differential.o python.o util.o
+	ar rcs libeth2fuzz.a base.o differential.o python.o util.o
 	ranlib libeth2fuzz.a
 
 clean:

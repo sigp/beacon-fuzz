@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
-#include <memory>
+#include <filesystem>
 #include <vector>
 
 namespace util {
@@ -27,4 +25,7 @@ std::vector<uint8_t> VecToLittleEndianBytes(const std::vector<T>& vec) {
   return result;
 }
 
-} /* namespace util */
+// returns path to the current executable
+std::filesystem::path getExePath();
+
+}  // namespace util

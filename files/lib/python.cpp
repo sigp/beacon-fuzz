@@ -49,10 +49,14 @@ class Python::Impl {
  public:
   Impl(const std::string argv0, const std::filesystem::path scriptPath,
        std::optional<std::filesystem::path> libPath,
-       std::optional<std::filesystem::path> venvPath) {
-    // set current directory to that of the executable
-    std::filesystem::path execDir = util::getExePath().parent_path();
-    std::filesystem::current_path(execDir);
+       std::optional<std::filesystem::path> venvPath,
+       bool eval_paths_rel_to_file) {
+    if (eval_paths_rel_to_file) {
+      std::filesystem::path oldCwd = std::filesystem::current_path();
+      // set current directory to that of the executable
+      std::filesystem::path execDir = util::getExePath().parent_path();
+      std::filesystem::current_path(execDir);
+    }
     {
       // Not the fastest way to read a file, but robust
       // Based on: https://stackoverflow.com/a/43027468
@@ -162,6 +166,10 @@ class Python::Impl {
     if (pFunc == nullptr || !PyCallable_Check(static_cast<PyObject*>(pFunc))) {
       printf("Fatal: FuzzerRunOne not defined or not callable\n");
       abort();
+    }
+    if (eval_paths_rel_to_file) {
+      // restore CWD
+      std::filesystem::current_path(oldCwd);
     }
   }
   // TODO(gnattishness) return a ref instead of a vector by value?

@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "python_coverage.h"
+#include "util.h"
 
 #if PY_MAJOR_VERSION < 3 || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 7)
 #warning "Only supported for Python >= 3.7"
@@ -49,6 +50,9 @@ class Python::Impl {
   Impl(const std::string argv0, const std::filesystem::path scriptPath,
        std::optional<std::filesystem::path> libPath,
        std::optional<std::filesystem::path> venvPath) {
+    // set current directory to that of the executable
+    std::filesystem::path execDir = util::getExePath().parent_path();
+    std::filesystem::current_path(execDir);
     {
       // Not the fastest way to read a file, but robust
       // Based on: https://stackoverflow.com/a/43027468

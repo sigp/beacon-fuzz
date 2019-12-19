@@ -14,6 +14,8 @@ namespace fuzzing {
 
 class Python : public Base {
  public:
+  // NOTE: if relative, paths are evaluated relative to the directory containing
+  // the running executable
   Python(const std::string argv0, const std::filesystem::path scriptPath,
          std::optional<std::filesystem::path> libPath = std::nullopt,
          std::optional<std::filesystem::path> venvPath = std::nullopt);

@@ -83,7 +83,7 @@ repos:
     hooks:
     - id: clang-format
     - id: cpplint
-      args: ['--filter=-legal,-build/include_subdir,-runtime/int']
+      args: ['--filter=-legal,-build/include_subdir,-build/c++11,-build/c++14,-runtime/int']
     - id: cppcheck
 
 

@@ -43,7 +43,7 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
         Ok(test_case) => test_case,
         Err(e) => panic!(
             "rs deserialization failed. Preproc should ensure decodable: {:?}",
-            e.to_string()
+            e
         ),
     };
 

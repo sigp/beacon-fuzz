@@ -14,13 +14,16 @@ namespace fuzzing {
 
 class Python : public Base {
  public:
-  // NOTE: if relative, paths are evaluated relative to the directory containing
+  // NOTE: if eval_paths_rel_to_file and the paths are relative,
+  // they are evaluated relative to the directory containing
   // the running executable
+  // TODO(gnattishness) better documentation
   Python(const std::string& name, const std::string& argv0,
          const std::filesystem::path scriptPath,
          std::optional<const std::filesystem::path> libPath = std::nullopt,
          std::optional<const std::filesystem::path> venvPath = std::nullopt,
-         const bool bls_disabled = true);
+         const bool bls_disabled = true,
+         const bool eval_paths_rel_to_file = false);
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t>& data) override;
   const std::string& name() override;

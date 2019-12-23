@@ -1,4 +1,5 @@
 target/
 **/*.rs.bk
 Cargo.lock
-.mypy_cache
+files/tools/*/bin
+.mypy_cache/

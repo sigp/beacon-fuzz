@@ -520,6 +520,13 @@ var g_return_data = make([]byte, 0)
 
 //export SSZPreprocessGetReturnData
 func SSZPreprocessGetReturnData(return_data []byte) {
+    // NOTE: for this to be correct, return_data must initially refer to an array with
+    // the same size and capacity (i.e. that copy doesn't re-size the data)
+    // Alternative could be to pass a pointer to a slice,
+    // but generally don't want this memory to be managed by the go runtime/GC.
+    if len(return_data) != len(g_return_data) {
+        panic("return_data must be the same length as g_return_data.")
+    }
 	copy(return_data, g_return_data)
 }
 

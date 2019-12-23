@@ -26,10 +26,10 @@ import (
 	"reflect"
 )
 
-type inputType uint64
+type InputType uint64
 
 const (
-    INPUT_TYPE_INVALID inputType = iota
+    INPUT_TYPE_INVALID InputType = iota
     INPUT_TYPE_ATTESTATION
     INPUT_TYPE_ATTESTER_SLASHING
     INPUT_TYPE_BLOCK_HEADER
@@ -39,7 +39,7 @@ const (
     INPUT_TYPE_BLOCK
 )
 
-var curInputType inputType = INPUT_TYPE_INVALID
+var curInputType InputType = INPUT_TYPE_INVALID
 
 // TODO I hate having to copy paste all this, but no generic functions/types
 // is there 1 function I can do that will convert from these types to
@@ -230,7 +230,7 @@ func init() {
 	loadPrestates()
 }
 
-func SetInputType(inputType_ inputType) {
+func SetInputType(inputType_ InputType) {
 	curInputType = inputType_
 }
 

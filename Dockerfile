@@ -16,7 +16,8 @@ RUN wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
 RUN tar -zxf go1.12.linux-amd64.tar.gz
 
 # Should be at b7a0feb7253965b1d5e622b6247736ca29e1a254
-RUN git clone --branch v0.8.3 --depth 1 https://github.com/sigp/lighthouse lighthouse
+RUN git clone --branch master https://github.com/sigp/lighthouse lighthouse \
+&& cd lighthouse && git checkout b7a0feb7253965b1d5e622b6247736ca29e1a254
 
 ADD files /eth2
 

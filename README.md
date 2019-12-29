@@ -25,9 +25,11 @@ Currently fuzzes against Eth2 `v0.9.1` python or Go executable specs
 ### Implementations
 
 * [Lighthouse](https://github.com/sigp/lighthouse/) (rust)
+* [Nimbus](https://github.com/status-im/nim-beacon-chain) (nim)
 * [pyspec](https://github.com/ethereum/eth2.0-specs/tree/dev/test_libs/pyspec) (python)
-* [zrnt](https://github.com/protolambda/zrnt/) (go)
 * [Trinity](https://github.com/ethereum/trinity) (python)
+* [zrnt](https://github.com/protolambda/zrnt/) (go)
+
 
 ### Operational Fuzz Targets:
 

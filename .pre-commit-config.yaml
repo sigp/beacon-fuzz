@@ -1,6 +1,6 @@
 # To update revisions, use `pre-commit autoupdate`
 default_language_version:
-    python: python3.7
+    python: python3
 repos:
 
 # Python

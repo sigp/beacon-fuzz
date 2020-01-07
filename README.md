@@ -27,6 +27,7 @@ Currently fuzzes against Eth2 `v0.9.1` python or Go executable specs
 * [Lighthouse](https://github.com/sigp/lighthouse/) (rust)
 * [pyspec](https://github.com/ethereum/eth2.0-specs/tree/dev/test_libs/pyspec) (python)
 * [zrnt](https://github.com/protolambda/zrnt/) (go)
+* [Trinity](https://github.com/ethereum/trinity) (python)
 
 ### Operational Fuzz Targets:
 
@@ -90,12 +91,10 @@ Use `help=1` for more arguments (see also [libfuzzer docs](https://llvm.org/docs
 
 The following implementations will be added to the various fuzzing targets:
 
-* [Nimbus](https://github.com/status-im/nim-beacon-chain)
 * [Prysm](https://github.com/prysmaticlabs/prysm)
 * [Artemis](https://github.com/PegaSysEng/artemis)
 * [Harmony](https://github.com/harmony-dev/beacon-chain-java)
 * [Lodestar](https://github.com/ChainSafe/lodestar)
-* [Trinity](https://github.com/ethereum/trinity)
 
 ## Contributing
 
@@ -117,6 +116,9 @@ This is quicker than re-running `./build.sh` and is useful when troubleshooting 
 
 After running `build.sh` once, a file `/eth2/exported_env.sh` will be created.
 Sourcing this will ensure you have all the environment variables required by the Makefiles.
+
+NOTE: the fuzzer's Makefiles do not currently identify changes to dependent file outside of the `fuzzers` directory.
+So, for example, a change to a dependent file in `./files/lib` will require a `make clean` (or equivalent) for the modifications to be visible.
 
 ### Adding new implementations for a target
 

@@ -67,8 +67,7 @@ export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 
 # Nimbus
 
-#git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
-git clone --branch libnfuzz_update https://github.com/gnattishness/nim-beacon-chain.git /eth2/nim-beacon-chain
+git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
 cd /eth2/nim-beacon-chain || exit
 make build-system-checks
 # Nim staticlib call uses llvm-ar and doesn't look like it can be changed
@@ -78,7 +77,7 @@ EXTRA_NIM_PATH="$(dirname "$(realpath "$(command -v clang-8)")")"
 # equiv to EXTRA_NIM_PATH=/usr/lib/llvm-8/bin/
 # should contain clang, clang++, llvm-ar executables
 
-# Uncomment for more portable solution
+# Uncomment for potentially more portable solution
 #EXTRA_NIM_PATH=/eth2/_nim_path
 #rm -r $EXTRA_NIM_PATH
 #mkdir -p $EXTRA_NIM_PATH

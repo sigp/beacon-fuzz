@@ -5,16 +5,15 @@ TRINITY_HARNESS_PATH := $(here)/trinity/harness.py
 
 lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
-# TODO(gnattishness) uncomment when nimbus harness is implemented for this target
-#ifndef NIM_CPPFLAGS
-#$(error NIM_CPPFLAGS is not set)
-#endif
-#ifndef NIM_LDFLAGS
-#$(error NIM_LDFLAGS is not set)
-#endif
-#ifndef NIM_LDLIBS
-#$(error NIM_LDLIBS is not set)
-#endif
+ifndef NIM_CPPFLAGS
+$(error NIM_CPPFLAGS is not set)
+endif
+ifndef NIM_LDFLAGS
+$(error NIM_LDFLAGS is not set)
+endif
+ifndef NIM_LDLIBS
+$(error NIM_LDLIBS is not set)
+endif
 
 .PHONY: all clean
 all: fuzzer
@@ -48,8 +47,8 @@ fuzzer.o : fuzzer.cpp
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 		-c fuzzer.cpp -o fuzzer.o
 
-#fuzzer : LDFLAGS += $(NIM_LDFLAGS)
-#fuzzer : LDLIBS += $(NIM_LDLIBS)
+fuzzer : LDFLAGS += $(NIM_LDFLAGS)
+fuzzer : LDLIBS += $(NIM_LDLIBS)
 fuzzer : fuzzer.o zrnt.a lighthouse.a
 	$(CXX) -fsanitize=fuzzer \
 	    fuzzer.o zrnt.a lighthouse.a \

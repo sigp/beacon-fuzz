@@ -49,6 +49,7 @@ void Differential::AddModule(std::shared_ptr<Base> module) {
 void Differential::Run(const std::vector<uint8_t> data) const {
   std::optional<std::vector<uint8_t>> prev = std::nullopt;
   bool first = true;
+  std::shared_ptr<Base> prevmod = nullptr;
 
   for (const auto& module : modules) {
     std::optional<std::vector<uint8_t>> cur = module->Run(data);
@@ -65,15 +66,15 @@ void Differential::Run(const std::vector<uint8_t> data) const {
       // NOTE: an empty list is different to a nullopt
       // TODO(gnattishness) compile-time flag to change how differences are
       // displayed
-      printf("Difference detected\n");
-      printf("Prev: ");
+      printf("Difference detected in %s\n", module->name().data());
+      printf("Prev (%s): ", prevmod->name().data());
       if (prev) {
         printf("difference-prev.ssz\n");
         dumpBytesVec("difference-prev.ssz", *prev);
       } else {
         printf("nullopt\n");
       }
-      printf("Cur: ");
+      printf("Cur (%s): ", module->name().data());
       if (cur) {
         printf("difference-cur.ssz\n");
         dumpBytesVec("difference-cur.ssz", *cur);
@@ -85,6 +86,7 @@ void Differential::Run(const std::vector<uint8_t> data) const {
 
     first = false;
     prev = std::move(cur);
+    prevmod = module;
   }
 }
 

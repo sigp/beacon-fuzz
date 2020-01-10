@@ -36,8 +36,13 @@ void GO_get_return_data(GoSlice dest);
 }
 
 class Go : public Base {
+  std::string name_;
+
  public:
-  Go(void) : Base() { GO_LLVMFuzzerInitialize(nullptr, nullptr); }
+  explicit Go(const std::string &name) : Base() {
+    name_ = name;
+    GO_LLVMFuzzerInitialize(nullptr, nullptr);
+  }
 
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t> &data) override {
@@ -61,6 +66,7 @@ class Go : public Base {
 
     return ret;
   };
+  const std::string &name() override { return name_; }
 };
 
 } /* namespace fuzzing */

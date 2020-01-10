@@ -27,6 +27,9 @@ namespace fuzzing {
 
 // Common implementation for Nim fuzzing handlers targeting state operations
 class NimOp : public Nim {
+  // inherit Nim's constructors
+  using Nim::Nim;
+
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t>& _data) override {
     // Copy because this wants as a non-const ptr

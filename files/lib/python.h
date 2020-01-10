@@ -14,11 +14,13 @@ namespace fuzzing {
 
 class Python : public Base {
  public:
-  Python(const std::string argv0, const std::filesystem::path scriptPath,
-         std::optional<std::filesystem::path> libPath = std::nullopt,
-         std::optional<std::filesystem::path> venvPath = std::nullopt);
+  Python(const std::string& name, const std::string& argv0,
+         const std::filesystem::path scriptPath,
+         std::optional<const std::filesystem::path> libPath = std::nullopt,
+         std::optional<const std::filesystem::path> venvPath = std::nullopt);
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t>& data) override;
+  const std::string& name() override;
   ~Python();
 
  private:
@@ -26,6 +28,7 @@ class Python : public Base {
   // <Python.h>: https://en.cppreference.com/w/cpp/language/pimpl
   class Impl;
   std::experimental::propagate_const<std::unique_ptr<Impl>> pimpl_;
+  std::string name_;
 };
 
 } /* namespace fuzzing */

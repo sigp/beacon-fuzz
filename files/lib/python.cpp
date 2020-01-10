@@ -240,16 +240,21 @@ class Python::Impl {
   }
 };
 
-Python::Python(const std::string argv0, const std::filesystem::path scriptPath,
-               std::optional<std::filesystem::path> libPath,
-               std::optional<std::filesystem::path> venvPath)
+Python::Python(const std::string& name, const std::string& argv0,
+               const std::filesystem::path scriptPath,
+               std::optional<const std::filesystem::path> libPath,
+               std::optional<const std::filesystem::path> venvPath)
     : Base(),
-      pimpl_{std::make_unique<Impl>(argv0, scriptPath, libPath, venvPath)} {}
+      pimpl_{std::make_unique<Impl>(argv0, scriptPath, libPath, venvPath)} {
+  name_ = name;
+}
 
 std::optional<std::vector<uint8_t>> Python::Run(
     const std::vector<uint8_t>& data) {
   return pimpl_->Run(data);
 }
+
+const std::string& Python::name() { return this->name_; }
 
 Python::~Python() = default;
 

@@ -14,14 +14,19 @@ class Nim : public Base {
  private:
   virtual std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t>& data) = 0;
+  std::string name_;
 
  public:
-  Nim(void) : Base() { NimMain(); }
+  explicit Nim(const std::string& name = "nimbus") : Base() {
+    name_ = name;
+    NimMain();
+  }
 
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t>& data) override {
     return run(data);
   };
+  const std::string& name() override { return name_; }
 };
 
 }  // namespace fuzzing

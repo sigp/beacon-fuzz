@@ -69,9 +69,13 @@ class Lighthouse : public Rust {
 
     return util::VecToLittleEndianBytes(input);
   }
+
+ public:
+  Lighthouse() : Rust("lighthouse") {}
 };
 
 class Nimbus : public Nim {
+  // NOTE: Nim uses a "nimbus" name by default
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
     // TODO(gnattishness) use c new instead of malloc?
@@ -108,26 +112,20 @@ class Nimbus : public Nim {
 };
 } /* namespace fuzzing */
 
-std::shared_ptr<fuzzing::Python> pyspec = nullptr;
-std::shared_ptr<fuzzing::Python> trinity = nullptr;
-std::shared_ptr<fuzzing::Go> go = nullptr;
-std::shared_ptr<fuzzing::Lighthouse> lighthouse = nullptr;
-std::shared_ptr<fuzzing::Nimbus> nimbus = nullptr;
-
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   differential = std::make_unique<fuzzing::Differential>();
 
-  differential->AddModule(go = std::make_shared<fuzzing::Go>());
-  differential->AddModule(
-      pyspec = std::make_shared<fuzzing::Python>(
-          (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt, PY_SPEC_VENV_PATH));
-  differential->AddModule(
-      trinity = std::make_shared<fuzzing::Python>(
-          (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt, TRINITY_VENV_PATH));
-  differential->AddModule(lighthouse = std::make_shared<fuzzing::Lighthouse>());
-  differential->AddModule(nimbus = std::make_shared<fuzzing::Nimbus>());
+  differential->AddModule(std::make_shared<fuzzing::Go>("zrnt"));
+  differential->AddModule(std::make_shared<fuzzing::Python>(
+      "pyspec", (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt,
+      PY_SPEC_VENV_PATH));
+  differential->AddModule(std::make_shared<fuzzing::Python>(
+      "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
+      TRINITY_VENV_PATH));
+  differential->AddModule(std::make_shared<fuzzing::Lighthouse>());
+  differential->AddModule(std::make_shared<fuzzing::Nimbus>());
 
   return 0;
 }

@@ -1,3 +1,5 @@
+here := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
 CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
 
 # TODO(gnattishness bls enable/disable option)
@@ -18,4 +20,5 @@ all clean: $(TARGETS)
 
 .PHONY: $(TARGETS)
 $(TARGETS):
-	$(MAKE) -C $@ $(filter-out $@,$(MAKECMDGOALS))
+	@# $(here) used so this can be called from other directories
+	$(MAKE) -C $(here)/$@ $(filter-out $@,$(MAKECMDGOALS)) -f ../fuzzer.mk

@@ -15,8 +15,8 @@ export
 
 TARGETS := attestation attester_slashing block block_header shuffle
 
-.PHONY: all clean
-all clean: $(TARGETS)
+.PHONY: all clean mostlyclean
+all clean mostlyclean: $(TARGETS)
 
 .PHONY: $(TARGETS)
 $(TARGETS):

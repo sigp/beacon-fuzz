@@ -45,10 +45,11 @@ class Python::Impl {
   // initializing a shared?
   // PyThreadState* mainInterpreter = nullptr;
   // TODO(gnattishness) what argv0 used for?
+  // TODO(gnattishness) add config path here?
  public:
   Impl(const std::string argv0, const std::filesystem::path scriptPath,
        std::optional<std::filesystem::path> libPath,
-       std::optional<std::filesystem::path> venvPath) {
+       std::optional<std::filesystem::path> venvPath, bool bls_disabled) {
     {
       // Not the fastest way to read a file, but robust
       // Based on: https://stackoverflow.com/a/43027468
@@ -103,7 +104,7 @@ class Python::Impl {
       setArgv0 << "import sys\nsys.argv[0] = '" << scriptPath << "'\n";
       if (PyRun_SimpleString(setArgv0.str().c_str()) != 0) {
         printf("Fatal: Cannot set argv[0]\n");
-        PyErr_PrintEx(1);
+        PyErr_Print();
         abort();
       }
     }
@@ -129,7 +130,7 @@ class Python::Impl {
       }
       if (PyRun_SimpleString(setPath.str().c_str()) != 0) {
         printf("Fatal: Cannot set python PATH\n");
-        PyErr_PrintEx(1);
+        PyErr_Print();
         abort();
       }
     }
@@ -148,10 +149,37 @@ class Python::Impl {
 
     if (pValue == nullptr) {
       printf("Fatal: Cannot create Python function from string\n");
-      PyErr_PrintEx(1);
+      PyErr_Print();
       abort();
     }
     Py_DECREF(pValue);
+
+    // Call FuzzerInit with relevant parameters
+    PyObject* initFun = PyObject_GetAttrString(pModule, "FuzzerInit");
+    if (initFun == nullptr ||
+        !PyCallable_Check(static_cast<PyObject*>(initFun))) {
+      printf("Fatal: FuzzerInit not defined or not callable\n");
+      abort();
+    }
+    PyObject* pArgs = PyTuple_New(1);
+    int err = PyTuple_SetItem(pArgs, 0, PyBool_FromLong(bls_disabled));
+    if (err) {
+      printf("Fatal: Unable to add bool to init args tuple.\n");
+      PyErr_Print();
+      abort();
+    }
+    pValue = PyObject_CallObject(initFun, pArgs);
+    if (pValue == nullptr) {
+      // FuzzerInit() raised an exception
+      printf("Fatal: FuzzerInit failed.");
+      PyErr_Print();
+      abort();
+    }
+    // Don't care about the value returned
+
+    Py_DECREF(pValue);
+    Py_DECREF(pArgs);
+    Py_DECREF(initFun);
 
     pFunc = PyObject_GetAttrString(pModule, "FuzzerRunOne");
 
@@ -180,10 +208,21 @@ class Python::Impl {
     (void)PyThreadState_Swap(thisInterpreter);
 
     PyObject* pArgs = PyTuple_New(1);
-    // TODO(gnattishness) is this first pValue not DECREFed?
     PyObject* pValue =
         PyBytes_FromStringAndSize((const char*)data.data(), data.size());
-    PyTuple_SetItem(pArgs, 0, pValue);
+    if (pValue == nullptr) {
+      printf("Fatal: Unable to save data as bytes\n");
+      PyErr_Print();
+      abort();
+    }
+    // NOTE: this pValue does not need to be DECREFed because PyTuple_SetItem
+    // steals the reference
+    int err = PyTuple_SetItem(pArgs, 0, pValue);
+    if (err) {
+      printf("Fatal: Unable to add bytes to a tuple.\n");
+      PyErr_Print();
+      abort();
+    }
 
     pValue = PyObject_CallObject(pFunc, pArgs);
 
@@ -196,7 +235,7 @@ class Python::Impl {
       //
       // Any expected exceptions that indicate failure (but not a bug) should be
       // caught by the target function, and None returned.
-      PyErr_PrintEx(1);
+      PyErr_Print();
       abort();
     }
 
@@ -243,9 +282,11 @@ class Python::Impl {
 Python::Python(const std::string& name, const std::string& argv0,
                const std::filesystem::path scriptPath,
                std::optional<const std::filesystem::path> libPath,
-               std::optional<const std::filesystem::path> venvPath)
+               std::optional<const std::filesystem::path> venvPath,
+               const bool bls_disabled)
     : Base(),
-      pimpl_{std::make_unique<Impl>(argv0, scriptPath, libPath, venvPath)} {
+      pimpl_{std::make_unique<Impl>(argv0, scriptPath, libPath, venvPath,
+                                    bls_disabled)} {
   name_ = name;
 }
 

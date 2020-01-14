@@ -11,10 +11,6 @@ from eth2.beacon.state_machines.forks.serenity.states import SerenityBeaconState
 from eth2.beacon.tools.misc.ssz_vector import override_lengths
 from eth_utils import ValidationError
 
-bls.Eth2BLS.use_noop_backend()
-# TODO allow a runtime init to change the config instead of setting globally
-override_lengths(SERENITY_CONFIG)
-
 
 class BlockHeaderTestCase(ssz.Serializable):
 
@@ -25,6 +21,12 @@ class BlockHeaderTestCase(ssz.Serializable):
 
     def __str__(self) -> str:
         return f"pre={self.pre}, block={self.block}"
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.Eth2BLS.use_noop_backend()
+    override_lengths(SERENITY_CONFIG)
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:

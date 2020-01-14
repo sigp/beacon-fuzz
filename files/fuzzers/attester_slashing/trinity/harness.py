@@ -11,10 +11,6 @@ from eth2.beacon.types.attester_slashings import AttesterSlashing
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-bls.Eth2BLS.use_noop_backend()
-# TODO allow a runtime init instead of setting globally
-override_lengths(SERENITY_CONFIG)
-
 
 class Dummy:
     pass
@@ -31,6 +27,12 @@ class AttesterSlashingTestCase(ssz.Serializable):
 
     def __str__(self) -> str:
         return f"pre={self.pre}, attester_slashing={self.attester_slashing}"
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.Eth2BLS.use_noop_backend()
+    override_lengths(SERENITY_CONFIG)
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:

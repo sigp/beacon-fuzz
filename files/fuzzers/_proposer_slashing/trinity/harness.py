@@ -10,8 +10,6 @@ from eth2.beacon.types.proposer_slashings import ProposerSlashing
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-bls.Eth2BLS.use_noop_backend()
-
 
 class ProposerSlashingTestCase(ssz.Serializable):
 
@@ -24,6 +22,12 @@ class ProposerSlashingTestCase(ssz.Serializable):
 
     def __str__(self) -> str:
         return f"pre={self.pre}, proposer_slashing={self.proposer_slashing}"
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.Eth2BLS.use_noop_backend()
+    override_lengths(SERENITY_CONFIG)
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:

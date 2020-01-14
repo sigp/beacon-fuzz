@@ -17,7 +17,8 @@ class Python : public Base {
   Python(const std::string& name, const std::string& argv0,
          const std::filesystem::path scriptPath,
          std::optional<const std::filesystem::path> libPath = std::nullopt,
-         std::optional<const std::filesystem::path> venvPath = std::nullopt);
+         std::optional<const std::filesystem::path> venvPath = std::nullopt,
+         const bool bls_disabled = true);
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t>& data) override;
   const std::string& name() override;

@@ -15,15 +15,17 @@ presets = loader.load_presets(configs_path, "mainnet")
 spec.apply_constants_preset(presets)
 
 
-bls.bls_active = False
-
-
 class AttesterSlashingTestCase(spec.Container):
     pre: spec.BeaconState
     attester_slashing: spec.AttesterSlashing
 
 
 attester_slashing_sedes = translate_typ(AttesterSlashingTestCase)
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.bls_active = False
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
@@ -36,7 +38,5 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
         spec.process_attester_slashing(test_case.pre, test_case.attester_slashing)
         # NOTE - signature verification should do nothing with bls disabled
         return serialize(test_case.pre)
-    except AssertionError as e:
-        return None
-    except IndexError:
+    except (AssertionError, IndexError):
         return None

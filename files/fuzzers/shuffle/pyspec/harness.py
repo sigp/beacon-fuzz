@@ -7,6 +7,11 @@ from eth2spec.phase0 import spec
 spec.hash = spec._hash
 
 
+def FuzzerInit(bls_disabled: bool) -> None:
+    # do nothing
+    pass
+
+
 def FuzzerRunOne(fuzzer_input):
     if len(fuzzer_input) < 2 + 32:
         return None

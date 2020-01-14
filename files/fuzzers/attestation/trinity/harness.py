@@ -11,10 +11,6 @@ from eth2.beacon.types.attestations import Attestation
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
 
-bls.Eth2BLS.use_noop_backend()
-# TODO allow a runtime init instead of setting globally
-override_lengths(SERENITY_CONFIG)
-
 # TODO do we have to override lengths for the AttestationTestCase?
 # I don't think so - only when there are dynamic lengthed items
 
@@ -32,6 +28,12 @@ class AttestationTestCase(ssz.Serializable):
 
     def __str__(self) -> str:
         return f"pre={self.pre}, attestation={self.attestation}"
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.Eth2BLS.use_noop_backend()
+    override_lengths(SERENITY_CONFIG)
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:

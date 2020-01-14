@@ -15,15 +15,17 @@ presets = loader.load_presets(configs_path, "mainnet")
 spec.apply_constants_preset(presets)
 
 
-bls.bls_active = False
-
-
 class BlockHeaderTestCase(spec.Container):
     pre: spec.BeaconState
     block: spec.BeaconBlock
 
 
 block_header_sedes = translate_typ(BlockHeaderTestCase)
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.bls_active = False
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
@@ -36,7 +38,5 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
         spec.process_block_header(state=test_case.pre, block=test_case.block)
         # NOTE - signature verification should do nothing with bls disabled
         return serialize(test_case.pre)
-    except AssertionError as e:
-        return None
-    except IndexError:
+    except (AssertionError, IndexError):
         return None

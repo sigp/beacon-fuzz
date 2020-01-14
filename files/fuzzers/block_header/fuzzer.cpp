@@ -1,6 +1,7 @@
 #define GO_FUZZ_PREFIX block_header_
 #define NIM_FUZZ_HANDLE nfuzz_block_header
 
+#include <lib/bfuzz_config.h>
 #include <lib/differential.h>
 #include <lib/go.h>
 #include <lib/nim_operation.h>
@@ -64,10 +65,10 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   differential->AddModule(std::make_shared<fuzzing::Go>("zrnt"));
   differential->AddModule(std::make_shared<fuzzing::Python>(
       "pyspec", (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt,
-      PY_SPEC_VENV_PATH));
+      PY_SPEC_VENV_PATH, fuzzing::config::disable_bls));
   differential->AddModule(std::make_shared<fuzzing::Python>(
       "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
-      TRINITY_VENV_PATH));
+      TRINITY_VENV_PATH, fuzzing::config::disable_bls));
   differential->AddModule(std::make_shared<fuzzing::Lighthouse>());
   differential->AddModule(std::make_shared<fuzzing::NimOp>());
 

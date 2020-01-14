@@ -5,7 +5,11 @@ from eth2.beacon.committee_helpers import compute_shuffled_index
 from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
 from eth_utils import ValidationError
 
-bls.Eth2BLS.use_noop_backend()
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        # likely not necessary
+        bls.Eth2BLS.use_noop_backend()
 
 
 def FuzzerRunOne(fuzzer_input):

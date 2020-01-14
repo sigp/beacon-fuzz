@@ -16,10 +16,6 @@ VALIDATE_STATE_ROOT = True
 if VALIDATE_STATE_ROOT:
     from eth2._utils.ssz import validate_imported_block_unchanged
 
-bls.Eth2BLS.use_noop_backend()
-# TODO allow a runtime init instead of setting globally
-override_lengths(SERENITY_CONFIG)
-
 st_instance = SerenityStateTransition(SERENITY_CONFIG)
 
 
@@ -33,6 +29,12 @@ class BlockTestCase(ssz.Serializable):
 
     def __str__(self) -> str:
         return f"pre={self.pre}, block={self.block}"
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.Eth2BLS.use_noop_backend()
+    override_lengths(SERENITY_CONFIG)
 
 
 def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:

@@ -15,8 +15,6 @@ presets = loader.load_presets(configs_path, "mainnet")
 spec.apply_constants_preset(presets)
 
 
-bls.bls_active = False
-
 VALIDATE_STATE_ROOT = True
 
 
@@ -26,6 +24,11 @@ class BlockTestCase(spec.Container):
 
 
 block_sedes = translate_typ(BlockTestCase)
+
+
+def FuzzerInit(bls_disabled: bool) -> None:
+    if bls_disabled:
+        bls.bls_active = False
 
 
 def FuzzerRunOne(fuzzer_input):
@@ -39,7 +42,5 @@ def FuzzerRunOne(fuzzer_input):
             validate_state_root=VALIDATE_STATE_ROOT,
         )
         return serialize(poststate)
-    except AssertionError as e:
-        pass
-    except IndexError:
-        pass
+    except (AssertionError, IndexError):
+        return None

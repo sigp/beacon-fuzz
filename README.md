@@ -122,6 +122,14 @@ Sourcing this will ensure you have all the environment variables required by the
 NOTE: the fuzzer's Makefiles do not currently identify changes to dependent file outside of the `fuzzers` directory.
 So, for example, a change to a dependent file in `./files/lib` will require a `make clean` (or equivalent) for the modifications to be visible.
 
+#### Compile-time options
+
+The following make variable flags are exposed (and are enabled by setting them to anything other than ''):
+e.g. `make BFUZZ_NO_DISABLE_BLS=1 all`
+
+- `BFUZZ_NO_DISABLE_BLS` - don't disable bls verification
+
+
 ### Adding new implementations for a target
 
 TODO

@@ -4,11 +4,16 @@ import eth2._utils.bls as bls
 import ssz
 from eth2.beacon.state_machines.forks.serenity.configs import SERENITY_CONFIG
 from eth2.beacon.state_machines.forks.serenity.operation_processing import (
-    process_attester_slashings,
+    process_proposer_slashings,
 )
+from eth2.beacon.tools.misc.ssz_vector import override_lengths
 from eth2.beacon.types.proposer_slashings import ProposerSlashing
 from eth2.beacon.types.states import BeaconState
 from eth_utils import ValidationError
+
+
+class Dummy:
+    pass
 
 
 class ProposerSlashingTestCase(ssz.Serializable):
@@ -39,12 +44,13 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
     dummy_block.body = Dummy()
     dummy_block.body.proposer_slashings = [test_case.proposer_slashing]
 
-    # TODO(gnattishness) any other relevant exceptions to catch?
     # TODO(gnattishness) disable signature validation
+    # TODO(gnattishness) remove IndexError handling once we use a trinity version
+    # where ethereum/trinity#1498 is accepted
     try:
         post = process_proposer_slashings(
             state=test_case.pre, block=dummy_block, config=SERENITY_CONFIG
         )
-    except ValidationError as e:
+    except (ValidationError, IndexError):
         return None
     return ssz.encode(post)

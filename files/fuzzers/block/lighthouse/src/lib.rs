@@ -94,7 +94,9 @@ pub fn block_c(
     if let Ok(output_bytes) = fuzz::<MainnetEthSpec>(input_bytes) {
         unsafe {
             if output_bytes.len() > *output_size {
-                return false;
+                // Likely indicates an issue with the fuzzer, we should halt here
+                // This is different to a processing failure, so we panic to differentiate.
+                panic!("Output buffer not large enough.")
             }
             ptr::copy_nonoverlapping(output_bytes.as_ptr(), output_ptr, output_bytes.len());
             *output_size = output_bytes.len();

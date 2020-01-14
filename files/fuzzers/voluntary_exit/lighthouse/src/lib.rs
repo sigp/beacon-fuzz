@@ -1,33 +1,29 @@
 use ssz::{Decode, Encode};
 use ssz_derive::{Decode, Encode};
 use state_processing::{
-    per_block_processing::{process_attestations, VerifySignatures},
+    per_block_processing::{process_exits, VerifySignatures},
     BlockProcessingError,
 };
 use std::{ptr, slice};
-use types::{Attestation, BeaconState, EthSpec, MainnetEthSpec};
+use types::{BeaconState, EthSpec, MainnetEthSpec, VoluntaryExit};
 
 #[derive(Decode, Encode)]
-struct AttestationTestCase<T: EthSpec> {
+struct VoluntaryExitTestCase<T: EthSpec> {
     pub pre: BeaconState<T>,
-    pub attestation: Attestation<T>,
+    pub voluntary_exit: VoluntaryExit,
 }
 
-impl<T: EthSpec> AttestationTestCase<T> {
-    /// Run `process_block_header` and return a `BeaconState` on success, or a
-    /// TODO change error
+impl<T: EthSpec> VoluntaryExitTestCase<T> {
+    /// Run `process_exits` and return a `BeaconState` on success, or a
     /// `BlockProcessingError` on failure.
-    fn process_attestation(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
+    fn process_voluntary_exit(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
         let spec = T::default_spec();
 
-        // TODO not certain whether we use beacon_node::beacon_chain::process_attestation,
-        // or eth2::state_processing::per_block_processing::process_attestations
-        // or possibly beacon_node:fork_choice
-        // I think process_attestations, but only due to existing types etc, not proper understanding
-        process_attestations(
+        process_exits(
             &mut self.pre,
-            &[self.attestation],
-            VerifySignatures::True,
+            &[self.voluntary_exit],
+            // TODO(gnattishness) check whether we validate these consistently
+            VerifySignatures::False,
             &spec,
         )?;
 
@@ -35,10 +31,10 @@ impl<T: EthSpec> AttestationTestCase<T> {
     }
 }
 
-/// Accepts an SSZ-encoded `AttestationTestCase` and returns an SSZ-encoded post-state on success,
+/// Accepts an SSZ-encoded `VoluntaryExitTestCase` and returns an SSZ-encoded post-state on success,
 /// or nothing on failure.
 fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
-    let test_case = match AttestationTestCase::from_ssz_bytes(&ssz_bytes) {
+    let test_case = match VoluntaryExitTestCase::from_ssz_bytes(&ssz_bytes) {
         Ok(test_case) => test_case,
         Err(e) => panic!(
             "rs deserialization failed. Preproc should ensure decodable: {:?}",
@@ -46,7 +42,7 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
         ),
     };
 
-    let post_state: BeaconState<T> = match test_case.process_attestation() {
+    let post_state: BeaconState<T> = match test_case.process_voluntary_exit() {
         Ok(state) => state,
         _ => return Err(()),
     };
@@ -55,7 +51,7 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
 }
 
 #[no_mangle]
-pub fn attestation_c(
+pub fn voluntary_exit_c(
     input_ptr: *mut u8,
     input_size: usize,
     output_ptr: *mut u8,

@@ -5,7 +5,7 @@ use state_processing::{
     BlockProcessingError,
 };
 use std::{ptr, slice};
-use types::{AttesterSlashing, BeaconState, EthSpec, MainnetEthSpec};
+use types::{AttesterSlashing, BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch};
 
 #[derive(Decode, Encode)]
 struct AttesterSlashingTestCase<T: EthSpec> {
@@ -14,16 +14,26 @@ struct AttesterSlashingTestCase<T: EthSpec> {
 }
 
 impl<T: EthSpec> AttesterSlashingTestCase<T> {
-    /// Run `process_block_header` and return a `BeaconState` on success, or a
-    /// TODO change error
+    /// Run `process_attester_slashings` and return a `BeaconState` on success, or a
     /// `BlockProcessingError` on failure.
     fn process_attester_slashing(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
         let spec = T::default_spec();
 
-        // TODO(gnattishness) allow signature verification to be enabled/disabled at compile-time
+        let mut state = &mut self.pre;
+        // Ensure the current epoch cache is built.
+        // Required by slash_validator->initiate_validator_exit->get_churn_limit
+        match state.build_committee_cache(RelativeEpoch::Current, &spec) {
+            Err(e) => panic!(
+                "Unable to build committee cache, invalid state? Error: {:?}",
+                e
+            ),
+            _ => (),
+        };
+
         process_attester_slashings(
             &mut self.pre,
             &[self.attester_slashing],
+            // TODO(gnattishness) check whether we validate these consistently
             VerifySignatures::False,
             &spec,
         )?;
@@ -64,7 +74,9 @@ pub fn attester_slashing_c(
     if let Ok(output_bytes) = fuzz::<MainnetEthSpec>(input_bytes) {
         unsafe {
             if output_bytes.len() > *output_size {
-                return false;
+                // Likely indicates an issue with the fuzzer, we should halt here
+                // This is different to a processing failure, so we panic to differentiate.
+                panic!("Output buffer not large enough.")
             }
             ptr::copy_nonoverlapping(output_bytes.as_ptr(), output_ptr, output_bytes.len());
             *output_size = output_bytes.len();

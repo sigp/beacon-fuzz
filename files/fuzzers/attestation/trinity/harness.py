@@ -50,6 +50,6 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
         post = process_attestations(
             state=test_case.pre, block=dummy_block, config=SERENITY_CONFIG
         )
-    except ValidationError as e:
+    except ValidationError:
         return None
     return ssz.encode(post)

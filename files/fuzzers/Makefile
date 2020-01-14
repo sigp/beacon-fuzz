@@ -13,7 +13,7 @@ LDFLAGS+=-L"$(realpath ../lib)"
 LDLIBS+= -leth2fuzz -lstdc++fs
 export
 
-TARGETS := attestation attester_slashing block block_header shuffle
+TARGETS := attestation attester_slashing block block_header deposit proposer_slashing shuffle voluntary_exit
 
 .PHONY: all clean mostlyclean
 all clean mostlyclean: $(TARGETS)

@@ -1,6 +1,6 @@
-#define GO_FUZZ_PREFIX block_header_
-#define NIM_FUZZ_HANDLE nfuzz_block_header
-#define LIGHTHOUSE_FUZZ_HANDLE block_header_c
+#define GO_FUZZ_PREFIX deposit_
+#define NIM_FUZZ_HANDLE nfuzz_deposit
+#define LIGHTHOUSE_FUZZ_HANDLE deposit_c
 
 #include <lib/bfuzz_config.h>
 #include <lib/differential.h>

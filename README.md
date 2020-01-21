@@ -94,7 +94,7 @@ Use `help=1` for more arguments (see also [libfuzzer docs](https://llvm.org/docs
 The following implementations will be added to the various fuzzing targets:
 
 * [Prysm](https://github.com/prysmaticlabs/prysm)
-* [Artemis](https://github.com/PegaSysEng/artemis)
+* [Teku](https://github.com/PegaSysEng/artemis)
 * [Harmony](https://github.com/harmony-dev/beacon-chain-java)
 * [Lodestar](https://github.com/ChainSafe/lodestar)
 

@@ -8,6 +8,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"reflect"
+
 	"github.com/protolambda/zrnt/eth2/beacon/attestations"
 	"github.com/protolambda/zrnt/eth2/beacon/deposits"
 	"github.com/protolambda/zrnt/eth2/beacon/exits"
@@ -20,23 +25,19 @@ import (
 	zrnt_ssz "github.com/protolambda/zrnt/eth2/util/ssz"
 	"github.com/protolambda/zssz"
 	"github.com/protolambda/zssz/types"
-	"io/ioutil"
-	"os"
-	"path"
-	"reflect"
 )
 
 type inputType uint64
 
 const (
-    INPUT_TYPE_INVALID inputType = iota
-    INPUT_TYPE_ATTESTATION
-    INPUT_TYPE_ATTESTER_SLASHING
-    INPUT_TYPE_BLOCK_HEADER
-    INPUT_TYPE_DEPOSIT
-    INPUT_TYPE_VOLUNTARY_EXIT
-    INPUT_TYPE_PROPOSER_SLASHING
-    INPUT_TYPE_BLOCK
+	INPUT_TYPE_INVALID inputType = iota
+	INPUT_TYPE_ATTESTATION
+	INPUT_TYPE_ATTESTER_SLASHING
+	INPUT_TYPE_BLOCK_HEADER
+	INPUT_TYPE_DEPOSIT
+	INPUT_TYPE_VOLUNTARY_EXIT
+	INPUT_TYPE_PROPOSER_SLASHING
+	INPUT_TYPE_BLOCK
 )
 
 var curInputType inputType = INPUT_TYPE_INVALID
@@ -287,40 +288,40 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 	// based on zrnt validator.go CommitteeCount, we need to ensure number of active validators
 	// is greater than SLOTS_PER_EPOCH
 
-    /*
-    // NOTE: Not currently used
-	ffstate := phase0.NewFullFeaturedState(state)
-	ffstate.LoadPrecomputedData()
-    */
+	/*
+		    // NOTE: Not currently used
+			ffstate := phase0.NewFullFeaturedState(state)
+			ffstate.LoadPrecomputedData()
+	*/
 
-    /*
-    // TODO(gnattishness) check whether any of this is worth using
-    // not useful while we use trusted states as input
-    // relied on GetCrosslinkCommitee (not present in 0.9.x), but can't
-    // see any division by 0 that this would resolve
+	/*
+		    // TODO(gnattishness) check whether any of this is worth using
+		    // not useful while we use trusted states as input
+		    // relied on GetCrosslinkCommitee (not present in 0.9.x), but can't
+		    // see any division by 0 that this would resolve
 
-    // I think unnecessary:
-    // get_beacon_proposer_index used to call get_crosslink_committee and `%` by its length
-    // resulting in div by 0, where now (0.9.1) compute_proposer_index checks the length
+		    // I think unnecessary:
+		    // get_beacon_proposer_index used to call get_crosslink_committee and `%` by its length
+		    // resulting in div by 0, where now (0.9.1) compute_proposer_index checks the length
 
-	// Avoid division by zero in ProcessBlockHeader
-	{
-		epoch := ffstate.VersioningState.CurrentEpoch()
-		committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
-		offset := core.Shard(committeesPerSlot) * core.Shard(ffstate.Slot%core.SLOTS_PER_EPOCH)
-		// TODO this typechecks but may not be correct/intended operation?
-		shard := (ffstate.GetStartShard(epoch) + offset) % core.SHARD_COUNT
-        // TODO now takes in a slot and index
-		firstCommittee := ffstate.ShufflingStatus.GetBeaconCommitee(epoch, shard)
-		if len(firstCommittee) == 0 {
-			if correct == false {
-				return errors.New("Empty firstCommittee")
-			} else {
-				// TODO correct
+			// Avoid division by zero in ProcessBlockHeader
+			{
+				epoch := ffstate.VersioningState.CurrentEpoch()
+				committeesPerSlot := ffstate.GetCommitteeCount(epoch) / uint64(core.SLOTS_PER_EPOCH)
+				offset := core.Shard(committeesPerSlot) * core.Shard(ffstate.Slot%core.SLOTS_PER_EPOCH)
+				// TODO this typechecks but may not be correct/intended operation?
+				shard := (ffstate.GetStartShard(epoch) + offset) % core.SHARD_COUNT
+		        // TODO now takes in a slot and index
+				firstCommittee := ffstate.ShufflingStatus.GetBeaconCommitee(epoch, shard)
+				if len(firstCommittee) == 0 {
+					if correct == false {
+						return errors.New("Empty firstCommittee")
+					} else {
+						// TODO correct
+					}
+				}
 			}
-		}
-	}
-    */
+	*/
 
 	return nil
 }
@@ -499,6 +500,8 @@ func correctBlock(state *phase0.BeaconState, block *phase0.BeaconBlock) {
 		prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, header.BeaconBlockHeaderSSZ)
 		randomlyValid(prevRoot[:], block.ParentRoot[:], 0.9)
 	}
+
+	// TODO eth1data??
 }
 
 var g_return_data = make([]byte, 0)
@@ -577,8 +580,12 @@ func SSZPreprocess(data []byte) int {
 		}
 		CorrectInvariants(&input.Pre)
 		if err := CheckInvariants(&input.Pre, false); err != nil {
+			// TODO log error here? if we've corrected invariants, they should be correct
 			return 0
 		}
+		// TODO update state.eth1data to atleast have length > 0, and index < length?
+		// also merkle root or not?
+		// TODO discuss
 		g_return_data = Encode(input)
 		return len(g_return_data)
 	case INPUT_TYPE_VOLUNTARY_EXIT:
@@ -624,6 +631,7 @@ func SSZPreprocess(data []byte) int {
 		if err := CheckInvariants(&input.Pre, false); err != nil {
 			return 0
 		}
+		// TODO update eth1data to match deposits?
 		correctBlock(&input.Pre, &input.Block)
 		g_return_data = Encode(input)
 		return len(g_return_data)

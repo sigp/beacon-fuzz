@@ -15,6 +15,9 @@ export
 
 TARGETS := attestation attester_slashing block block_header deposit proposer_slashing shuffle voluntary_exit
 
+# TODO this has a problem e.g. `make block clean` will call `make -C /eth2/fuzzers/voluntary_exit clean -f ../fuzzer.mk` and then `make clean block`
+# which will try to build all targets with `make block`
+# Desired behavior is to call `make clean` for only the block target
 .PHONY: all clean mostlyclean
 all clean mostlyclean: $(TARGETS)
 

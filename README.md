@@ -175,6 +175,12 @@ TODO
 
 - Python editable installs in Venvs aren't detected.
 
+## Trophies
+
+- [nimbus: `process_attestation` missing index validation](https://github.com/status-im/nim-beacon-chain/issues/659) **fixed**
+- [nimbus: `process_deposit` not validating merkle proofs](https://github.com/status-im/nim-beacon-chain/issues/703) **fixed**
+- [trinity: some block validation raising `IndexError`, not caught by `BeaconChainSyncer`](https://github.com/ethereum/trinity/issues/1497)
+
 ## License
 
 MIT - see [LICENSE](./LICENSE)

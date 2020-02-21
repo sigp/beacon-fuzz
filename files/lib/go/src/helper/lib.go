@@ -279,6 +279,16 @@ func CheckInvariants(state *phase0.BeaconState, correct bool) error {
 		}
 	}
 
+	depIndex := state.DepIndex()
+	depCount := state.DepCount()
+	if depIndex > depCount {
+		if correct == false {
+			return fmt.Errorf("DepositIndex greater than DepositCount (%v > %v), should be <=", depIndex, depCount)
+		}
+		// Set to equal, which is ok - says all deposits have been processed
+		state.Eth1State.DepositIndex = depCount
+	}
+
 	// TODO
 	// ensure committeeCount <= uint64(SHARD_COUNT)
 
@@ -579,13 +589,23 @@ func SSZPreprocess(data []byte) int {
 			return 0
 		}
 		CorrectInvariants(&input.Pre)
+		// This should ensure DepositIndex <= DepositCount
 		if err := CheckInvariants(&input.Pre, false); err != nil {
 			// TODO log error here? if we've corrected invariants, they should be correct
 			return 0
 		}
-		// TODO update state.eth1data to atleast have length > 0, and index < length?
-		// also merkle root or not?
-		// TODO discuss
+		// ensure that DepositIndex < DepositCount, to allow at least 1 deposit to be processed
+		depCount := input.Pre.DepCount()
+		if input.Pre.DepIndex() == depCount {
+			if depCount == 0 {
+				// need to add an entry to the deposits
+				input.Pre.Eth1State.Eth1Data.DepositCount += 1
+				// TODO discuss - either need to update the Merkle root here or ensure Merkle validation is disabled
+			} else {
+				// reduce the DepositIndex to protect the invariant
+				input.Pre.Eth1State.DepositIndex -= 1
+			}
+		}
 		g_return_data = Encode(input)
 		return len(g_return_data)
 	case INPUT_TYPE_VOLUNTARY_EXIT:

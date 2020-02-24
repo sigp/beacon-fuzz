@@ -98,7 +98,6 @@ The following implementations will be added to the various fuzzing targets:
 
 * [Prysm](https://github.com/prysmaticlabs/prysm)
 * [Teku](https://github.com/PegaSysEng/artemis)
-* [Harmony](https://github.com/harmony-dev/beacon-chain-java)
 * [Lodestar](https://github.com/ChainSafe/lodestar)
 
 ## Contributing

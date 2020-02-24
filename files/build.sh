@@ -67,7 +67,8 @@ export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 
 # Nimbus
 
-git clone --branch libnfuzz https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
+# TODO change back to official branch & repo
+git clone --branch libnfuzz https://github.com/gnattishness/nim-beacon-chain.git /eth2/nim-beacon-chain
 cd /eth2/nim-beacon-chain || exit
 make build-system-checks
 # Nim staticlib call uses llvm-ar and doesn't look like it can be changed

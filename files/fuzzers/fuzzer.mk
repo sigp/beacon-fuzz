@@ -38,7 +38,6 @@ __check_defined = \
 # Possible values:
 #
 # BFUZZ_ARTEMIS_OFF
-# BFUZZ_HARMONY_OFF
 # BFUZZ_LODESTAR_OFF
 # BFUZZ_LIGHTHOUSE_OFF
 # BFUZZ_NIMBUS_OFF
@@ -72,25 +71,35 @@ target_name ?= $(lastword $(subst /, ,$(realpath $(here))))
 zrnt_prefix ?= $(target_name)_
 lighthouse_package_name ?= $(target_name)_fuzzer
 
-# check that required variables are set
+# NOTE: need ZRNT for preprocessing, even if not included in the differential fuzzing
+fuzzer_deps ?= fuzzer.o zrnt.a
+# TO differentiate between this applying to everything, and only the fuzzer linking
+#fuzzer_ldflags
+#fuzzer_ldlibs
+
 required_variables := target_name
 
 ifndef BFUZZ_LIGHTHOUSE_OFF
-required_variables += lighthouse_package_name
+required_variables += lighthouse_package_name CARGO_CONFIG_PATH
+fuzzer_deps += lighthouse.a
 endif
 ifndef BFUZZ_NIMBUS_OFF
 required_variables += NIM_CPPFLAGS NIM_LDFLAGS NIM_LDLIBS
+# TODO
+fuzzer_ldflags += $(NIM_LDFLAGS)
+fuzzer_ldlibs += $(NIM_LDLIBS)
 endif
 ifndef BFUZZ_PYSPEC_OFF
-required_variables += PY_SPEC_VENV_PATH
+required_variables += PY_SPEC_VENV_PATH PYTHON_LDFLAGS
 endif
 ifndef BFUZZ_TRINITY_OFF
-required_variables += TRINITY_VENV_PATH
+required_variables += TRINITY_VENV_PATH PYTHON_LDFLAGS
 endif
 ifndef BFUZZ_ZRNT_OFF
 required_variables += zrnt_prefix GO_FUZZ_BUILD_PATH
 endif
 
+# check that required variables are set
 $(call check_defined, $(required_variables))
 
 
@@ -129,7 +138,7 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 # but -leth2fuzz depends on -lpython, so we have to link -lpython after
 #
 # TODO depend on lib header files here?
-# TODO build to enable/disable bls in trinity, pyspec, nimbus
+# TODO build to enable/disable bls in nimbus
 
 fuzzer.o : CPPFLAGS += $(NIM_CPPFLAGS)
 fuzzer.o : fuzzer.cpp
@@ -143,8 +152,8 @@ fuzzer.o : fuzzer.cpp
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 		-c fuzzer.cpp -o fuzzer.o
 
-fuzzer : LDFLAGS += $(NIM_LDFLAGS)
-fuzzer : LDLIBS += $(NIM_LDLIBS)
+fuzzer : LDFLAGS += $(fuzzer_ldflags)
+fuzzer : LDLIBS += $(fuzzer_ldlibs)
 fuzzer : fuzzer.o zrnt.a lighthouse.a
 	$(CXX) -fsanitize=fuzzer \
 	    fuzzer.o zrnt.a lighthouse.a \

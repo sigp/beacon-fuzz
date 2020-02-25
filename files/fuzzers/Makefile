@@ -8,6 +8,7 @@ CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
 PYTHON_LDFLAGS := $(shell $(CPYTHON_INSTALL_PATH)/bin/python3-config --ldflags) -lpython3.8 -Xlinker -export-dynamic
 
 # TODO use python3-config --cflags, -g?
+# TODO check wanting to avoid setting generic CXXFLAGS that can affect other things accidentally?
 CXXFLAGS+=-I"$(realpath ..)" -I"$(CPYTHON_INSTALL_PATH)/include/python3.8" -fsanitize=fuzzer-no-link -std=c++17
 LDFLAGS+=-L"$(realpath ../lib)"
 LDLIBS+= -leth2fuzz -lstdc++fs

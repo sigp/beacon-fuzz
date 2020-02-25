@@ -35,12 +35,18 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   differential = std::make_unique<fuzzing::Differential>();
 
   differential->AddModule(std::make_shared<fuzzing::Go>("zrnt"));
-  differential->AddModule(std::make_shared<fuzzing::Python>(
-      "pyspec", (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt,
-      PY_SPEC_VENV_PATH, fuzzing::config::disable_bls));
-  differential->AddModule(std::make_shared<fuzzing::Python>(
-      "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
-      TRINITY_VENV_PATH, fuzzing::config::disable_bls));
+  if
+    contexpr(enable_pyspec) {
+      differential->AddModule(std::make_shared<fuzzing::Python>(
+          "pyspec", (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt,
+          PY_SPEC_VENV_PATH, fuzzing::config::disable_bls));
+    }
+  if
+    contexpr(enable_trinity) {
+      differential->AddModule(std::make_shared<fuzzing::Python>(
+          "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
+          TRINITY_VENV_PATH, fuzzing::config::disable_bls));
+    }
   differential->AddModule(std::make_shared<fuzzing::LighthouseOp>());
   differential->AddModule(std::make_shared<fuzzing::NimOp>());
 

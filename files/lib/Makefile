@@ -17,9 +17,13 @@ python.o : python.cpp python.h base.h
 	test $(CPYTHON_INSTALL_PATH)
 	$(CXX) $(CXXFLAGS) -c -o python.o -I"$(CPYTHON_INSTALL_PATH)/include/python3.8" python.cpp
 
+java.o : CXXFLAGS += $(JAVA_CXXFLAGS)
+java.o : java.cpp java.h base.h
+	$(CXX) $(CXXFLAGS) -c -o java.o java.cpp
+
 # NOTE: if python.o is used, you also need to link the python lib
-libeth2fuzz.a : base.o differential.o python.o util.o
-	ar rcs libeth2fuzz.a base.o differential.o python.o util.o
+libeth2fuzz.a : base.o differential.o python.o util.o java.o
+	ar rcs libeth2fuzz.a base.o differential.o python.o util.o java.o
 	ranlib libeth2fuzz.a
 
 clean:

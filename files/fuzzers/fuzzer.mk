@@ -11,6 +11,9 @@ here := $(CURDIR)
 # so def.mk doesn't unintentionally override the default goal
 .DEFAULT_GOAL := all
 
+# TODO include a rules for the lib leth2fuzz?
+
+# TODO move to a common "makeutils.mk"?
 # Custom functions
 
 # Check that given variables are set and all have non-empty values,
@@ -81,10 +84,13 @@ ifndef BFUZZ_LIGHTHOUSE_OFF
 required_variables += lighthouse_package_name
 endif
 ifndef BFUZZ_NIMBUS_OFF
-required_variables += NIM_CPPFLAGS NIM_LDFLAGS NIM_LDLIBS
+required_variables += NIM_CXXFLAGS NIM_LDFLAGS NIM_LDLIBS
 endif
 ifndef BFUZZ_PYSPEC_OFF
 required_variables += PY_SPEC_VENV_PATH
+endif
+ifndef BFUZZ_TEKU_OFF
+required_variables += JAVA_CXXFLAGS JAVA_LDFLAGS JAVA_LDLIBS
 endif
 ifndef BFUZZ_TRINITY_OFF
 required_variables += TRINITY_VENV_PATH
@@ -133,7 +139,7 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 # TODO depend on lib header files here?
 # TODO build to enable/disable bls in trinity, pyspec, nimbus
 
-fuzzer.o : CPPFLAGS += $(NIM_CPPFLAGS)
+fuzzer.o : CXXFLAGS += $(NIM_CXXFLAGS)
 fuzzer.o : fuzzer.cpp
 	#test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)
@@ -145,8 +151,8 @@ fuzzer.o : fuzzer.cpp
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
 		-c fuzzer.cpp -o fuzzer.o
 
-fuzzer : LDFLAGS += $(NIM_LDFLAGS)
-fuzzer : LDLIBS += $(NIM_LDLIBS)
+fuzzer : LDFLAGS += $(NIM_LDFLAGS) $(JAVA_LDFLAGS)
+fuzzer : LDLIBS += $(NIM_LDLIBS) $(JAVA_LDLIBS)
 fuzzer : fuzzer.o zrnt.a lighthouse.a
 	$(CXX) -fsanitize=fuzzer \
 	    fuzzer.o lighthouse.a zrnt.a \

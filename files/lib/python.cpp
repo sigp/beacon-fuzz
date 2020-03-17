@@ -214,6 +214,7 @@ class Python::Impl {
       // if nullptr, the pValue contains uninitialized data:
       // "If v is NULL, the contents of the bytes object are uninitialized."
       // https://docs.python.org/3/c-api/bytes.html?highlight=pybytes_check#c.PyBytes_FromStringAndSize
+      // NOTE: this assumes empty input is never valid
       return ret;
     }
     // swap to our interpreter, don't care about previous interpreter

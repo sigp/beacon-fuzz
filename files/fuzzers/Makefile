@@ -13,6 +13,7 @@ GO_BFUZZ_BUILD ?= go-bfuzz-build
 PYTHON_LDFLAGS := $(shell $(CPYTHON_INSTALL_PATH)/bin/python3-config --ldflags) -lpython3.8 -Xlinker -export-dynamic
 
 # TODO use python3-config --cflags, -g?
+# TODO can remove CPYTHON... include? only needed in python.cpp
 CXXFLAGS+=-I"$(realpath ..)" -I"$(CPYTHON_INSTALL_PATH)/include/python3.8" -fsanitize=fuzzer-no-link -std=c++17
 LDFLAGS+=-L"$(realpath ../lib)"
 LDLIBS+= -leth2fuzz -lstdc++fs

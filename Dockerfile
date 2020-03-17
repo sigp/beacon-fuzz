@@ -3,9 +3,8 @@ WORKDIR /eth2
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y build-essential clang-8 git zlib1g-dev libssl-dev libboost-all-dev wget locales curl python3-pip g++-8 gcc-8
-# For trinity
-# TODO trinity has cmake in its dockerfile, needed?
-RUN apt-get install -y libleveldb1v5 libleveldb-dev libgmp3-dev libsnappy-dev
+# For trinity, teku
+RUN apt-get install -y libleveldb1v5 libleveldb-dev libgmp3-dev libsnappy-dev openjdk-11-jdk
 
 # For nimbus
 RUN apt-get install -y librocksdb-dev libpcre3-dev
@@ -21,6 +20,10 @@ RUN git clone --branch fuzzing --depth 1 https://github.com/gnattishness/cpython
 # This is a tag, so fine to always cache
 #RUN git clone --branch XXX --depth 1 https://github.com/sigp/lighthouse lighthouse
 RUN git clone --branch master https://github.com/sigp/lighthouse lighthouse && cd lighthouse && git checkout 784997b09bc7c49de9b3ddb5b11680549d577523
+
+# RUN git clone --branch master https://github.com/PegaSysEng/teku && cd teku && git checkout d0848be277bbaa23e271927fd60303e3d44246d4 && ./gradlew dependencies --refresh-dependencies
+# TODO replace when suitable harnesses are in teku master
+RUN git clone --branch fuzz_utils https://github.com/gnattishness/teku.git && cd teku && ./gradlew installDist -x test --stacktrace
 
 # TODO(gnattishness) add other git clones here so they get cached
 

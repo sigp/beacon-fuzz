@@ -1,5 +1,4 @@
 #define GO_FUZZ_PREFIX zrnt_shuffle_
-#include <assert.h>
 #include <lib/bfuzz_config.h>
 #include <lib/differential.h>
 #include <lib/go.h>
@@ -9,6 +8,7 @@
 #include <lib/rust.h>
 #include <lib/util.h>
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -29,6 +29,10 @@
 // // python venv containing dependencies
 // #error TRINITY_VENV_PATH undefined
 // #endif
+#ifndef BFUZZ_JAVA_CLASSPATH
+// TODO(gnattishness) move to bfuzz_config with validation
+#error BFUZZ_JAVA_CLASSPATH undefined
+#endif
 
 extern "C" bool shuffle_list_c(uint64_t *input_ptr, size_t input_size,
                                const uint8_t *seed_ptr);
@@ -123,7 +127,9 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   differential->AddModule(std::make_shared<fuzzing::Lighthouse>());
   differential->AddModule(
       std::make_shared<fuzzing::Nimbus>(fuzzing::config::disable_bls));
-  differential->AddModule(std::make_shared<fuzzing::Java>());
+  differential->AddModule(std::make_shared<fuzzing::Java>(
+      "tech/pegasys/artemis/statetransition/util/FuzzUtil", "fuzzShuffle",
+      BFUZZ_JAVA_CLASSPATH));
 
   return 0;
 }

@@ -11,4 +11,9 @@ inline bool const disable_bls = false;
 inline bool const disable_bls = true;
 #endif
 
+// If this appears in the environment, it takes precedence
+// BFUZZ_JAVA_CLASSPATH
+
+// DEFAULT_JAVA_CLASSPATH
+
 }  // namespace fuzzing::config

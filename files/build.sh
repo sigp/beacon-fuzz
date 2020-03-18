@@ -69,12 +69,19 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 cd /eth2/teku || exit
 # This should be a NOOP unless files have changed since the docker image was created
 ./gradlew installDist -x test --stacktrace
-# TODO get classpath from teku shell script
-# TODO portable JDK_DIR
-export JDK_DIR=/usr/lib/jvm/java-11-openjdk-amd64
+JDK_DIR="$(dirname "$(dirname "$(realpath -e "$(command -v java)")")")"
+# e.g on ubuntu this resolved to JDK_DIR=/usr/lib/jvm/java-11-openjdk-amd64
 export JAVA_CXXFLAGS="-I\"$JDK_DIR/include\" -I\"$JDK_DIR/include/linux\""
 export JAVA_LDFLAGS="-L\"$JDK_DIR/lib\" -L\"$JDK_DIR/lib/server\""
 export JAVA_LDLIBS="-ljvm -Wl,-R\"$JDK_DIR/lib/server\""
+# get classpath from teku shell script
+TEKU_SCRIPT=/eth2/teku/build/scripts/teku
+TEKU_HOME=/eth2/teku/build/install/teku
+[[ -f "$TEKU_SCRIPT" ]] || exit
+[[ -d "$TEKU_HOME" ]] || exit
+# shellcheck disable=SC2016
+JAVA_CLASSPATH=$(grep -F CLASSPATH= "$TEKU_SCRIPT" | head -n 1 | cut -d= -f 2 | sed 's:\$APP_HOME:'"$TEKU_HOME"':g') || exit
+export JAVA_CLASSPATH
 
 cd /eth2 || exit
 

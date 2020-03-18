@@ -5,6 +5,7 @@
 #include <lib/bfuzz_config.h>
 #include <lib/differential.h>
 #include <lib/go.h>
+#include <lib/java.h>
 #include <lib/lighthouse_operation.h>
 #include <lib/nim_operation.h>
 #include <lib/python.h>
@@ -29,6 +30,10 @@
 // // python venv containing dependencies
 // #error TRINITY_VENV_PATH undefined
 // #endif
+#ifndef BFUZZ_JAVA_CLASSPATH
+// TODO(gnattishness) move to bfuzz_config with validation
+#error BFUZZ_JAVA_CLASSPATH undefined
+#endif
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -45,6 +50,9 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   differential->AddModule(std::make_shared<fuzzing::LighthouseOp>());
   differential->AddModule(
       std::make_shared<fuzzing::NimOp>(fuzzing::config::disable_bls));
+  differential->AddModule(std::make_shared<fuzzing::Java>(
+      "tech/pegasys/artemis/statetransition/util/FuzzUtil", "fuzzBlock",
+      BFUZZ_JAVA_CLASSPATH));
 
   return 0;
 }

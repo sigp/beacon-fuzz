@@ -90,7 +90,7 @@ ifndef BFUZZ_PYSPEC_OFF
 required_variables += PY_SPEC_VENV_PATH
 endif
 ifndef BFUZZ_TEKU_OFF
-required_variables += JAVA_CXXFLAGS JAVA_LDFLAGS JAVA_LDLIBS
+required_variables += JAVA_CXXFLAGS JAVA_LDFLAGS JAVA_LDLIBS JAVA_CLASSPATH
 endif
 ifndef BFUZZ_TRINITY_OFF
 required_variables += TRINITY_VENV_PATH
@@ -149,6 +149,7 @@ fuzzer.o : fuzzer.cpp
 	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
 	    -DTRINITY_VENV_PATH="\"$(TRINITY_VENV_PATH)\"" \
+		-DBFUZZ_JAVA_CLASSPATH="\"$(JAVA_CLASSPATH)\"" \
 		-c fuzzer.cpp -o fuzzer.o
 
 fuzzer : LDFLAGS += $(NIM_LDFLAGS) $(JAVA_LDFLAGS)

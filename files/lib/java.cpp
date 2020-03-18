@@ -18,180 +18,16 @@ namespace fuzzing {
 // TODO(gnattishness) enable extended JNI checks
 class Java::Impl {
  public:
-  explicit Impl(bool bls_disabled) {
-    // TODO(gnattishness) Java-level initialization e.g. instantiate FuzzUtil
-    // class? classpath as parameter and class name, method as parameter?
+  Impl(const std::string& fuzzClassName, const std::string& fuzzMethodName,
+       const std::string& classPath, bool bls_disabled) {
     // TODO(gnattishness) config details optionally via Environment to allow
     // classes to be moved around after compilation
     JavaVMInitArgs vmArgs;
-    std::string classPath(
-        "-Djava.class.path=/eth2/teku/build/install/teku/lib/"
-        "artemis-0.8.2-SNAPSHOT.jar:/eth2/teku/build/install/teku/lib/"
-        "artemis-0.8.2-SNAPSHOT.jar:/eth2/teku/build/install/teku/lib/"
-        "artemis-services-beaconchain-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-services-powchain-0.8.2-SNAPSHOT.jar:/eth2/"
-        "teku/build/install/teku/lib/"
-        "artemis-services-chainstorage-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-sync-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-networking-eth2-0.8.2-SNAPSHOT.jar:/eth2/"
-        "teku/build/install/teku/lib/"
-        "artemis-data-beaconrestapi-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-networking-p2p-0.8.2-SNAPSHOT.jar:/eth2/teku/"
-        "build/install/teku/lib/"
-        "artemis-validator-coordinator-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-ethereum-statetransition-0.8.2-SNAPSHOT.jar:/"
-        "eth2/teku/build/install/teku/lib/"
-        "artemis-services-serviceutils-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-events-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-data-recorder-0.8.2-SNAPSHOT.jar:/eth2/teku/"
-        "build/install/teku/lib/artemis-validator-client-0.8.2-SNAPSHOT.jar:/"
-        "eth2/teku/build/install/teku/lib/"
-        "artemis-data-provider-0.8.2-SNAPSHOT.jar:/eth2/teku/build/install/"
-        "teku/lib/artemis-data-0.8.2-SNAPSHOT.jar:/eth2/teku/build/install/"
-        "teku/lib/artemis-data-metrics-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-storage-0.8.2-SNAPSHOT.jar:/eth2/teku/build/"
-        "install/teku/lib/artemis-ethereum-datastructures-0.8.2-SNAPSHOT.jar:/"
-        "eth2/teku/build/install/teku/lib/artemis-pow-0.8.2-SNAPSHOT.jar:/eth2/"
-        "teku/build/install/teku/lib/artemis-util-0.8.2-SNAPSHOT.jar:/eth2/"
-        "teku/build/install/teku/lib/tuweni-plumtree-0.9.0.jar:/eth2/teku/"
-        "build/install/teku/lib/tuweni-ssz-0.9.0.jar:/eth2/teku/build/install/"
-        "teku/lib/tuweni-rlpx-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-crypto-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-units-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "jvm-libp2p-minimal-0.3.2-RELEASE.jar:/eth2/teku/build/install/teku/"
-        "lib/tuweni-kv-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-rlp-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-bytes-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-config-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "milagro-crypto-java-0.4.0.jar:/eth2/teku/build/install/teku/lib/"
-        "metrics-core-1.3.4.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-io-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-concurrent-coroutines-0.9.0.jar:/eth2/teku/build/install/teku/"
-        "lib/tuweni-concurrent-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "mapdb-3.0.7.jar:/eth2/teku/build/install/teku/lib/"
-        "kotlinx-coroutines-guava-1.1.1.jar:/eth2/teku/build/install/teku/lib/"
-        "guava-28.1-jre.jar:/eth2/teku/build/install/teku/lib/"
-        "log4j-slf4j-impl-2.12.1.jar:/eth2/teku/build/install/teku/lib/"
-        "log4j-core-2.12.1.jar:/eth2/teku/build/install/teku/lib/"
-        "gson-2.8.6.jar:/eth2/teku/build/install/teku/lib/"
-        "tuweni-toml-0.9.0.jar:/eth2/teku/build/install/teku/lib/"
-        "picocli-4.0.4.jar:/eth2/teku/build/install/teku/lib/"
-        "vertx-web-3.8.3.jar:/eth2/teku/build/install/teku/lib/"
-        "vertx-web-common-3.8.3.jar:/eth2/teku/build/install/teku/lib/"
-        "vertx-auth-common-3.8.3.jar:/eth2/teku/build/install/teku/lib/"
-        "vertx-core-3.8.3.jar:/eth2/teku/build/install/teku/lib/"
-        "log4j-api-2.12.1.jar:/eth2/teku/build/install/teku/lib/"
-        "plugin-api-1.3.4.jar:/eth2/teku/build/install/teku/lib/"
-        "failureaccess-1.0.1.jar:/eth2/teku/build/install/teku/lib/"
-        "listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/eth2/"
-        "teku/build/install/teku/lib/jsr305-3.0.2.jar:/eth2/teku/build/install/"
-        "teku/lib/checker-qual-2.8.1.jar:/eth2/teku/build/install/teku/lib/"
-        "error_prone_annotations-2.3.2.jar:/eth2/teku/build/install/teku/lib/"
-        "j2objc-annotations-1.3.jar:/eth2/teku/build/install/teku/lib/"
-        "animal-sniffer-annotations-1.18.jar:/eth2/teku/build/install/teku/lib/"
-        "swagger-core-2.1.1.jar:/eth2/teku/build/install/teku/lib/"
-        "commons-lang3-3.9.jar:/eth2/teku/build/install/teku/lib/"
-        "reactor-core-3.3.0.RELEASE.jar:/eth2/teku/build/install/teku/lib/"
-        "bson4jackson-2.9.2.jar:/eth2/teku/build/install/teku/lib/"
-        "core-4.5.6.jar:/eth2/teku/build/install/teku/lib/crypto-4.5.6.jar:/"
-        "eth2/teku/build/install/teku/lib/jackson-module-kotlin-2.10.2.jar:/"
-        "eth2/teku/build/install/teku/lib/jackson-datatype-jsr310-2.10.1.jar:/"
-        "eth2/teku/build/install/teku/lib/jackson-databind-2.10.1.jar:/eth2/"
-        "teku/build/install/teku/lib/snappy-java-1.1.7.3.jar:/eth2/teku/build/"
-        "install/teku/lib/bcpkix-jdk15on-1.62.jar:/eth2/teku/build/install/"
-        "teku/lib/abi-4.5.6.jar:/eth2/teku/build/install/teku/lib/"
-        "rlp-4.5.6.jar:/eth2/teku/build/install/teku/lib/utils-4.5.6.jar:/eth2/"
-        "teku/build/install/teku/lib/bcprov-jdk15on-1.64.jar:/eth2/teku/build/"
-        "install/teku/lib/jackson-dataformat-yaml-2.10.1.jar:/eth2/teku/build/"
-        "install/teku/lib/quartz-2.3.2.jar:/eth2/teku/build/install/teku/lib/"
-        "json-simple-1.1.jar:/eth2/teku/build/install/teku/lib/"
-        "jnr-unixsocket-0.21.jar:/eth2/teku/build/install/teku/lib/"
-        "jnr-enxio-0.19.jar:/eth2/teku/build/install/teku/lib/"
-        "jnr-posix-3.0.47.jar:/eth2/teku/build/install/teku/lib/"
-        "jnr-ffi-2.1.9.jar:/eth2/teku/build/install/teku/lib/"
-        "kotlinx-coroutines-jdk8-1.1.1.jar:/eth2/teku/build/install/teku/lib/"
-        "kotlinx-coroutines-core-1.3.0-M1.jar:/eth2/teku/build/install/teku/"
-        "lib/logging-interceptor-3.8.1.jar:/eth2/teku/build/install/teku/lib/"
-        "okhttp-4.2.2.jar:/eth2/teku/build/install/teku/lib/javalin-3.7.0.jar:/"
-        "eth2/teku/build/install/teku/lib/kotlin-stdlib-jdk8-1.3.61.jar:/eth2/"
-        "teku/build/install/teku/lib/kotlin-reflect-1.3.61.jar:/eth2/teku/"
-        "build/install/teku/lib/okio-2.2.2.jar:/eth2/teku/build/install/teku/"
-        "lib/kotlin-stdlib-jdk7-1.3.61.jar:/eth2/teku/build/install/teku/lib/"
-        "kotlin-stdlib-1.3.61.jar:/eth2/teku/build/install/teku/lib/"
-        "antlr4-runtime-4.7.1.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-all-4.1.36.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "protobuf-java-3.11.0.jar:/eth2/teku/build/install/teku/lib/"
-        "commons-codec-1.13.jar:/eth2/teku/build/install/teku/lib/"
-        "jaxb-api-2.3.1.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-handler-proxy-4.1.42.Final.jar:/eth2/teku/build/install/teku/"
-        "lib/netty-codec-http2-4.1.42.Final.jar:/eth2/teku/build/install/teku/"
-        "lib/netty-codec-http-4.1.42.Final.jar:/eth2/teku/build/install/teku/"
-        "lib/netty-handler-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-resolver-dns-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-codec-socks-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-codec-dns-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-codec-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-transport-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-buffer-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-resolver-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "netty-common-4.1.42.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "jackson-core-2.10.1.jar:/eth2/teku/build/install/teku/lib/"
-        "vertx-bridge-common-3.8.3.jar:/eth2/teku/build/install/teku/lib/"
-        "HikariCP-java7-2.4.13.jar:/eth2/teku/build/install/teku/lib/"
-        "slf4j-api-1.7.28.jar:/eth2/teku/build/install/teku/lib/"
-        "logl-api-0.3.1.jar:/eth2/teku/build/install/teku/lib/"
-        "rxjava-2.2.2.jar:/eth2/teku/build/install/teku/lib/"
-        "reactive-streams-1.0.3.jar:/eth2/teku/build/install/teku/lib/"
-        "swagger-models-2.1.1.jar:/eth2/teku/build/install/teku/lib/"
-        "jackson-annotations-2.10.2.jar:/eth2/teku/build/install/teku/lib/"
-        "swagger-ui-3.24.3.jar:/eth2/teku/build/install/teku/lib/"
-        "classgraph-4.8.34.jar:/eth2/teku/build/install/teku/lib/"
-        "snakeyaml-1.24.jar:/eth2/teku/build/install/teku/lib/"
-        "commons-math3-3.6.1.jar:/eth2/teku/build/install/teku/lib/"
-        "simpleclient_pushgateway-0.7.0.jar:/eth2/teku/build/install/teku/lib/"
-        "simpleclient_common-0.7.0.jar:/eth2/teku/build/install/teku/lib/"
-        "simpleclient_hotspot-0.7.0.jar:/eth2/teku/build/install/teku/lib/"
-        "simpleclient-0.7.0.jar:/eth2/teku/build/install/teku/lib/"
-        "tuples-4.5.6.jar:/eth2/teku/build/install/teku/lib/"
-        "Java-WebSocket-1.3.8.jar:/eth2/teku/build/install/teku/lib/"
-        "jffi-1.2.17.jar:/eth2/teku/build/install/teku/lib/"
-        "jffi-1.2.17-native.jar:/eth2/teku/build/install/teku/lib/"
-        "asm-commons-5.0.3.jar:/eth2/teku/build/install/teku/lib/"
-        "asm-analysis-5.0.3.jar:/eth2/teku/build/install/teku/lib/"
-        "asm-util-5.0.3.jar:/eth2/teku/build/install/teku/lib/"
-        "asm-tree-5.0.3.jar:/eth2/teku/build/install/teku/lib/asm-5.0.3.jar:/"
-        "eth2/teku/build/install/teku/lib/jnr-a64asm-1.0.0.jar:/eth2/teku/"
-        "build/install/teku/lib/jnr-x86asm-1.0.2.jar:/eth2/teku/build/install/"
-        "teku/lib/kotlin-stdlib-common-1.3.61.jar:/eth2/teku/build/install/"
-        "teku/lib/annotations-13.0.jar:/eth2/teku/build/install/teku/lib/"
-        "javax.activation-api-1.2.0.jar:/eth2/teku/build/install/teku/lib/"
-        "eclipse-collections-forkjoin-10.2.0.jar:/eth2/teku/build/install/teku/"
-        "lib/eclipse-collections-10.2.0.jar:/eth2/teku/build/install/teku/lib/"
-        "eclipse-collections-api-10.2.0.jar:/eth2/teku/build/install/teku/lib/"
-        "lz4-1.3.0.jar:/eth2/teku/build/install/teku/lib/elsa-3.0.0-M5.jar:/"
-        "eth2/teku/build/install/teku/lib/jetty-webapp-9.4.25.v20191220.jar:/"
-        "eth2/teku/build/install/teku/lib/"
-        "websocket-server-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/jetty-servlet-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/jetty-security-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/jetty-server-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/swagger-annotations-2.1.1.jar:/eth2/teku/build/install/teku/lib/"
-        "validation-api-1.1.0.Final.jar:/eth2/teku/build/install/teku/lib/"
-        "jnr-constants-0.9.11.jar:/eth2/teku/build/install/teku/lib/"
-        "websocket-servlet-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/javax.servlet-api-3.1.0.jar:/eth2/teku/build/install/teku/lib/"
-        "websocket-client-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/jetty-client-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/jetty-http-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/lib/"
-        "websocket-common-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/"
-        "lib/jetty-io-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/lib/"
-        "jetty-xml-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/lib/"
-        "jetty-util-9.4.25.v20191220.jar:/eth2/teku/build/install/teku/lib/"
-        "websocket-api-9.4.25.v20191220.jar");
+    std::string classPathOption = "-Djava.class.path=" + classPath;
     JavaVMOption* options = new JavaVMOption[1];
     // do this instead of directly passing the literal, as optionString wants a
     // char* not a const char*
-    options[0].optionString = classPath.data();
+    options[0].optionString = classPathOption.data();
     // TODO(gnattishness) abort and exit hooks if it doesn't immediately abort
     // already?
     // https://docs.oracle.com/en/java/javase/11/docs/specs/jni/invocation.html#jni_createjavavm
@@ -207,10 +43,10 @@ class Java::Impl {
       abort();
     }
 
-    fuzzClass =
-        env->FindClass("tech/pegasys/artemis/statetransition/util/FuzzUtil");
+    fuzzClass = env->FindClass(fuzzClassName.data());
     if (fuzzClass == nullptr) {
-      printf("Fatal: Unable to locate \"FuzzUtil\" class\n");
+      printf("Fatal: Unable to load %s class definition\n",
+             fuzzClassName.data());
       env->ExceptionDescribe();
       abort();
     }
@@ -228,10 +64,10 @@ class Java::Impl {
       abort();
     }
     // TODO(gnattishness) get method string via parameter
-    fuzzMethod =
-        env->GetMethodID(fuzzClass, "fuzzShuffle", "([B)Ljava/util/Optional;");
+    fuzzMethod = env->GetMethodID(fuzzClass, fuzzMethodName.data(),
+                                  "([B)Ljava/util/Optional;");
     if (fuzzMethod == nullptr) {
-      printf("Fatal: Unable to find method.\n");
+      printf("Fatal: Unable to find method: %s.\n", fuzzMethodName.data());
       env->ExceptionDescribe();
       abort();
     }
@@ -368,8 +204,12 @@ class Java::Impl {
   // any extra default args?
 };
 
-Java::Java(const std::string& name, const bool bls_disabled)
-    : Base(), pimpl_{std::make_unique<Impl>(bls_disabled)} {
+Java::Java(const std::string& fuzzClass, const std::string& fuzzMethod,
+           const std::string& classPath, const std::string& name,
+           const bool bls_disabled)
+    : Base(),
+      pimpl_{std::make_unique<Impl>(fuzzClass, fuzzMethod, classPath,
+                                    bls_disabled)} {
   name_ = name;
 }
 

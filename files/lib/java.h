@@ -11,11 +11,22 @@
 
 namespace fuzzing {
 
-// TODO(gnattishness) pass path to java class files?
 class Java : public Base {
  public:
-  explicit Java(const std::string& name = "java",
-                const bool bls_disabled = true);
+  /**
+   * Constructor.
+   *
+   * @param fuzzClass fully-qualified class name
+   * @param fuzzMethod name of fuzz harness method
+   * @param classPath contains a java CLASSPATH setting, as defined in
+   * https://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html
+   * e.g. : separated filesystem paths for Unix
+   * @param string identifier for the fuzzing module
+   * @param bls_disabled whether BLS verification is disabled
+   */
+  Java(const std::string& fuzzClass, const std::string& fuzzMethod,
+       const std::string& classPath = ".", const std::string& name = "java",
+       const bool bls_disabled = true);
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t>& data) override;
   const std::string& name() override;

@@ -82,7 +82,7 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
 }
 
 #[no_mangle]
-pub fn block_c(
+pub extern "C" fn block_c(
     input_ptr: *mut u8,
     input_size: usize,
     output_ptr: *mut u8,

@@ -29,17 +29,12 @@
 #endif
 
 extern "C" bool shuffle_list_c(uint64_t *input_ptr, size_t input_size,
-                               uint8_t *seed_ptr);
+                               const uint8_t *seed_ptr);
 
 namespace fuzzing {
 class Lighthouse : public Rust {
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
-    // TODO(gnattishness) use c new instead of malloc?
-    // any reason not to have this point to the existing vector.data?
-    // no need to malloc right?
-    // this currently leaks
-    uint8_t *seed = reinterpret_cast<uint8_t *>(malloc(32));
     uint16_t count;
 
     if (data.size() < sizeof(count) + 32) {
@@ -47,11 +42,12 @@ class Lighthouse : public Rust {
       return std::nullopt;
     }
 
+    // Don't need to copy because the rust shuffle takes a const uint8_t*
+    const uint8_t *seed = data.data() + sizeof(count);
+
     // NOTE: this ensures a little-endian interpretation on all systems
     count = (data[0] | data[1] << 8) % 100;
     assert(sizeof(count) == 2);  // sanity check to protect against later bugs
-
-    memcpy(seed, data.data() + sizeof(count), 32);
 
     std::vector<size_t> input(count);
     std::iota(input.begin(), input.end(), 0);  // input = [0...count-1]
@@ -64,7 +60,6 @@ class Lighthouse : public Rust {
     /* Call Lighthouse shuffle function */
     if (shuffle_list_c(input.data(), input.size(), seed) == false) {
       /* Lighthouse shuffle function failed */
-
       return std::nullopt;
     }
 
@@ -79,22 +74,19 @@ class Nimbus : public Nim {
   // NOTE: Nim uses a "nimbus" name by default
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
-    // TODO(gnattishness) use c new instead of malloc?
-    // any reason not to have this point to the existing vector.data?
-    // no need to malloc right?
-    uint8_t *seed = reinterpret_cast<uint8_t *>(malloc(32));
     uint16_t count;
-
     if (data.size() < sizeof(count) + 32) {
       // data is too small
       return std::nullopt;
     }
 
-    memcpy(seed, data.data() + sizeof(count), 32);
-
     // NOTE: this ensures a little-endian interpretation on all systems
     count = (data[0] | data[1] << 8) % 100;
     assert(sizeof(count) == 2);  // sanity check to protect against later bugs
+
+    // We copy because nfuzz_shuffle wants a non-const pointer
+    std::vector<uint8_t> seed(data.begin() + sizeof(count),
+                              data.begin() + sizeof(count) + 32);
 
     std::vector<uint64_t> output(count);
 
@@ -102,7 +94,7 @@ class Nimbus : public Nim {
     // NOTE: this doesn't shuffle an arbitrary array input, assumes output
     // buffer is initially zeroed but produces output assuming an initial input
     // of 0..N
-    if (nfuzz_shuffle(seed, output.data(), output.size()) == false) {
+    if (nfuzz_shuffle(seed.data(), output.data(), output.size()) == false) {
       // Nimbus shuffle function failed
 
       return std::nullopt;

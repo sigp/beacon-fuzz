@@ -72,6 +72,7 @@ class Lighthouse : public Rust {
 };
 
 class Nimbus : public Nim {
+  using Nim::Nim;
   // NOTE: Nim uses a "nimbus" name by default
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
@@ -119,7 +120,8 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   //    "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
   //    TRINITY_VENV_PATH, fuzzing::config::disable_bls));
   differential->AddModule(std::make_shared<fuzzing::Lighthouse>());
-  differential->AddModule(std::make_shared<fuzzing::Nimbus>());
+  differential->AddModule(
+      std::make_shared<fuzzing::Nimbus>(fuzzing::config::disable_bls));
 
   return 0;
 }

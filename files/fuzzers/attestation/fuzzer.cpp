@@ -43,7 +43,8 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   //    "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
   //    TRINITY_VENV_PATH, fuzzing::config::disable_bls));
   differential->AddModule(std::make_shared<fuzzing::LighthouseOp>());
-  differential->AddModule(std::make_shared<fuzzing::NimOp>());
+  differential->AddModule(
+      std::make_shared<fuzzing::NimOp>(fuzzing::config::disable_bls));
 
   return 0;
 }

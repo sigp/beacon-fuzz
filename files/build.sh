@@ -99,8 +99,11 @@ EXTRA_NIM_PATH="$(dirname "$(realpath "$(command -v clang-8)")")"
 # TODO(gnattishness) other relevant build flags
 # TODO(gnattishness) if we use a static lib, no linking happens right? so don't need to pass load flags
 # NOTE: -d:release should be fine currently, looks like it mainly turns on optimizations, shouldn't disable checks
+# TODO check if we can enable/use libbacktrace?
+# currently fails with "undefined reference to `get_backtrace_c`" if enabled
 PATH="$EXTRA_NIM_PATH:$PATH" \
     NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link' -d:chronicles_log_level=ERROR -d:release -d:const_preset=mainnet --lineTrace:on --opt:speed" \
+    USE_LIBBACKTRACE=0 \
     make libnfuzz.a || exit
 export NIM_LDFLAGS="-L/eth2/nim-beacon-chain/build/"
 export NIM_LDLIBS="-lnfuzz -lrocksdb -lpcre"

@@ -34,17 +34,17 @@ export ETH2_SPECS_PATH
 cd "$ETH2_SPECS_PATH" || exit
 make pyspec
 export PY_SPEC_VENV_PATH="$ETH2_SPECS_PATH"/venv
-# TODO still delete and start from scratch?
-rm -rf "$PY_SPEC_VENV_PATH"
+# NOTE: potential risk of not a full upgrade if already exists, but should be fine
+# Way quicker to avoid rebuilding every time
 "$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$PY_SPEC_VENV_PATH"
 "$PY_SPEC_VENV_PATH"/bin/pip install --upgrade pip
 cd "$ETH2_SPECS_PATH"/test_libs/pyspec || exit
 # don't need to use requirements.py as the setup.py contains pinned dependencies
 # TODO use editable install "-e ." once editable venvs are supported
-"$PY_SPEC_VENV_PATH"/bin/pip install .
+"$PY_SPEC_VENV_PATH"/bin/pip install --upgrade .
 cd "$ETH2_SPECS_PATH"/test_libs/config_helpers || exit
 # TODO use editable install "-e ." once editable venvs are supported
-"$PY_SPEC_VENV_PATH"/bin/pip install .
+"$PY_SPEC_VENV_PATH"/bin/pip install --upgrade .
 
 # Now any script run with the python executable below will have access to pyspec
 export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
@@ -57,13 +57,21 @@ git clone --branch master https://github.com/ethereum/trinity.git /eth2/trinity
 cd /eth2/trinity || exit
 git checkout fcea7124effca010db62bd41a24dd7975825ba90 || exit
 export TRINITY_VENV_PATH="/eth2/trinity/venv"
-# TODO still delete and start from scratch?
-rm -rf "$TRINITY_VENV_PATH"
+# NOTE: potential risk of not fully upgrading if already exists, but should be fine
+# Way quicker to avoid rebuilding every time
 "$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$TRINITY_VENV_PATH"
 "$TRINITY_VENV_PATH"/bin/pip install --upgrade pip
-"$TRINITY_VENV_PATH"/bin/pip install .
+"$TRINITY_VENV_PATH"/bin/pip install --upgrade .
 # Now any script run with the python executable below will have access to trinity
 export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
+
+cd /eth2 || exit
+
+# Set env variables for using Golang
+GOROOT=$(realpath go)
+export GOROOT
+export PATH="$GOROOT/bin:$PATH"
+export GO111MODULE="off" # not supported by go-fuzz, keep it off unless explicitly enabled
 
 # Nimbus
 
@@ -101,13 +109,6 @@ cd /eth2/lib || exit
 # NOTE this doesn't depend on any GOPATH
 # TODO || exit if make fails?
 make "-j$(nproc)"
-cd /eth2 || exit
-
-# Set env variables for using Golang
-GOROOT=$(realpath go)
-export GOROOT
-export PATH="$GOROOT/bin:$PATH"
-export GO111MODULE="off" # not supported by go-fuzz, keep it off unless explicitly enabled
 
 # Get and configure zrnt
 ZRNT_GOPATH="/eth2/zrnt_gopath/"

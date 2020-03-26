@@ -48,13 +48,13 @@ class Python::Impl {
   // TODO(gnattishness) what argv0 used for?
   // TODO(gnattishness) add config path here?
  public:
-  Impl(const std::string argv0, const std::filesystem::path scriptPath,
-       std::optional<std::filesystem::path> libPath,
-       std::optional<std::filesystem::path> venvPath,
-       bool bls_disabled,
-       bool eval_paths_rel_to_file) {
+  Impl(const std::string& argv0, const std::filesystem::path& scriptPath,
+       const std::optional<const std::filesystem::path>& libPath,
+       const std::optional<const std::filesystem::path>& venvPath,
+       const bool bls_disabled, const bool eval_paths_rel_to_file) {
+    std::filesystem::path oldCwd;
     if (eval_paths_rel_to_file) {
-      std::filesystem::path oldCwd = std::filesystem::current_path();
+      oldCwd = std::filesystem::current_path();
       // set current directory to that of the executable
       std::filesystem::path execDir = util::getExePath().parent_path();
       std::filesystem::current_path(execDir);
@@ -293,13 +293,13 @@ class Python::Impl {
 };
 
 Python::Python(const std::string& name, const std::string& argv0,
-               const std::filesystem::path scriptPath,
-               std::optional<const std::filesystem::path> libPath,
-               std::optional<const std::filesystem::path> venvPath,
-               const bool bls_disabled)
+               const std::filesystem::path& scriptPath,
+               const std::optional<const std::filesystem::path>& libPath,
+               const std::optional<const std::filesystem::path>& venvPath,
+               const bool bls_disabled, const bool eval_paths_rel_to_file)
     : Base(),
       pimpl_{std::make_unique<Impl>(argv0, scriptPath, libPath, venvPath,
-                                    bls_disabled)} {
+                                    bls_disabled, eval_paths_rel_to_file)} {
   name_ = name;
 }
 

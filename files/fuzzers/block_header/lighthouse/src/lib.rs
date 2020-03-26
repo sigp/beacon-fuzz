@@ -1,4 +1,3 @@
-use libc::{size_t, uint8_t};
 use ssz::{Decode, Encode};
 use ssz_derive::{Decode, Encode};
 use state_processing::{
@@ -53,10 +52,10 @@ fn fuzz<T: EthSpec>(ssz_bytes: &[u8]) -> Result<Vec<u8>, ()> {
 
 #[no_mangle]
 pub fn block_header_c(
-    input_ptr: *mut uint8_t,
-    input_size: size_t,
-    output_ptr: *mut uint8_t,
-    output_size: *mut size_t,
+    input_ptr: *mut u8,
+    input_size: usize,
+    output_ptr: *mut u8,
+    output_size: *mut usize,
 ) -> bool {
     let input_bytes: &[u8] = unsafe { slice::from_raw_parts(input_ptr, input_size as usize) };
 

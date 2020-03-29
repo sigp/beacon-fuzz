@@ -17,7 +17,7 @@ spec.apply_constants_preset(presets)
 
 class VoluntaryExitTestCase(spec.Container):
     pre: spec.BeaconState
-    exit: spec.VoluntaryExit
+    exit: spec.SignedVoluntaryExit
 
 
 voluntary_exit_sedes = translate_typ(VoluntaryExitTestCase)

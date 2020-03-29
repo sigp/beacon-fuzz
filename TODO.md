@@ -20,3 +20,4 @@
 - disable merkle for `process_deposit` and state transition
 - fuzz is_valid_merkle_branch on its own?
 - bls fuzzing and ssz diff fuzzing?
+- diff fuzzing of crypto primitives?

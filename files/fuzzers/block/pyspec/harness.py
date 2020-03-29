@@ -20,7 +20,7 @@ VALIDATE_STATE_ROOT = True
 
 class BlockTestCase(spec.Container):
     pre: spec.BeaconState
-    block: spec.BeaconBlock
+    block: spec.SignedBeaconBlock
 
 
 block_sedes = translate_typ(BlockTestCase)
@@ -35,11 +35,10 @@ def FuzzerRunOne(fuzzer_input):
     state_block = translate_value(block_sedes.deserialize(fuzzer_input), BlockTestCase)
 
     try:
-        # NOTE we don't validate state root here
         poststate = spec.state_transition(
             state=state_block.pre,
-            block=state_block.block,
-            validate_state_root=VALIDATE_STATE_ROOT,
+            signed_block=state_block.block,
+            validate_result=VALIDATE_STATE_ROOT,
         )
         return serialize(poststate)
     except (AssertionError, IndexError):

@@ -115,35 +115,38 @@ cd /eth2/lib || exit
 # TODO || exit if make fails?
 make "-j$(nproc)"
 
-# Get and configure zrnt
-ZRNT_GOPATH="/eth2/zrnt_gopath/"
-ZRNT_TMP="/eth2/zrnt_tmp/"
-# TODO choose to error or remove if these paths already exist?
-rm -rf "$ZRNT_GOPATH"
-rm -rf "$ZRNT_TMP"
-mkdir -p "$ZRNT_TMP"
-cd "$ZRNT_TMP" || exit
-git clone --depth 1 --branch v0.10.1 https://github.com/protolambda/zrnt.git
-cd zrnt || exit
-# TODO variables for relevant spec release and tags - a manifest file?
-
-# hacky way to use module dependencies with go fuzz
-# see https://github.com/dvyukov/go-fuzz/issues/195#issuecomment-523526736
-# TODO avoid a single GOPATH passed everywhere
-# TODO have a zrnt go dependency section
-# turn GO111MODULE on in case it was set off or auto in go v1.12
-GO111MODULE="on" go mod vendor
-mkdir -p "$ZRNT_GOPATH"/src/
-# TODO does this copy the file or only the directories? i.e. does */ do any different to *?
-mv vendor/*/ "$ZRNT_GOPATH"/src/
-rm -rf vendor
-mkdir -p "$ZRNT_GOPATH"/src/github.com/protolambda
-cd .. || exit
-mv zrnt "$ZRNT_GOPATH"/src/github.com/protolambda/
-
-cd /eth2 || exit
-rm -rf $ZRNT_TMP
-# Now ZRNT_GOPATH contains (only) zrnt and all its dependencies.
+## Get and configure zrnt
+#ZRNT_GOPATH="/eth2/zrnt_gopath/"
+#ZRNT_TMP="/eth2/zrnt_tmp/"
+## TODO choose to error or remove if these paths already exist?
+#rm -rf "$ZRNT_GOPATH"
+#rm -rf "$ZRNT_TMP"
+#mkdir -p "$ZRNT_TMP"
+#cd "$ZRNT_TMP" || exit
+#git clone --depth 1 --branch v0.10.1 https://github.com/protolambda/zrnt.git
+#cd zrnt || exit
+## TODO variables for relevant spec release and tags - a manifest file?
+#
+## hacky way to use module dependencies with go fuzz
+## see https://github.com/dvyukov/go-fuzz/issues/195#issuecomment-523526736
+## TODO avoid a single GOPATH passed everywhere
+## TODO have a zrnt go dependency section
+## turn GO111MODULE on in case it was set off or auto in go v1.12
+## TODO this doesn't copy the .h files for herumi-bls-eth-go-binary, so fails to include
+## TODO use go-fuzz module support
+## See also: https://github.com/golang/go/issues/26366
+#GO111MODULE="on" go mod vendor
+#mkdir -p "$ZRNT_GOPATH"/src/
+## TODO does this copy the file or only the directories? i.e. does */ do any different to *?
+#mv vendor/*/ "$ZRNT_GOPATH"/src/
+#rm -rf vendor
+#mkdir -p "$ZRNT_GOPATH"/src/github.com/protolambda
+#cd .. || exit
+#mv zrnt "$ZRNT_GOPATH"/src/github.com/protolambda/
+#
+#cd /eth2 || exit
+#rm -rf $ZRNT_TMP
+## Now ZRNT_GOPATH contains (only) zrnt and all its dependencies.
 
 export GOPATH="$GOROOT"/packages
 mkdir "$GOPATH"
@@ -152,15 +155,14 @@ export PATH="$GOPATH/bin:$PATH"
 # Get custom go-fuzz
 mkdir -p "$GOPATH"/src/github.com/dvyukov
 cd "$GOPATH"/src/github.com/dvyukov || exit
-git clone https://github.com/guidovranken/go-fuzz.git
+git clone https://github.com/gnattishness/go-fuzz.git
 cd go-fuzz || exit
-git checkout libfuzzer-extensions
+git checkout rebase-libfuzzer-ex
 
 cd /eth2 || exit
 
 # TODO should this be in a ZRNT specific spot or common fuzzer?
 # common $GOPATH for now
-go get github.com/cespare/xxhash
 # TODO what is packages used for?
 go get golang.org/x/tools/go/packages
 go build github.com/dvyukov/go-fuzz/go-fuzz-build

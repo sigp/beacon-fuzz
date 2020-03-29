@@ -1,9 +1,10 @@
 package fuzz
 
 import (
+	"helper"
+
 	"github.com/cespare/xxhash"
 	"github.com/protolambda/zrnt/eth2/phase0"
-	"helper"
 )
 
 // TODO(gnattishness) allow configurable at compile time
@@ -48,7 +49,7 @@ func Fuzz(data []byte) []byte {
 	ffstate.LoadPrecomputedData()
 	blockProc := new(phase0.BlockProcessFeature)
 	blockProc.Meta = ffstate
-	blockProc.Block = &input.Block
+	blockProc.Block = &input.SignedBlock
 	if err := ffstate.StateTransition(blockProc, VALIDATE_STATE_ROOT); err != nil {
 		return []byte{}
 	}

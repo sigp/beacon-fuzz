@@ -1,8 +1,9 @@
-package fuzz
+package main
 
 import (
-	"github.com/protolambda/zrnt/eth2/phase0"
 	"helper"
+
+	"github.com/protolambda/zrnt/eth2/phase0"
 )
 
 func init() {
@@ -19,7 +20,7 @@ func Fuzz(data []byte) []byte {
 	ffstate := phase0.NewFullFeaturedState(&input.Pre)
 	ffstate.LoadPrecomputedData()
 
-    // TODO(gnattishness) disable validation and sig verification (once supported)
+	// TODO(gnattishness) disable validation and sig verification (once supported)
 	if err := ffstate.ProcessAttestation(&input.Attestation); err != nil {
 		return []byte{}
 	}

@@ -98,12 +98,21 @@ $(call check_defined, $(required_variables))
 all: fuzzer
 
 # TODO N depend on lib or GO_FUZZ_BUILD_PATH?
-zrnt.a : zrnt/fuzz.go
-	test -x $(GO_FUZZ_BUILD_PATH)
+#zrnt.a : zrnt/fuzz.go
+#	test -x $(GO_FUZZ_BUILD_PATH)
+#	cd zrnt && \
+#		GO111MODULE=on $(GO_FUZZ_BUILD_PATH) -tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),, bls_off)' \
+#		-libfuzzer-prefix=$(zrnt_prefix) -libfuzzer-ex \
+#		-o ../zrnt.a .
+
+zrnt.a : zrnt/fuzz.go zrnt/main.go
 	cd zrnt && \
-		$(GO_FUZZ_BUILD_PATH) -tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),, bls_off)' \
-		-libfuzzer-prefix=$(zrnt_prefix) -libfuzzer-ex \
-		-o ../zrnt.a .
+		GO111MODULE=on go build \
+		-gcflags all=-d=libfuzzer \
+		-gcflags syscall=-d=libfuzzer=0 -trimpath \
+		-tags 'gofuzz gofuzz_libfuzzer libfuzzer preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),, bls_off)' \
+		-buildmode=c-archive \
+		-o ../zrnt.a main.go fuzz.go
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a
@@ -133,10 +142,10 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 
 fuzzer.o : CPPFLAGS += $(NIM_CPPFLAGS)
 fuzzer.o : fuzzer.cpp
-	test -d $(TRINITY_VENV_PATH)
+	#test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS)\
-		$(if $(BFUZZ_NO_DISABLE_BLS),-DBFUZZ_NO_DISABLE_BLS=1)\
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
+		$(if $(BFUZZ_NO_DISABLE_BLS),-DBFUZZ_NO_DISABLE_BLS=1) \
 	    -DPY_SPEC_HARNESS_PATH="\"$(PY_SPEC_HARNESS_PATH)\"" \
 	    -DPY_SPEC_VENV_PATH="\"$(PY_SPEC_VENV_PATH)\"" \
 	    -DTRINITY_HARNESS_PATH="\"$(TRINITY_HARNESS_PATH)\"" \
@@ -147,7 +156,7 @@ fuzzer : LDFLAGS += $(NIM_LDFLAGS)
 fuzzer : LDLIBS += $(NIM_LDLIBS)
 fuzzer : fuzzer.o zrnt.a lighthouse.a
 	$(CXX) -fsanitize=fuzzer \
-	    fuzzer.o zrnt.a lighthouse.a \
+	    fuzzer.o lighthouse.a zrnt.a \
 	    $(LDFLAGS) $(LDLIBS) $(PYTHON_LDFLAGS) -o fuzzer
 
 clean:

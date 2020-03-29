@@ -18,7 +18,7 @@ func Fuzz(data []byte) []byte {
 	ffstate := phase0.NewFullFeaturedState(&input.Pre)
 	ffstate.LoadPrecomputedData()
 
-	if err := ffstate.ProcessVoluntaryExit(&input.VoluntaryExit); err != nil {
+	if err := ffstate.ProcessVoluntaryExit(&input.Exit); err != nil {
 		return []byte{}
 	}
 

@@ -5,12 +5,12 @@ use state_processing::{
     BlockProcessingError,
 };
 use std::{ptr, slice};
-use types::{BeaconState, EthSpec, MainnetEthSpec, VoluntaryExit};
+use types::{BeaconState, EthSpec, MainnetEthSpec, SignedVoluntaryExit};
 
 #[derive(Decode, Encode)]
 struct VoluntaryExitTestCase<T: EthSpec> {
     pub pre: BeaconState<T>,
-    pub voluntary_exit: VoluntaryExit,
+    pub exit: SignedVoluntaryExit,
 }
 
 impl<T: EthSpec> VoluntaryExitTestCase<T> {
@@ -21,7 +21,7 @@ impl<T: EthSpec> VoluntaryExitTestCase<T> {
 
         process_exits(
             &mut self.pre,
-            &[self.voluntary_exit],
+            &[self.exit],
             // TODO(gnattishness) check whether we validate these consistently
             VerifySignatures::False,
             &spec,

@@ -10,8 +10,8 @@ RUN apt-get install -y libleveldb1v5 libleveldb-dev libgmp3-dev libsnappy-dev
 # For nimbus
 RUN apt-get install -y librocksdb-dev libpcre3-dev
 
-RUN wget -q https://dl.google.com/go/go1.12.linux-amd64.tar.gz
-RUN tar -zxf go1.12.linux-amd64.tar.gz
+RUN wget -q https://dl.google.com/go/go1.14.linux-amd64.tar.gz
+RUN tar -zxf go1.14.linux-amd64.tar.gz
 
 # To clear cache when branch updates
 ADD https://api.github.com/repos/gnattishness/cpython/git/refs/heads/fuzzing meta/cpython_version.json

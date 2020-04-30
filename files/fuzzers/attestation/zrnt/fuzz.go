@@ -1,4 +1,4 @@
-package main
+package fuzz
 
 import (
 	"helper"
@@ -10,7 +10,7 @@ func init() {
 	helper.SetInputType(helper.INPUT_TYPE_ATTESTATION)
 }
 
-func Fuzz(data []byte) []byte {
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeAttestation(data, false)
 	if err != nil {
 		// Assumes preprocessing ensures data is decodable
@@ -22,8 +22,8 @@ func Fuzz(data []byte) []byte {
 
 	// TODO(gnattishness) disable validation and sig verification (once supported)
 	if err := ffstate.ProcessAttestation(&input.Attestation); err != nil {
-		return []byte{}
+		return []byte{}, err
 	}
 
-	return helper.EncodePoststate(&input.Pre)
+	return helper.EncodePoststate(&input.Pre), nil
 }

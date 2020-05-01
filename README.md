@@ -178,7 +178,20 @@ TODO
 
 - [nimbus: `process_attestation` missing index validation](https://github.com/status-im/nim-beacon-chain/issues/659) **fixed**
 - [nimbus: `process_deposit` not validating merkle proofs](https://github.com/status-im/nim-beacon-chain/issues/703) **fixed**
+- [nimbus: `ncli_pretty` `Deposit` SSZ parsing `AssertionError`](https://github.com/status-im/nim-beacon-chain/issues/895) **fixed**
+- [nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with empty container](https://github.com/status-im/nim-beacon-chain/issues/896) **fixed**
+- [nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with variable list reporting 0 length](https://github.com/status-im/nim-beacon-chain/issues/920) **fixed**
+- [nimbus: `ncli_transition` out of memory segfault during `process_final_updates`](https://github.com/status-im/nim-beacon-chain/issues/921) **fixed**
+- [nimbus: `ncli_transition` `AssertionError` due to inconsistent aggregation bits and committee length when passed *invalid* `BeaconState` and `BeaconBlock`](https://github.com/status-im/nim-beacon-chain/issues/922) (See [1](#invalidState)) **fixed**
+- [nimbus: `ncli` `IndexError` decoding 0-byte SSZ BitList](https://github.com/status-im/nim-beacon-chain/issues/931) **fixed**
 - [trinity: some block validation raising `IndexError`, not caught by `BeaconChainSyncer`](https://github.com/ethereum/trinity/issues/1497)
+- [teku: infinite loop when decoding SSZ `BitList` without "end-of-list" marker bit](https://github.com/PegaSysEng/teku/issues/1674) **fixed**
+- [teku: transition subcommand raising `IllegalArgumentException` instead of logging when passed invalid SSZ](https://github.com/PegaSysEng/teku/issues/1675) **fixed**
+- [teku: transition subcommand raising `IllegalArgumentException` instead of logging when passed invalid SSZ](https://github.com/PegaSysEng/teku/issues/1677) **fixed**
+- [teku: `IndexOutOfBoundsException` when SSZ decoding 0-byte `BitList`](https://github.com/PegaSysEng/teku/issues/1678) **fixed**
+- [teku: `IndexOutOfBoundsException` when passed *invalid* `BeaconState` and committee size is inconsistent with attestation aggregation bits](https://github.com/PegaSysEng/teku/issues/1685). (See [1](#invalidState)) **fixed**
+
+<a name="invalidState">1</a>: **NOTE** `BeaconState` objects are not untrusted input, so client state transition functions are not expected to handle invalid `BeaconState` values.
 
 ## License
 

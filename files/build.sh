@@ -71,7 +71,7 @@ cd /eth2 || exit
 GOROOT=$(realpath go)
 export GOROOT
 export PATH="$GOROOT/bin:$PATH"
-export GO111MODULE="off" # not supported by go-fuzz, keep it off unless explicitly enabled
+export GO111MODULE="on"
 
 # Nimbus
 
@@ -152,22 +152,13 @@ export GOPATH="$GOROOT"/packages
 mkdir "$GOPATH"
 export PATH="$GOPATH/bin:$PATH"
 
-# Get custom go-fuzz
-mkdir -p "$GOPATH"/src/github.com/dvyukov
-cd "$GOPATH"/src/github.com/dvyukov || exit
-git clone https://github.com/gnattishness/go-fuzz.git
-cd go-fuzz || exit
-git checkout rebase-libfuzzer-ex
+cd /eth2/tools/go-bfuzz-build || exit
+make install "-j$(nproc)"
+
+# installed into PATH so don't need any special path to it
+export GO_BFUZZ_BUILD=go-bfuzz-build
 
 cd /eth2 || exit
-
-# TODO should this be in a ZRNT specific spot or common fuzzer?
-# common $GOPATH for now
-# TODO what is packages used for?
-go get golang.org/x/tools/go/packages
-go build github.com/dvyukov/go-fuzz/go-fuzz-build
-GO_FUZZ_BUILD_PATH=$(realpath go-fuzz-build)
-export GO_FUZZ_BUILD_PATH
 
 export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"
 

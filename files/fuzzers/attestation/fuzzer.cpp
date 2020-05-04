@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX attestation_
+// #define GO_FUZZ_PREFIX attestation_
 #define NIM_FUZZ_HANDLE nfuzz_attestation
 #define LIGHTHOUSE_FUZZ_HANDLE attestation_c
 

@@ -1,8 +1,10 @@
 #pragma once
 
+/*
 #if !defined(GO_FUZZ_PREFIX)
 #error You must define GO_FUZZ_PREFIX
 #endif
+*/
 
 #include <cstddef>
 #include <cstdint>
@@ -12,15 +14,25 @@
 
 #include "base.h"
 
+/*
 #define CONCAT(A, B) CONCAT_(A, B)
 #define CONCAT_(A, B) A##B
 
-#define GO_LLVMFuzzerInitialize CONCAT(GO_FUZZ_PREFIX, LLVMFuzzerInitialize)
-#define GO_LLVMFuzzerTestOneInput CONCAT(GO_FUZZ_PREFIX, LLVMFuzzerTestOneInput)
-#define GO_get_return_size CONCAT(GO_FUZZ_PREFIX, get_return_size)
-#define GO_get_return_data CONCAT(GO_FUZZ_PREFIX, get_return_data)
+#define GO_LLVMFuzzerTestOneInput CONCAT(GO_FUZZ_PREFIX,
+BFUZZGolangTestOneInput) #define GO_get_return_data CONCAT(GO_FUZZ_PREFIX,
+BFUZZGolangGetReturnData)
+*/
+// TODO(gnattishness) include generated bfuzz-go.h?
 
 namespace fuzzing {
+
+extern "C" {
+
+/* Return type for BFUZZGolangTestOneInput */
+struct BFUZZGolangTestOneInput_return {
+  size_t r0; /* resultSize */
+  int r1;    /* errnum */
+};
 
 typedef struct {
   void *data;
@@ -28,11 +40,11 @@ typedef struct {
   long long cap;
 } GoSlice;
 
-extern "C" {
-int GO_LLVMFuzzerInitialize(int *argc, char ***argv);
-int GO_LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
-int GO_get_return_size(void);
-void GO_get_return_data(GoSlice dest);
+// int GO_LLVMFuzzerInitialize(int *argc, char ***argv);
+// TODO(gnattishness) prob can't be const?
+struct BFUZZGolangTestOneInput_return BFUZZGolangTestOneInput(
+    unsigned char *data, size_t size);
+void BFUZZGolangGetReturnData(unsigned char *dest);
 }
 
 class Go : public Base {
@@ -41,28 +53,29 @@ class Go : public Base {
  public:
   explicit Go(const std::string &name) : Base() {
     name_ = name;
-    GO_LLVMFuzzerInitialize(nullptr, nullptr);
+    // GO_LLVMFuzzerInitialize(nullptr, nullptr);
   }
 
   std::optional<std::vector<uint8_t>> Run(
       const std::vector<uint8_t> &data) override {
-    GO_LLVMFuzzerTestOneInput(data.data(), data.size());
+    // TODO(gnattishness) any value in static casting to unsigned char?
+    // TODO(gnattishness) copy instead of the dodgy const cast? Will linking
+    // work if I say it is const?
+    struct BFUZZGolangTestOneInput_return result = BFUZZGolangTestOneInput(
+        const_cast<unsigned char *>(data.data()), data.size());
 
-    const int retSize = GO_get_return_size();
-
-    if (retSize == 0) {
-      /* No point in retrieving data from go */
-      // TODO(gnattishness) distinguish between returning empty and nullopt
-      // would need to change go-fuzz-build interface to allow for this
+    if (result.r1) {
+      /* An error occurred */
       return std::nullopt;
+    } else if (!result.r0) {
+      /* No error but empty data
+       * No point in retrieving data from Go */
+      return std::make_optional<std::vector<uint8_t>>();
     }
 
-    auto ret = std::make_optional<std::vector<uint8_t>>(retSize);
+    auto ret = std::make_optional<std::vector<uint8_t>>(result.r0);
 
-    GoSlice slice{ret->data(), (long long)(ret->size()),
-                  (long long)(ret->size())};
-
-    GO_get_return_data(slice);
+    BFUZZGolangGetReturnData(ret->data());
 
     return ret;
   };

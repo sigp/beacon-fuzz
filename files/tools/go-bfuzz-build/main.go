@@ -31,9 +31,11 @@ var (
 	flagX          = flag.Bool("x", false, "print the commands.")
 	flagV          = flag.Bool("v", false, "verbose build.")
 	flagPreserve   = flag.String("preserve", "", "a comma-separated list of import paths not to instrument.")
-	flagRuntimeCov = flag.Bool("cover-runtime", false, "Provide coverage instrumentation for runtime.")
-	flagMainCov    = flag.Bool("cover-main", false, "Provide coverage instrumentation for generated main package.")
+	flagRuntimeCov = flag.Bool("cover-runtime", false, "Provide coverage instrumentation for runtime (normally ignored).")
+	flagMainCov    = flag.Bool("cover-main", false, "Provide coverage instrumentation for generated main package (normally ignored).")
 )
+
+// TODO option to build without any coverage?
 
 type Exit struct{ Code int }
 
@@ -435,7 +437,7 @@ var bfuzz_return_data []byte
 // TODO check if we can use the return struct from C
 
 //export BFUZZGolangTestOneInput
-func BFUZZGolangTestOneInput(data *C.char, size C.size_t) (resultSize C.size_t, errnum C.int) {
+func BFUZZGolangTestOneInput(data *C.uchar, size C.size_t) (resultSize C.size_t, errnum C.int) {
     // returns size of result
     // errnum is set to 1 if an error occured
     // TODO use uchar?
@@ -455,7 +457,7 @@ func BFUZZGolangTestOneInput(data *C.char, size C.size_t) (resultSize C.size_t, 
 }
 
 //export BFUZZGolangGetReturnData
-func BFUZZGolangGetReturnData(buf *C.char) {
+func BFUZZGolangGetReturnData(buf *C.uchar) {
     // copies previous result into buf
     // ensure buf is large enough to contain the result
     // NOTE: this can only be called once for each call to a successful BFUZZGolangTestOneInput,

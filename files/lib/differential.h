@@ -17,7 +17,7 @@ class Differential {
   ~Differential();
 
   void AddModule(std::shared_ptr<Base> module);
-  void Run(const std::vector<uint8_t> data) const;
+  void Run(const std::vector<uint8_t>& data);
 };
 
 } /* namespace fuzzing */

@@ -5,6 +5,8 @@ BFUZZ_TRINITY_OFF:=1
 
 CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
 
+GO_BFUZZ_BUILD ?= go-bfuzz-build
+
 # TODO(gnattishness bls enable/disable option)
 
 # NOTE this is both LD_FLAGS and LDLIBS for Python-related stuff

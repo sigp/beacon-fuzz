@@ -72,6 +72,8 @@ target_name ?= $(lastword $(subst /, ,$(realpath $(here))))
 zrnt_prefix ?= $(target_name)_
 lighthouse_package_name ?= $(target_name)_fuzzer
 
+comma := ,
+
 # check that required variables are set
 required_variables := target_name
 
@@ -98,21 +100,12 @@ $(call check_defined, $(required_variables))
 all: fuzzer
 
 # TODO N depend on lib or GO_FUZZ_BUILD_PATH?
-#zrnt.a : zrnt/fuzz.go
-#	test -x $(GO_FUZZ_BUILD_PATH)
-#	cd zrnt && \
-#		GO111MODULE=on $(GO_FUZZ_BUILD_PATH) -tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),, bls_off)' \
-#		-libfuzzer-prefix=$(zrnt_prefix) -libfuzzer-ex \
-#		-o ../zrnt.a .
-
-zrnt.a : zrnt/fuzz.go zrnt/main.go
+# TODO check GO_BFUZZ_BUILD is accessible?
+zrnt.a : zrnt/fuzz.go
 	cd zrnt && \
-		GO111MODULE=on go build \
-		-gcflags all=-d=libfuzzer \
-		-gcflags syscall=-d=libfuzzer=0 -trimpath \
-		-tags 'gofuzz gofuzz_libfuzzer libfuzzer preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),, bls_off)' \
-		-buildmode=c-archive \
-		-o ../zrnt.a main.go fuzz.go
+		GO111MODULE=on $(GO_BFUZZ_BUILD) \
+		-tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),,$(comma)bls_off)' \
+		-o ../zrnt.a fuzz
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a

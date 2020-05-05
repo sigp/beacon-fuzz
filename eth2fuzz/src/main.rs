@@ -204,7 +204,7 @@ fn targets_dir() -> Result<PathBuf, Error> {
 
 fn workspace_dir() -> Result<PathBuf, Error> {
     let p = root_dir()?.join("workspace");
-    fs::create_dir_all(&p).context(format!("unable to create corpora/wasm dir"))?;
+    fs::create_dir_all(&p).context(format!("unable to create workspace dir"))?;
     Ok(p)
 }
 
@@ -215,7 +215,7 @@ fn corpora_dir() -> Result<PathBuf, Error> {
 
 fn state_dir() -> Result<PathBuf, Error> {
     let seed_dir = corpora_dir()?.join("beaconstate");
-    fs::create_dir_all(&seed_dir).context(format!("unable to create corpora/wasm dir"))?;
+    fs::create_dir_all(&seed_dir).context(format!("unable to create corpora/beaconstate dir"))?;
     Ok(seed_dir)
 }
 
@@ -367,7 +367,8 @@ fn run_honggfuzz(target: &str, timeout: Option<i32>, thread: Option<i32>) -> Res
         .args(&["+nightly", "hfuzz", "run", &target])
         .env("HFUZZ_RUN_ARGS", &args)
         //.env("HFUZZ_BUILD_ARGS", "opt-level=3")
-        .env("HFUZZ_INPUT", corpora_dir) // todo - replace with wasm_folder
+        .env("HFUZZ_INPUT", corpora_dir)
+        .env("ETH2FUZZ_BEACONSTATE", format!("{}", state_dir()?.display()))
         .current_dir(&dir)
         .spawn()
         .context(format!("error starting {:?} to run {}", fuzzer, target))?
@@ -455,6 +456,7 @@ fn run_afl(target: &str, _timeout: Option<i32>, _thread: Option<i32>) -> Result<
         .arg("-o")
         .arg(&corpus_dir)
         .args(&["--", &format!("./target/debug/{}", target)])
+        .env("ETH2FUZZ_BEACONSTATE", format!("{}", state_dir()?.display()))
         .current_dir(&dir)
         .spawn()
         .context(format!("error starting {:?} to run {}", fuzzer, target))?

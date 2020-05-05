@@ -80,7 +80,14 @@ fn main() {
 
     // provide only valid beaconstate in this folder
     // valid ssz beaconstate here: ../../../corpora/mainnet/beaconstate/
-    let mut list_path = match list_files_in_folder(&"../corpora/beaconstate".to_string()){
+    use std::env;
+    let key = "ETH2FUZZ_BEACONSTATE";
+    let mut beacon_path: String = "".to_string();
+    match env::var(key) {
+        Ok(val) => beacon_path = val,
+        Err(e) => println!("couldn't interpret {}: {}", key, e),
+    };
+    let mut list_path = match list_files_in_folder(&beacon_path){
         Ok(list_path) => list_path,
         Err(e) => panic!(
             "list_files_in_folder failed: {:?}",

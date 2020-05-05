@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX deposit_
+#define GO_FUZZ_PREFIX zrnt_deposit_
 #define NIM_FUZZ_HANDLE nfuzz_deposit
 #define LIGHTHOUSE_FUZZ_HANDLE deposit_c
 

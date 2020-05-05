@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX block_header_
+#define GO_FUZZ_PREFIX zrnt_block_header_
 #define NIM_FUZZ_HANDLE nfuzz_block_header
 #define LIGHTHOUSE_FUZZ_HANDLE block_header_c
 

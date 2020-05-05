@@ -69,7 +69,7 @@ lighthouse_dir_contents := $(shell find $(here)/lighthouse | sed 's/ /\\ /g')
 
 # the name of the current directory
 target_name ?= $(lastword $(subst /, ,$(realpath $(here))))
-zrnt_prefix ?= $(target_name)_
+zrnt_prefix ?= zrnt_$(target_name)_
 lighthouse_package_name ?= $(target_name)_fuzzer
 
 comma := ,
@@ -105,7 +105,7 @@ zrnt.a : zrnt/fuzz.go
 	cd zrnt && \
 		GO111MODULE=on $(GO_BFUZZ_BUILD) \
 		-tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),,$(comma)bls_off)' \
-		-o ../zrnt.a fuzz
+		-o ../zrnt.a $(zrnt_prefix),fuzz,Fuzz
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 	rm -rf lighthouse.a

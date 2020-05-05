@@ -18,8 +18,7 @@ LDFLAGS+=-L"$(realpath ../lib)"
 LDLIBS+= -leth2fuzz -lstdc++fs
 export
 
-#TARGETS := attestation attester_slashing block block_header deposit proposer_slashing shuffle voluntary_exit
-TARGETS := attestation shuffle
+TARGETS := attestation attester_slashing block block_header deposit proposer_slashing shuffle voluntary_exit
 
 # TODO this has a problem e.g. `make block clean` will call `make -C /eth2/fuzzers/voluntary_exit clean -f ../fuzzer.mk` and then `make clean block`
 # which will try to build all targets with `make block`

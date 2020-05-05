@@ -1,10 +1,8 @@
 #pragma once
 
-/*
 #if !defined(GO_FUZZ_PREFIX)
 #error You must define GO_FUZZ_PREFIX
 #endif
-*/
 
 #include <cstddef>
 #include <cstdint>
@@ -14,14 +12,13 @@
 
 #include "base.h"
 
-/*
 #define CONCAT(A, B) CONCAT_(A, B)
 #define CONCAT_(A, B) A##B
 
-#define GO_LLVMFuzzerTestOneInput CONCAT(GO_FUZZ_PREFIX,
-BFUZZGolangTestOneInput) #define GO_get_return_data CONCAT(GO_FUZZ_PREFIX,
-BFUZZGolangGetReturnData)
-*/
+#define GO_LLVMFuzzerTestOneInput \
+  CONCAT(GO_FUZZ_PREFIX, BFUZZGolangTestOneInput)
+#define GO_LLVMFuzzerResult \
+  CONCAT(GO_FUZZ_PREFIX, BFUZZGolangTestOneInput_return)
 // TODO(gnattishness) include generated bfuzz-go.h?
 
 namespace fuzzing {
@@ -29,7 +26,7 @@ namespace fuzzing {
 extern "C" {
 
 /* Return type for BFUZZGolangTestOneInput */
-struct BFUZZGolangTestOneInput_return {
+struct GO_LLVMFuzzerResult {
   size_t r0; /* resultSize */
   int r1;    /* errnum */
 };
@@ -41,9 +38,8 @@ typedef struct {
 } GoSlice;
 
 // int GO_LLVMFuzzerInitialize(int *argc, char ***argv);
-// TODO(gnattishness) prob can't be const?
-struct BFUZZGolangTestOneInput_return BFUZZGolangTestOneInput(
-    unsigned char *data, size_t size);
+struct GO_LLVMFuzzerResult GO_LLVMFuzzerTestOneInput(unsigned char *data,
+                                                     size_t size);
 void BFUZZGolangGetReturnData(unsigned char *dest);
 }
 
@@ -61,7 +57,7 @@ class Go : public Base {
     // TODO(gnattishness) any value in static casting to unsigned char?
     // TODO(gnattishness) copy instead of the dodgy const cast? Will linking
     // work if I say it is const?
-    struct BFUZZGolangTestOneInput_return result = BFUZZGolangTestOneInput(
+    struct GO_LLVMFuzzerResult result = GO_LLVMFuzzerTestOneInput(
         const_cast<unsigned char *>(data.data()), data.size());
 
     if (result.r1) {

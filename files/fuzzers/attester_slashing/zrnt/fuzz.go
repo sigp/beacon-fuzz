@@ -1,15 +1,16 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/phase0"
 	"helper"
+
+	"github.com/protolambda/zrnt/eth2/phase0"
 )
 
 func init() {
 	helper.SetInputType(helper.INPUT_TYPE_ATTESTER_SLASHING)
 }
 
-func Fuzz(data []byte) []byte {
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeAttesterSlashing(data, false)
 	if err != nil {
 		panic("Decoding failed - bug in preprocessing.")
@@ -18,8 +19,8 @@ func Fuzz(data []byte) []byte {
 	ffstate.LoadPrecomputedData()
 
 	if err := ffstate.ProcessAttesterSlashing(&input.AttesterSlashing); err != nil {
-		return []byte{}
+		return []byte{}, err
 	}
 
-	return helper.EncodePoststate(&input.Pre)
+	return helper.EncodePoststate(&input.Pre), nil
 }

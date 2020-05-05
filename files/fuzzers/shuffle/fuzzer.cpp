@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX shuffle_
+#define GO_FUZZ_PREFIX zrnt_shuffle_
 #include <assert.h>
 #include <lib/bfuzz_config.h>
 #include <lib/differential.h>

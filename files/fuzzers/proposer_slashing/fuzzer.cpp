@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX proposer_slashing_
+#define GO_FUZZ_PREFIX zrnt_proposer_slashing_
 #define NIM_FUZZ_HANDLE nfuzz_proposer_slashing
 #define LIGHTHOUSE_FUZZ_HANDLE proposer_slashing_c
 

@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX voluntary_exit_
+#define GO_FUZZ_PREFIX zrnt_voluntary_exit_
 #define NIM_FUZZ_HANDLE nfuzz_voluntary_exit
 #define LIGHTHOUSE_FUZZ_HANDLE voluntary_exit_c
 

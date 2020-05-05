@@ -37,8 +37,7 @@ func init() {
 	*/
 }
 
-func Fuzz(data []byte) []byte {
-	// TODO set fuzz to true here? or no, to keep consistent decoding
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeBlock(data, false)
 	if err != nil {
 		// A sanity check to ensure preprocessing works
@@ -51,11 +50,11 @@ func Fuzz(data []byte) []byte {
 	blockProc.Meta = ffstate
 	blockProc.Block = &input.SignedBlock
 	if err := ffstate.StateTransition(blockProc, VALIDATE_STATE_ROOT); err != nil {
-		return []byte{}
+		return []byte{}, err
 	}
 
 	// NOTE this will panic if the invariants aren't correct
-	return helper.EncodePoststate(ffstate.BeaconState)
+	return helper.EncodePoststate(ffstate.BeaconState), nil
 	// equiv to
 	// return helper.EncodePoststate(&input.Pre)
 }

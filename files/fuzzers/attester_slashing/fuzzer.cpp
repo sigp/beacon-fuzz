@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX attester_slashing_
+#define GO_FUZZ_PREFIX zrnt_attester_slashing_
 #define NIM_FUZZ_HANDLE nfuzz_attester_slashing
 #define LIGHTHOUSE_FUZZ_HANDLE attester_slashing_c
 

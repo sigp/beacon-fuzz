@@ -1,0 +1,11 @@
+github.com/herumi/bls-eth-go-binary v0.0.0-20200310092706-2b0aca401927 h1:kwrD3rx8t7PWFFgZx9CZ1CqMyG5tq5ufMaUoePjL9IA=
+github.com/herumi/bls-eth-go-binary v0.0.0-20200310092706-2b0aca401927/go.mod h1:WKIQeicfSedn/NDDV6IiaxUcthn5gp3w6RbIG/GOLAg=
+github.com/minio/sha256-simd v0.1.0 h1:U41/2erhAKcmSI14xh/ZTUdBPOzDOIfS93ibzUSl8KM=
+github.com/minio/sha256-simd v0.1.0/go.mod h1:2FMWW+8GMoPweT6+pI63m9YE3Lmw4J71hV56Chs1E/U=
+github.com/protolambda/messagediff v1.3.0/go.mod h1:LboJp0EwIbJsePYpzh5Op/9G1/4mIztMRYzzwR0dR2M=
+github.com/protolambda/zrnt v0.10.1 h1:KBkgAkR29Y5gFz8VEwha7qsdeJMF1PDQ5usRN8JSYwc=
+github.com/protolambda/zrnt v0.10.1/go.mod h1:k5lqfFKncUeUl5/HgNOfAffpUcOotNPinXiGQNM/Gh4=
+github.com/protolambda/zssz v0.1.3 h1:WL25qizRrzcmaHz62CiWA/oHX+cXDELV/UT0kpbi64Y=
+github.com/protolambda/zssz v0.1.3/go.mod h1:a4iwOX5FE7/JkKA+J/PH0Mjo9oXftN6P8NZyL28gpag=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

@@ -35,7 +35,9 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
 
     try:
         # modifies state in place
-        spec.process_voluntary_exit(state=test_case.pre, exit=test_case.exit)
+        spec.process_voluntary_exit(
+            state=test_case.pre, signed_voluntary_exit=test_case.exit
+        )
         return serialize(test_case.pre)
     except (AssertionError, IndexError):
         return None

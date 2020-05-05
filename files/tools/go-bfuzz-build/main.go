@@ -24,8 +24,7 @@ import (
 
 var (
 	flagTags       = flag.String("tags", "", "a comma-separated list of build tags to consider satisfied during the build.")
-	flagOut        = flag.String("o", "", "output file. (default [pkgName]-fuzz.a)")
-	flagFunc       = flag.String("func", "Fuzz", "preferred entry function.")
+	flagOut        = flag.String("o", "", "output file. (default [pkg1Name]-fuzz.a)")
 	flagWork       = flag.Bool("work", false, "do not delete generated main file.\nprint the name of the temporary work directory and do not delete it when exiting.")
 	flagRace       = flag.Bool("race", false, "enable race detection.")
 	flagX          = flag.Bool("x", false, "print the commands.")
@@ -38,6 +37,14 @@ var (
 // TODO option to build without any coverage?
 
 type Exit struct{ Code int }
+
+type HarnessSpec struct {
+	Path         string
+	FuncName     string
+	ExportPrefix string
+}
+
+// TODO(gnattishness) can also build in an initialization func if needed
 
 // exit code handler thanks https://stackoverflow.com/a/27630092
 func handleExit() {
@@ -53,31 +60,46 @@ func main() {
 	defer handleExit()
 
 	flag.Usage = func() {
-		usageStr := "Usage: %s [options] [pkg_or_module]\n\n" +
-			"pkg default: \".\"\n" +
+		usageStr := "Usage: %s [options] export_prefix[,pkg_or_module_path][,func_name] [export_prefix[,pkg_or_module_path][,func_name] ...] \n\n" +
+			"Build a `c-archive` static library exporting Fuzz harnesses suitable for Beacon Fuzz.\n\n" +
+			"Harnesses expose C functions with the following naming convention: \"export_prefixBFUZZGolangTestOneInput\"\n" +
+			"pkg_or_module_path:    package containing Go fuzz harness (default \".\")\n" +
+			"func_name:             name of Go fuzz harness function (default \"Fuzz\")\n\n" +
 			"Use module name to load go.mod dependencies correctly.\n\n" +
 			"Options:\n"
+
 		fmt.Fprintf(os.Stderr, usageStr, os.Args[0])
 
 		flag.PrintDefaults()
+
+		extendedUsage := "\n\n" +
+			"Extended details:\n" +
+			"(only required for beacon-fuzz implementors):\n\n" +
+			"Each harness exports the following C function:\n" +
+			"   `struct export_prefixBFUZZGolangTestOneInput_return export_prefixBFUZZGolangTestOneInput(unsigned char* data, size_t size)`\n" +
+			"Where\n" +
+			"   `struct export_prefixBFUZZGolangTestOneInput_return`\n" +
+			"       contains the equivalent of a `(size_t resultSize, int errnum)` tuple.\n" +
+			"   `resultSize`\n" +
+			"       is the size of the Fuzz harness output after successful operation.\n" +
+			"   `errnum!=0`\n" +
+			"       indicates the Fuzz harness returned an error, and no result should be viewed.\n\n" +
+			"After a successful result, the harness result can be retrieved by passing a buffer of at least `resultSize` to `BFUZZGolangGetReturnData(uint8_t* buf)`\n" +
+			"NOTE: this should only be retrieved once when no error is present, or memory corruption may occur.\n\n" +
+			"See the generated `.h` file for more details, or the `main.*.go` left when using `-work`.\n"
+		fmt.Fprintf(os.Stderr, extendedUsage)
 	}
 	flag.Parse()
 
-	if flag.NArg() > 1 {
+	if flag.NArg() < 1 {
 		flag.Usage()
 		panic(Exit{1})
 	}
 
-	path := "."
-	if flag.NArg() == 1 {
-		path = flag.Arg(0)
-	}
-	if strings.Contains(path, "...") {
-		safeLogFatal("package path must not contain ... wildcards")
-	}
-
-	if !isFuzzFuncName(*flagFunc) {
-		safeLogFatalf("provided -func=%v, but %v is not a valid function name", *flagFunc, *flagFunc)
+	harnesses := parseArgs(flag.Args())
+	if len(harnesses) == 0 {
+		// the previous NArg check should avoid this
+		panic("Something went wrong parsing args.")
 	}
 
 	buildFlags := []string{
@@ -106,7 +128,11 @@ func main() {
 		buildFlags = append(buildFlags, "-x")
 	}
 
-	pkg := loadPkg(path, buildFlags)
+	pkgs := make([]packages.Package, len(harnesses))
+	// validate package paths
+	for i, h := range harnesses {
+		pkgs[i] = *loadPkg(h.Path, buildFlags)
+	}
 
 	// TODO will this be a problem if its being called from within a package,
 	// so will then have "main" and the pkg in the same dir?
@@ -118,14 +144,7 @@ func main() {
 		defer os.Remove(mainFile.Name())
 	}
 
-	type Data struct {
-		PkgPath string
-		Func    string
-	}
-	err = mainSrc.Execute(mainFile, &Data{
-		PkgPath: path,
-		Func:    *flagFunc,
-	})
+	err = mainSrc.Execute(mainFile, harnesses)
 	if err != nil {
 		safeLogFatalf("failed to execute template: %v", err)
 	}
@@ -135,7 +154,7 @@ func main() {
 
 	out := *flagOut
 	if out == "" {
-		out = pkg.Name + "-fuzz.a"
+		out = pkgs[0].Name + "-fuzz.a"
 	}
 
 	args := []string{"build", "-o", out}
@@ -147,6 +166,46 @@ func main() {
 
 	if err := cmd.Run(); err != nil {
 		safeLogFatalf("failed to build packages: %v", err)
+	}
+}
+
+func parseArgs(args []string) []HarnessSpec {
+	harnesses := make([]HarnessSpec, len(args))
+	for i, arg := range args {
+		// TODO does this get dereferenced or do we have to do it ourselves?
+		harnesses[i] = *parseArg(arg)
+	}
+	return harnesses
+}
+
+func parseArg(arg string) *HarnessSpec {
+	// TODO(gnattishness) should I ensure none of the spec sections are "" ?
+	parts := strings.Split(arg, ",")
+	partsLen := len(parts)
+	if partsLen > 3 {
+		safeLogFatalf("unexpected number of comma-separated sections in arg: `%v`. Got %v, max 3", arg, partsLen)
+	}
+	if partsLen == 0 || parts[0] == "" {
+		safeLogFatalf("invalid arg: `%v`. Need to at least provide `export_prefix`", arg)
+	}
+	path := "."
+	if partsLen >= 2 && parts[1] != "" {
+		path = parts[1]
+	}
+	if strings.Contains(path, "...") {
+		safeLogFatal("package path must not contain ... wildcards")
+	}
+	name := "Fuzz"
+	if partsLen == 3 && parts[2] != "" {
+		name = parts[2]
+		if !isFuzzFuncName(name) {
+			safeLogFatalf("provided FuncName=%v, but %v is not a valid function name", name, name)
+		}
+	}
+	return &HarnessSpec{
+		Path:         path,
+		FuncName:     name,
+		ExportPrefix: parts[0],
 	}
 }
 
@@ -383,12 +442,12 @@ func (c *Context) packagesNamed(paths ...string) (pkgs []*packages.Package) {
 
 // Because log.Fatal calls os.Exit(1) and doesn't respect defers
 func safeLogFatal(v ...interface{}) {
-	log.Print(v)
+	log.Print(v...)
 	panic(Exit{1})
 }
 
 func safeLogFatalf(format string, v ...interface{}) {
-	log.Printf(format, v)
+	log.Printf(format, v...)
 	panic(Exit{1})
 }
 
@@ -411,9 +470,11 @@ package main
 
 import (
 	"unsafe"
-    "fmt"
+	"fmt"
 
-	target {{printf "%q" .PkgPath}}
+	{{range $i, $h := .}}
+	target{{- $i}} {{printf "%q" $h.Path}}
+	{{end}}
 
 )
 
@@ -428,66 +489,58 @@ func BFUZZFuzzerInitialize(argc uintptr, argv uintptr) int {
 	return 0
 }
 */}}
-
-{{/* // TODO allow more than 1 harness exported, with different names */}}
-
-
 var bfuzz_return_data []byte
 
-// TODO check if we can use the return struct from C
+{{range $i, $h := .}}
+//export {{ $h.ExportPrefix -}} BFUZZGolangTestOneInput
+func {{ $h.ExportPrefix -}} BFUZZGolangTestOneInput(data *C.uchar, size C.size_t) (resultSize C.size_t, errnum C.int) {
+	// returns size of result
+	// errnum is set to 1 if an error occured
 
-//export BFUZZGolangTestOneInput
-func BFUZZGolangTestOneInput(data *C.uchar, size C.size_t) (resultSize C.size_t, errnum C.int) {
-    // returns size of result
-    // errnum is set to 1 if an error occured
-    // TODO use uchar?
+	input := (*[1<<31]byte)(unsafe.Pointer(data))[:size:size]
 
-    input := (*[1<<31]byte)(unsafe.Pointer(data))[:size:size]
+	var result []byte
 
-    var result []byte
+	result, err := target{{$i}}.{{$h.FuncName}}(input)
 
-    result, err := target.{{.Func}}(input)
+	if err != nil || result == nil {
+		return 0, 1
+	}
 
-    if err != nil || result == nil {
-        return 0, 1
-    }
-
-    bfuzz_return_data = result
-    return C.size_t(len(bfuzz_return_data)), 0
+	bfuzz_return_data = result
+	return C.size_t(len(bfuzz_return_data)), 0
 }
 
+{{end}}
 //export BFUZZGolangGetReturnData
 func BFUZZGolangGetReturnData(buf *C.uchar) {
-    // copies previous result into buf
-    // ensure buf is large enough to contain the result
-    // NOTE: this can only be called once for each call to a successful BFUZZGolangTestOneInput,
-    // as it allows the result data to be gc'd
+	// copies previous result into buf
+	// ensure buf is large enough to contain the result
+	// NOTE: this can only be called once for each call to a successful BFUZZGolangTestOneInput,
+	// as it allows the result data to be gc'd
 
-    // NOTE: we could use C.CBytes, but that calls malloc
-    // This allows us to pass a buffer from the stack
+	// NOTE: we could use C.CBytes, but that calls malloc
+	// This allows us to pass a buffer from the stack
 
-    // TODO worth checking that bfuzz_return_data != nil?
+	// TODO worth checking that bfuzz_return_data != nil?
 
-    size := len(bfuzz_return_data)
+	size := len(bfuzz_return_data)
 
-    output := (*[1<<30]byte)(unsafe.Pointer(buf))[:size:size]
+	output := (*[1<<30]byte)(unsafe.Pointer(buf))[:size:size]
 
-    nCopied := copy(output, bfuzz_return_data)
+	nCopied := copy(output, bfuzz_return_data)
 
-    if (nCopied != size) {
-        panic(fmt.Sprintf("Go: Unable to copy entire result. Expected %v, but only copied %v", size, nCopied))
-    }
+	if (nCopied != size) {
+		panic(fmt.Sprintf("Go: Unable to copy entire result. Expected %v, but only copied %v", size, nCopied))
+	}
 
-    // TODO should we keep this setting stored data to nil so it can be gc'd?
-    // potentially trap for the unwary
-    bfuzz_return_data = nil
+	// TODO should we keep this setting stored data to nil so it can be gc'd?
+	// potentially trap for the unwary
+	bfuzz_return_data = nil
 }
-
 
 // TODO also export a way to check the size of the stored return value?
 // generally shouldn't be needed though
-
-
 
 func main() {
 }

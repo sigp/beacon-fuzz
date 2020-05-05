@@ -47,6 +47,9 @@ enum Cli {
         // Run `cargo update` between cycles
         #[structopt(long = "cargo-update")]
         cargo_update: bool,
+        /// Set number of thread (only for hfuzz)
+        #[structopt(short = "n", long = "thread")]
+        thread: Option<i32>,
     },
     /// Run one target with specific fuzzer
     #[structopt(name = "target")]
@@ -66,6 +69,9 @@ enum Cli {
         /// Set timeout
         #[structopt(short = "t", long = "timeout")]
         timeout: Option<i32>,
+        /// Set number of thread (only for hfuzz)
+        #[structopt(short = "n", long = "thread")]
+        thread: Option<i32>,
     },
     /// Debug one target
     #[structopt(name = "debug")]
@@ -98,7 +104,7 @@ fn run() -> Result<(), Error> {
                 println!("{}", target);
             }
         }
-        Run { target, fuzzer, timeout } => {
+        Run { target, fuzzer, timeout, thread } => {
             let targets = get_targets()?;
             if targets.iter().find(|x| *x == &target).is_none() {
                 bail!(
@@ -114,9 +120,9 @@ fn run() -> Result<(), Error> {
 
             use Fuzzer::*;
             match fuzzer {
-                Afl => run_afl(&target, timeout)?,
-                Honggfuzz => run_honggfuzz(&target, timeout)?,
-                Libfuzzer => run_libfuzzer(&target, timeout)?,
+                Afl => run_afl(&target, timeout, None)?, // TODO - fix thread
+                Honggfuzz => run_honggfuzz(&target, timeout, thread)?,
+                Libfuzzer => run_libfuzzer(&target, timeout, None)?, // TODO - fix thread
             }
         }
         Debug { target } => {
@@ -141,13 +147,14 @@ fn run() -> Result<(), Error> {
             infinite,
             fuzzer,
             cargo_update,
+            thread
         } => {
             let run = |target: &str| -> Result<(), Error> {
                 use Fuzzer::*;
                 match fuzzer {
-                    Afl => run_afl(&target, Some(timeout))?,
-                    Honggfuzz => run_honggfuzz(&target, Some(timeout))?,
-                    Libfuzzer => run_libfuzzer(&target, Some(timeout))?,
+                    Afl => run_afl(&target, Some(timeout), None)?, // TODO - fix thread
+                    Honggfuzz => run_honggfuzz(&target, Some(timeout), thread)?,
+                    Libfuzzer => run_libfuzzer(&target, Some(timeout), None)?, // TODO - fix thread
                 }
                 Ok(())
             };
@@ -326,7 +333,7 @@ fn corpora_target(target: &str) -> Result<PathBuf, Error> {
     Ok(path)
 }
 
-fn run_honggfuzz(target: &str, timeout: Option<i32>) -> Result<(), Error> {
+fn run_honggfuzz(target: &str, timeout: Option<i32>, thread: Option<i32>) -> Result<(), Error> {
     let fuzzer = Fuzzer::Honggfuzz;
 
     let dir = fuzzer.work_dir()?;
@@ -340,9 +347,15 @@ fn run_honggfuzz(target: &str, timeout: Option<i32>) -> Result<(), Error> {
 
     let args = format!(
         "{} \
+         {} \
          {}",
         if let Some(t) = timeout {
             format!("--run_time {}", t)
+        } else {
+            "".into()
+        },
+        if let Some(n) = thread { // Set number of thread
+            format!("-n {}", n)
         } else {
             "".into()
         },
@@ -411,7 +424,7 @@ fn build_afl(target: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn run_afl(target: &str, _timeout: Option<i32>) -> Result<(), Error> {
+fn run_afl(target: &str, _timeout: Option<i32>, _thread: Option<i32>) -> Result<(), Error> {
     let fuzzer = Fuzzer::Afl;
 
     let dir = fuzzer.work_dir()?;
@@ -505,7 +518,7 @@ fn write_libfuzzer_target(fuzzer: Fuzzer, target: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn run_libfuzzer(target: &str, timeout: Option<i32>) -> Result<(), Error> {
+fn run_libfuzzer(target: &str, timeout: Option<i32>, _thread: Option<i32>) -> Result<(), Error> {
     let fuzzer = Fuzzer::Libfuzzer;
 
     prepare_target_workspace()?;

@@ -6,7 +6,7 @@ edition = "2018"
 
 [[bin]]
 name = "eth2fuzz"
-path = "cli.rs"
+path = "src/main.rs"
 
 [dependencies]
 structopt = "0.2.7"

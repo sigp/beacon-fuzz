@@ -44,6 +44,18 @@ test-afl: build
 test-libfuzzer: build
 	./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer
 
+# Run all fuzzing hardness over libfuzzer
+test-continuously-libfuzzer: build
+	./eth2fuzz continuously -t 2 --fuzzer libfuzzer
+
+# Run all fuzzing hardness over honggfuzz
+test-continuously-honggfuzz: build
+	./eth2fuzz continuously -t 2 --fuzzer honggfuzz
+
+# Run all fuzzing hardness over afl
+test-continuously-afl: build
+	./eth2fuzz continuously -t 2 --fuzzer afl
+
 # Build the docker
 # NOTE: `make docker CACHE=--no-cache` to force docker update/build everything again
 docker:

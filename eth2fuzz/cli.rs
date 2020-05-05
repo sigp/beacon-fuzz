@@ -534,23 +534,23 @@ fn run_libfuzzer(target: &str, timeout: Option<i32>) -> Result<(), Error> {
     }
 
     let fuzz_dir = fuzzer.work_dir()?.join("fuzz");
+    let corpus_dir = corpora_target(target)?;
 
-    let max_time = if let Some(timeout) = timeout {
-        format!("-max_total_time={}", timeout)
-    } else {
-        "".into()
+    // create arguments
+    // corpora dir
+    // max_time if provided (i.e. continuously fuzzing)
+    let mut args: Vec<String> = Vec::new();
+    args.push(format!("{}", &corpus_dir.display()));
+    if let Some(timeout) = timeout {
+        args.push("--".to_string());
+        args.push(format!("-max_total_time={}", timeout));
     };
 
-    // TODO - fix maxtime
-    println!("{:?}", max_time);
-    println!("{}", state_dir()?.display());
-
-    let corpus_dir = corpora_target(target)?;
+    // Launch the fuzzer using cargo
     let fuzzer_bin = Command::new("cargo")
         .env("ETH2FUZZ_BEACONSTATE", format!("{}", state_dir()?.display()))
         .args(&["+nightly", "fuzz", "run", &target])
-        .arg(&corpus_dir)
-        //.args(&["--", &max_time])
+        .args(&args)
         .current_dir(&fuzz_dir)
         .spawn()
         .context(format!("error starting {:?} to run {}", fuzzer, target))?

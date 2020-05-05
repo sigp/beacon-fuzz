@@ -36,25 +36,18 @@ test-debug: build
 		workspace/corpora/attestation/05db7ea93a4ee2467a1a04f3a0fa8f38.ssz
 
 test-hfuzz: build
-	./eth2fuzz target lighthouse_attestation
+	./eth2fuzz target lighthouse_attestation \
+		-t 2
 
 test-afl: build
-	./eth2fuzz target lighthouse_attestation --fuzzer afl
+	./eth2fuzz target lighthouse_attestation \
+		--fuzzer afl \
+		-t 2
 
 test-libfuzzer: build
-	./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer
-
-# Run all fuzzing hardness over libfuzzer
-test-continuously-libfuzzer: build
-	./eth2fuzz continuously -t 2 --fuzzer libfuzzer
-
-# Run all fuzzing hardness over honggfuzz
-test-continuously-honggfuzz: build
-	./eth2fuzz continuously -t 2 --fuzzer honggfuzz
-
-# Run all fuzzing hardness over afl
-test-continuously-afl: build
-	./eth2fuzz continuously -t 2 --fuzzer afl
+	./eth2fuzz target lighthouse_attestation \
+		--fuzzer libfuzzer \
+		-t 2
 
 # Build the docker
 # NOTE: `make docker CACHE=--no-cache` to force docker update/build everything again
@@ -81,3 +74,18 @@ clean-all: clean
 	rm -rf workspace/hfuzz
 	rm -rf workspace/libfuzzer
 
+#
+# CI utils
+#
+
+# Run all fuzzing hardness over libfuzzer
+test-continuously-libfuzzer: build
+	./eth2fuzz continuously -t 2 --fuzzer libfuzzer
+
+# Run all fuzzing hardness over honggfuzz
+test-continuously-honggfuzz: build
+	./eth2fuzz continuously -t 2 --fuzzer honggfuzz
+
+# Run all fuzzing hardness over afl
+test-continuously-afl: build
+	./eth2fuzz continuously -t 2 --fuzzer afl

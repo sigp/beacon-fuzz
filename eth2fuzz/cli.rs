@@ -12,7 +12,7 @@ extern crate fs_extra;
 use std::env;
 use std::ffi::OsStr;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 use std::process::Command;
 
 use failure::{Error, ResultExt};
@@ -63,6 +63,9 @@ enum Cli {
             )
         )]
         fuzzer: Fuzzer,
+        /// Set timeout
+        #[structopt(short = "t", long = "timeout")]
+        timeout: Option<i32>,
     },
     /// Debug one target
     #[structopt(name = "debug")]
@@ -95,7 +98,7 @@ fn run() -> Result<(), Error> {
                 println!("{}", target);
             }
         }
-        Run { target, fuzzer } => {
+        Run { target, fuzzer, timeout } => {
             let targets = get_targets()?;
             if targets.iter().find(|x| *x == &target).is_none() {
                 bail!(
@@ -111,9 +114,9 @@ fn run() -> Result<(), Error> {
 
             use Fuzzer::*;
             match fuzzer {
-                Afl => run_afl(&target, None)?,
-                Honggfuzz => run_honggfuzz(&target, None)?,
-                Libfuzzer => run_libfuzzer(&target, None)?,
+                Afl => run_afl(&target, timeout)?,
+                Honggfuzz => run_honggfuzz(&target, timeout)?,
+                Libfuzzer => run_libfuzzer(&target, timeout)?,
             }
         }
         Debug { target } => {

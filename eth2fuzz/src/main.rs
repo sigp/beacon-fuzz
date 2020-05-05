@@ -425,7 +425,7 @@ fn build_afl(target: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn run_afl(target: &str, _timeout: Option<i32>, _thread: Option<i32>) -> Result<(), Error> {
+fn run_afl(target: &str, timeout: Option<i32>, _thread: Option<i32>) -> Result<(), Error> {
     let fuzzer = Fuzzer::Afl;
 
     let dir = fuzzer.work_dir()?;
@@ -445,10 +445,19 @@ fn run_afl(target: &str, _timeout: Option<i32>, _thread: Option<i32>) -> Result<
         corpora_dir.as_ref()
     };
 
+    let mut args: Vec<String> = Vec::new();
+    args.push("+nightly".to_string());
+    args.push("afl".to_string());
+    args.push("fuzz".to_string());
+    if let Some(t) = timeout {
+        args.push(format!("-V {}", t));
+    };
+
+
     // Run the fuzzer using cargo
     let fuzzer_bin = Command::new("cargo")
-        .args(&["+nightly", "afl", "fuzz"])
-        .arg("-t 30000+") // increase timeout to let the fuzzer pick a valid beaconstate
+        .args(args)
+        //.arg("-t 30000+" ) // increase timeout to let the fuzzer pick a valid beaconstate
         .arg("-m") // remove memory limit
         .arg("none")
         .arg("-i")

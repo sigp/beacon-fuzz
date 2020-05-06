@@ -90,7 +90,7 @@ ifndef BFUZZ_TRINITY_OFF
 required_variables += TRINITY_VENV_PATH
 endif
 ifndef BFUZZ_ZRNT_OFF
-required_variables += zrnt_prefix GO_FUZZ_BUILD_PATH
+required_variables += zrnt_prefix GO_BFUZZ_BUILD
 endif
 
 $(call check_defined, $(required_variables))
@@ -99,7 +99,7 @@ $(call check_defined, $(required_variables))
 .PHONY: all clean mostlyclean
 all: fuzzer
 
-# TODO N depend on lib or GO_FUZZ_BUILD_PATH?
+# TODO N depend on lib or GO_BFUZZ_BUILD?
 # TODO check GO_BFUZZ_BUILD is accessible?
 zrnt.a : zrnt/fuzz.go
 	cd zrnt && \

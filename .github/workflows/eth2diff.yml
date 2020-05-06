@@ -53,6 +53,6 @@ jobs:
             override: true
 
       - name: Build Docker
-        run: cd warf && make docker
+        run: cd eth2diff && make docker
 
   # TODO - add dockers compilation + tests

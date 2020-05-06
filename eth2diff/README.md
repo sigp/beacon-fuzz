@@ -4,7 +4,7 @@
 
 When you provide a state and a block, eth2diff will process them through all clients you have (compiled using docker, see Makefile) inside the shared folder.
 
-The goal is to detect excution differences between all eth2 implementation. 
+The goal is to detect execution differences between all eth2 implementation. 
 
 
 ## Usage

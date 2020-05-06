@@ -1,4 +1,4 @@
-# ETH2FUZZ TUTORIAL
+# ETH2FUZZ
 
 
 ## Goal of this tool

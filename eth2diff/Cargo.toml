@@ -1,0 +1,18 @@
+[package]
+name = "eth2diff"
+version = "0.1.0"
+authors = ["Patrick Ventuzelo <ventuzelo.patrick@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+failure = "0.1.1" # Error
+structopt = "0.3.14" # cli parsing
+strum = "0.18.0" # iteration over enum
+strum_macros = "0.18.0" # iteration over enum
+clap =  "2.33.0" # arg_num
+colored = "1.9" # color terminal
+chrono = "0.4.0" # time
+
+# wait-timeout = "0.1.5" # Child process timeout

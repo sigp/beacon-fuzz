@@ -1,0 +1,1 @@
+pid: 24471 | beaconstate: ../common/seeds/lighthouse_beaconstate/1d9a968391f52f81c69c6b616e311aa2.ssz

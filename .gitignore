@@ -1,3 +1,11 @@
+# files of eth2diff
+eth2diff/eth2diff
+eth2diff/shared/
+
+# files of eth2fuzz
+eth2fuzz/eth2fuzz
+eth2fuzz/workspace
+
 target/
 **/*.rs.bk
 Cargo.lock

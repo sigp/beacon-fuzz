@@ -1,0 +1,27 @@
+[package]
+name = "eth2fuzz"
+version = "0.1.0"
+authors = ["Patrick Ventuzelo <ventuzelo.patrick@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "eth2fuzz"
+path = "src/main.rs"
+
+[dependencies]
+structopt = "0.2.7"
+clap = "2.31.2"
+regex = "0.2.10"
+failure = "0.1.1"
+strsim = "0.7.0"
+fs_extra = "1.1.0"
+
+[workspace]
+exclude = [
+  "targets",
+  "debug",
+  "fuzzer-afl",
+  "fuzzer-honggfuzz",
+  "fuzzer-libfuzzer",
+  "workspace",
+]

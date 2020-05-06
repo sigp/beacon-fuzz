@@ -1,0 +1,9 @@
+# ignore .git and .cache folders
+.git
+.cache
+
+# Ignore eth2diff compiled locally
+target/*
+
+# TODO
+shared/

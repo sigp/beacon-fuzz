@@ -1,0 +1,43 @@
+name: Eth2diff
+
+on:
+  push:
+    paths:
+      - 'eth2diff/**'
+  pull_request:
+    paths: 
+      - 'eth2diff/**'
+
+jobs:
+  # Check code style quickly by running `rustfmt` over all code
+  rustfmt:
+    name: Check Rust fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt
+
+      - name: Run cargo fmt
+        run: cd eth2diff && make check-fmt
+
+  # Build only eth2diff tool
+  build:
+    name: Building eth2diff cli tool
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build
+        run: cd eth2diff && make build
+
+  # TODO - add dockers compilation + tests

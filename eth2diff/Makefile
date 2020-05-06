@@ -14,6 +14,7 @@ help:
 	@echo '    make fmt 										Run Rust fmt.'
 	@echo '    make clean 										Clean the directory tree.'
 	@echo '    make docker										Build a docker image for this project.'
+	@echo
 	@echo '    make test		 								Test eth2 clients with valid state + block files.'
 	@echo '    make test-error		 							Test eth2 clients with invalid state + block files.'
 	@echo '    make docker-test		 							Test eth2 clients with valid state + block files using docker.'
@@ -122,3 +123,11 @@ teku:
 	--file docker/teku.Dockerfile \
 	--output ./shared/teku . \
 	$(CACHE)
+
+#
+# CI utils
+#
+
+# Check code style quickly by running `rustfmt` over all code
+check-fmt:
+	cargo fmt --all -- --check

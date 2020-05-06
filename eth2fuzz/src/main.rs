@@ -19,7 +19,7 @@ use failure::{Error, ResultExt};
 use regex::Regex;
 use structopt::StructOpt;
 
-/// Run fuzzer collection
+/// Run eth2fuzz fuzzing targets
 #[derive(StructOpt, Debug)]
 enum Cli {
     /// Run all fuzz targets

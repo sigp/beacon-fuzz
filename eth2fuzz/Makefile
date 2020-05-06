@@ -60,7 +60,7 @@ clean-all: clean
 	rm -rf workspace/libfuzzer
 
 #
-# Testing utils / CI utils
+# Testing utils
 #
 
 # Simple test to check if eth2fuzz is working.
@@ -104,3 +104,11 @@ test-continuously-libfuzzer: build
 # Run all fuzzing hardness over afl
 test-continuously-afl: build
 	./eth2fuzz continuously -t 2 --fuzzer afl
+
+#
+# CI utils
+#
+
+# Check code style quickly by running `rustfmt` over all code
+check-fmt:
+	cargo fmt --all -- --check

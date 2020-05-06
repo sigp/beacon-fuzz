@@ -48,8 +48,6 @@ lighthouse_deposit
 lighthouse_proposer_slashing
 lighthouse_voluntary_exit
 lighthouse_beaconstate
-ssz_encode_decode
-ssz_decode_encode
 ```
 
 # Commands
@@ -57,12 +55,22 @@ ssz_decode_encode
 Help:
 ``` sh
 $ ./eth2fuzz help
-[...]
+Run eth2fuzz fuzzing targets
+
+USAGE:
+    eth2fuzz <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
 SUBCOMMANDS:
     continuously    Run all fuzz targets
+    debug           Debug one target
     help            Prints this message or the help of the given subcommand(s)
     list-targets    List all available targets
     target          Run one target with specific fuzzer
+
 
 ```
 
@@ -74,7 +82,7 @@ Run targets: `cargo +nightly run target lighthouse_attestation`.
 Using other fuzzing engines:
 ``` sh
 # --fuzzer <fuzzer>    Which fuzzer to run [default: Honggfuzz]  [possible values: Afl, Honggfuzz, Libfuzzer]
-./eth2fuzz target lighthouse_attestation --fuzzer Libfuzzer`.
+./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer`.
 ```
 
 ## Continuous fuzzing 
@@ -84,10 +92,9 @@ CAUTIONS: eth2fuzz continuous mode will stop after all target being executed onc
 Help:
 ``` sh
 $ ./eth2fuzz continuously --help
-Run eth2fuzz targets
-
+Run all fuzz targets
 USAGE:
-    cli continuously [FLAGS] [OPTIONS]
+    eth2fuzz continuously [FLAGS] [OPTIONS]
 
 FLAGS:
         --cargo-update    
@@ -98,6 +105,7 @@ FLAGS:
 OPTIONS:
     -q, --filter <filter>      Only run target containing this string
         --fuzzer <fuzzer>      Which fuzzer to run [default: Honggfuzz]  [possible values: Afl, Honggfuzz, Libfuzzer]
+    -n, --thread <thread>      Set number of thread (only for hfuzz)
     -t, --timeout <timeout>    Set timeout per target [default: 10]
 ```
 
@@ -132,13 +140,10 @@ libfuzzer output details: http://llvm.org/docs/LibFuzzer.html#output
 
 # Improvements
 
-This tool can be improved 
-
 ## General improvement for this tool
 
 - add first time running script for afl
 - add more documentation
-- fix libfuzzer (cargofuzz) => use cargo-fuzz instead of existing code.
 - support new fuzzers (lain, fuzzcheck, customs, etc.)
 - compile all target before running fuzzing (no need to compile targets each time fuzzer restart)
 - Verify sharing coverage + seeds work as expected

@@ -114,6 +114,8 @@ jobs:
             toolchain: nightly
             override: true
 
+      - name: Submodule update
+        run: git submodule update --init
       - name: Install afl dependencies
         run: |
           sudo apt-get update

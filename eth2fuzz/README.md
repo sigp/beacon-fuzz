@@ -5,7 +5,7 @@
 
 
 The main goal of this tool is to provide an easy way to fuzz lighthouse (and other clients) to create new inputs for differential fuzzers.
-Generated samples/inputs can than be reused as unittest and testcases for differential fuzzers (eth2diff && beacon-fuzz-2).
+Generated samples/inputs can than be reused as unittest and testcases for differential fuzzers (`eth2diff` && `beacon-fuzz-2`).
 
 
 Main features are:
@@ -77,9 +77,9 @@ SUBCOMMANDS:
 ## Run targets
 
 Help: `./eth2fuzz target --help`.
+Run one target: `./eth2fuzz target lighthouse_attestation`.
 
-Run targets: `cargo +nightly run target lighthouse_attestation`.
-Using other fuzzing engines:
+Run one target with specific fuzzing engines:
 ``` sh
 # --fuzzer <fuzzer>    Which fuzzer to run [default: Honggfuzz]  [possible values: Afl, Honggfuzz, Libfuzzer]
 ./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer`.
@@ -157,5 +157,5 @@ libfuzzer output details: http://llvm.org/docs/LibFuzzer.html#output
 
 ## How to add new harnesses?
 
-Modify the `common/src/lib.rs` to add the function you want to fuzz.
+Modify the `targets/src/lib.rs` to add the function you want to fuzz.
 TODO

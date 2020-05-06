@@ -45,7 +45,7 @@ fn main() {
     let data = read_contents_from_path(&args[2]).expect("Cannot read container file");
 
     // call the fuzzing target
-    fuzz_target(&data, beaconstate);
+    fuzz_target(beaconstate, &data);
 
     println!("No crash, everything is OK\n");
 }

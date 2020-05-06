@@ -133,7 +133,7 @@ fn main() {
     // Run fuzzing loop
     loop {
         fuzz!(|data|{
-            fuzz_target(data, state.clone());
+            fuzz_target(state.clone(), data);
         })
     }
 }

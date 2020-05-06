@@ -23,9 +23,11 @@ WORKDIR nim-beacon-chain
 # First `make` invocation
 # will update all Git submodules
 RUN make
+# TODO - only make tools we need
+
 # Second `make` invocation
 # will compiled everything
-RUN make NIMFLAGS="-d:chronicles_log_level=ERROR -d:release -d:const_preset=$PRESET" all
+# RUN make NIMFLAGS="-d:chronicles_log_level=ERROR -d:release -d:const_preset=$PRESET" all
 
 #
 # Exporting compiled binaries 
@@ -33,3 +35,4 @@ RUN make NIMFLAGS="-d:chronicles_log_level=ERROR -d:release -d:const_preset=$PRE
 FROM scratch AS export
 
 COPY --from=build /nim-beacon-chain/build/* .
+# TODO - only copy needed tools

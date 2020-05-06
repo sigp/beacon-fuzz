@@ -1,15 +1,16 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/phase0"
 	"helper"
+
+	"github.com/protolambda/zrnt/eth2/phase0"
 )
 
 func init() {
 	helper.SetInputType(helper.INPUT_TYPE_BLOCK_HEADER)
 }
 
-func Fuzz(data []byte) (result []byte) {
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeBlockHeader(data, false)
 	if err != nil {
 		// Assumes preprocessing ensures data is decodable
@@ -20,8 +21,8 @@ func Fuzz(data []byte) (result []byte) {
 	blockHeader := (&input.Block).Header()
 
 	if err := ffstate.ProcessHeader(blockHeader); err != nil {
-		return []byte{}
+		return []byte{}, err
 	}
 
-	return helper.EncodePoststate(ffstate.BeaconState)
+	return helper.EncodePoststate(ffstate.BeaconState), nil
 }

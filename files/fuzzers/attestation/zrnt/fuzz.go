@@ -1,15 +1,16 @@
 package fuzz
 
 import (
-	"github.com/protolambda/zrnt/eth2/phase0"
 	"helper"
+
+	"github.com/protolambda/zrnt/eth2/phase0"
 )
 
 func init() {
 	helper.SetInputType(helper.INPUT_TYPE_ATTESTATION)
 }
 
-func Fuzz(data []byte) []byte {
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeAttestation(data, false)
 	if err != nil {
 		// Assumes preprocessing ensures data is decodable
@@ -19,10 +20,10 @@ func Fuzz(data []byte) []byte {
 	ffstate := phase0.NewFullFeaturedState(&input.Pre)
 	ffstate.LoadPrecomputedData()
 
-    // TODO(gnattishness) disable validation and sig verification (once supported)
+	// TODO(gnattishness) disable validation and sig verification (once supported)
 	if err := ffstate.ProcessAttestation(&input.Attestation); err != nil {
-		return []byte{}
+		return []byte{}, err
 	}
 
-	return helper.EncodePoststate(&input.Pre)
+	return helper.EncodePoststate(&input.Pre), nil
 }

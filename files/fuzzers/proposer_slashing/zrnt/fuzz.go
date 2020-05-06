@@ -10,7 +10,7 @@ func init() {
 	helper.SetInputType(helper.INPUT_TYPE_PROPOSER_SLASHING)
 }
 
-func Fuzz(data []byte) []byte {
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeProposerSlashing(data, false)
 	if err != nil {
 		panic("Decoding failed - bug in preprocessing.")
@@ -19,8 +19,8 @@ func Fuzz(data []byte) []byte {
 	ffstate.LoadPrecomputedData()
 
 	if err := ffstate.ProcessProposerSlashing(&input.ProposerSlashing); err != nil {
-		return []byte{}
+		return []byte{}, err
 	}
 
-	return helper.EncodePoststate(ffstate.BeaconState)
+	return helper.EncodePoststate(ffstate.BeaconState), nil
 }

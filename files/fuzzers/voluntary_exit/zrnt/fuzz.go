@@ -10,7 +10,7 @@ func init() {
 	helper.SetInputType(helper.INPUT_TYPE_VOLUNTARY_EXIT)
 }
 
-func Fuzz(data []byte) []byte {
+func Fuzz(data []byte) ([]byte, error) {
 	input, err := helper.DecodeVoluntaryExit(data, false)
 	if err != nil {
 		panic("Decoding failed - bug in preprocessing.")
@@ -18,9 +18,9 @@ func Fuzz(data []byte) []byte {
 	ffstate := phase0.NewFullFeaturedState(&input.Pre)
 	ffstate.LoadPrecomputedData()
 
-	if err := ffstate.ProcessVoluntaryExit(&input.VoluntaryExit); err != nil {
-		return []byte{}
+	if err := ffstate.ProcessVoluntaryExit(&input.Exit); err != nil {
+		return []byte{}, err
 	}
 
-	return helper.EncodePoststate(ffstate.BeaconState)
+	return helper.EncodePoststate(ffstate.BeaconState), nil
 }

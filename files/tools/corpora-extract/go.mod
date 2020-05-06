@@ -8,4 +8,4 @@ require (
 )
 
 replace helper => ../../lib/go/src/helper
-replace github.com/protolambda/zrnt => github.com/protolambda/zrnt v0.9.1
+replace github.com/protolambda/zrnt => github.com/protolambda/zrnt v0.10.1

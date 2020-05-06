@@ -1,6 +1,11 @@
 here := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
+# TODO remove when Trinity supports v0.10.1
+BFUZZ_TRINITY_OFF:=1
+
 CARGO_CONFIG_PATH := $(realpath ../.cargo/config)
+
+GO_BFUZZ_BUILD ?= go-bfuzz-build
 
 # TODO(gnattishness bls enable/disable option)
 

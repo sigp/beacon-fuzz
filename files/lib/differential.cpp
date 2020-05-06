@@ -46,7 +46,7 @@ void Differential::AddModule(std::shared_ptr<Base> module) {
   modules.push_back(module);
 }
 
-void Differential::Run(const std::vector<uint8_t> data) const {
+void Differential::Run(const std::vector<uint8_t>& data) {
   std::optional<std::vector<uint8_t>> prev = std::nullopt;
   bool first = true;
   std::shared_ptr<Base> prevmod = nullptr;

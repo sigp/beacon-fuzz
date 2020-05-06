@@ -1,4 +1,4 @@
-#define GO_FUZZ_PREFIX shuffle_
+#define GO_FUZZ_PREFIX zrnt_shuffle_
 #include <assert.h>
 #include <lib/bfuzz_config.h>
 #include <lib/differential.h>
@@ -20,13 +20,14 @@
 // python venv containing dependencies
 #error PY_SPEC_VENV_PATH undefined
 #endif
-#ifndef TRINITY_HARNESS_PATH
-#error TRINITY_HARNESS_PATH undefined
-#endif
-#ifndef TRINITY_VENV_PATH
-// python venv containing dependencies
-#error TRINITY_VENV_PATH undefined
-#endif
+// TODO(gnattishness) re-enable when TRINITY supports v0.10.1
+// #ifndef TRINITY_HARNESS_PATH
+// #error TRINITY_HARNESS_PATH undefined
+// #endif
+// #ifndef TRINITY_VENV_PATH
+// // python venv containing dependencies
+// #error TRINITY_VENV_PATH undefined
+// #endif
 
 extern "C" bool shuffle_list_c(uint64_t *input_ptr, size_t input_size,
                                const uint8_t *seed_ptr);
@@ -71,6 +72,7 @@ class Lighthouse : public Rust {
 };
 
 class Nimbus : public Nim {
+  using Nim::Nim;
   // NOTE: Nim uses a "nimbus" name by default
   std::optional<std::vector<uint8_t>> run(
       const std::vector<uint8_t> &data) override {
@@ -114,11 +116,12 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   differential->AddModule(std::make_shared<fuzzing::Python>(
       "pyspec", (*argv)[0], PY_SPEC_HARNESS_PATH, std::nullopt,
       PY_SPEC_VENV_PATH, fuzzing::config::disable_bls));
-  differential->AddModule(std::make_shared<fuzzing::Python>(
-      "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
-      TRINITY_VENV_PATH, fuzzing::config::disable_bls));
+  // differential->AddModule(std::make_shared<fuzzing::Python>(
+  //    "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
+  //    TRINITY_VENV_PATH, fuzzing::config::disable_bls));
   differential->AddModule(std::make_shared<fuzzing::Lighthouse>());
-  differential->AddModule(std::make_shared<fuzzing::Nimbus>());
+  differential->AddModule(
+      std::make_shared<fuzzing::Nimbus>(fuzzing::config::disable_bls));
 
   return 0;
 }

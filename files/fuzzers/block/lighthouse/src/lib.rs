@@ -4,12 +4,12 @@ use state_processing::{
     per_block_processing, per_slot_processing, BlockProcessingError, BlockSignatureStrategy,
 };
 use std::{ptr, slice};
-use types::{BeaconBlock, BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch};
+use types::{BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch, SignedBeaconBlock};
 
 #[derive(Decode, Encode)]
 struct BlockTestCase<T: EthSpec> {
     pub pre: BeaconState<T>,
-    pub block: BeaconBlock<T>,
+    pub block: SignedBeaconBlock<T>,
 }
 
 impl<T: EthSpec> BlockTestCase<T> {
@@ -30,11 +30,11 @@ impl<T: EthSpec> BlockTestCase<T> {
         // TODO(gnattishness) any reason why we would want to unwrap and panic here vs returning an error?
         state.build_all_caches(spec).unwrap();
         let result = {
-            while state.slot < block.slot {
+            while state.slot < block.slot() {
                 // TODO(gnattishness) handle option
                 // requires implementation of an error trait that I can specify as the
                 // return type
-                per_slot_processing(&mut state, spec).unwrap();
+                per_slot_processing(&mut state, None, spec).unwrap();
             }
 
             state
@@ -51,7 +51,7 @@ impl<T: EthSpec> BlockTestCase<T> {
             state
         };
 
-        if !validate_state_root || block.state_root == result.canonical_root() {
+        if !validate_state_root || block.state_root() == result.canonical_root() {
             Ok(result)
         } else {
             Err(BlockProcessingError::StateRootMismatch)

@@ -72,8 +72,8 @@ type InputDeposit struct {
 }
 
 type InputVoluntaryExit struct {
-	Pre           phase0.BeaconState
-	VoluntaryExit exits.VoluntaryExit
+	Pre  phase0.BeaconState
+	Exit exits.SignedVoluntaryExit
 }
 
 type InputProposerSlashing struct {
@@ -87,18 +87,21 @@ type InputBlockHeader struct {
 }
 
 type InputBlock struct {
-	Pre   phase0.BeaconState
-	Block phase0.BeaconBlock
+	Pre         phase0.BeaconState
+	SignedBlock phase0.SignedBeaconBlock
 }
 
 // Types to be read from fuzzer
 type InputBlockWrapper struct {
+	StateID     uint16
+	SignedBlock phase0.SignedBeaconBlock
+}
+
+// NOTE: not signed like Block is
+type InputBlockHeaderWrapper struct {
 	StateID uint16
 	Block   phase0.BeaconBlock
 }
-
-// Same as for Block
-type InputBlockHeaderWrapper InputBlockWrapper
 
 type InputAttestationWrapper struct {
 	StateID     uint16
@@ -116,8 +119,8 @@ type InputDepositWrapper struct {
 }
 
 type InputVoluntaryExitWrapper struct {
-	StateID       uint16
-	VoluntaryExit exits.VoluntaryExit
+	StateID uint16
+	Exit    exits.SignedVoluntaryExit
 }
 
 type InputProposerSlashingWrapper struct {
@@ -135,7 +138,7 @@ func (w *InputBlockWrapper) unwrap() (*InputBlock, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &InputBlock{Pre: state, Block: w.Block}, nil
+	return &InputBlock{Pre: state, SignedBlock: w.SignedBlock}, nil
 }
 
 func (w *InputBlockHeaderWrapper) unwrap() (*InputBlockHeader, error) {
@@ -175,7 +178,7 @@ func (w *InputVoluntaryExitWrapper) unwrap() (*InputVoluntaryExit, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &InputVoluntaryExit{Pre: state, VoluntaryExit: w.VoluntaryExit}, nil
+	return &InputVoluntaryExit{Pre: state, Exit: w.Exit}, nil
 }
 
 func (w *InputProposerSlashingWrapper) unwrap() (*InputProposerSlashing, error) {
@@ -488,6 +491,8 @@ func GetStateByID(stateID uint16) (phase0.BeaconState, error) {
 }
 
 func randomlyValid(valid []byte, random []byte, chance float32) {
+	// NOTE: although "random" it is deterministically generated based on original input,
+	// so repeatable
 	chanceRNG := binary.LittleEndian.Uint32(random[:4])
 	bit := random[4]
 	// make random all valid
@@ -499,16 +504,19 @@ func randomlyValid(valid []byte, random []byte, chance float32) {
 	}
 }
 
-func correctBlock(state *phase0.BeaconState, block *phase0.BeaconBlock) {
+func correctBlock(state *phase0.BeaconState, block *phase0.SignedBeaconBlock) {
 	{
-		block.Slot = state.Slot + (block.Slot % 10)
+		block.Message.Slot = state.Slot + (block.Message.Slot % 10)
 	}
 
 	{
 		latestHeaderCopy := state.LatestBlockHeader
-		latestHeaderCopy.StateRoot = zrnt_ssz.HashTreeRoot(state, phase0.BeaconStateSSZ)
-		prevRoot := zrnt_ssz.SigningRoot(latestHeaderCopy, header.BeaconBlockHeaderSSZ)
-		randomlyValid(prevRoot[:], block.ParentRoot[:], 0.9)
+		prevRoot := zrnt_ssz.HashTreeRoot(latestHeaderCopy, header.BeaconBlockHeaderSSZ)
+		// TODO(gnattishness) evaluate if this is helpful - i feel if validation is turned on,
+		// a mutation here will almost never be correct
+		// This will also invalidate signatures
+		randomlyValid(prevRoot[:], block.Message.ParentRoot[:], 0.9)
+		// TODO block.state_root correction
 	}
 
 	// TODO eth1data??
@@ -520,13 +528,13 @@ var g_return_data = make([]byte, 0)
 
 //export SSZPreprocessGetReturnData
 func SSZPreprocessGetReturnData(return_data []byte) {
-    // NOTE: for this to be correct, return_data must initially refer to an array with
-    // the same size and capacity (i.e. that copy doesn't re-size the data)
-    // Alternative could be to pass a pointer to a slice,
-    // but generally don't want this memory to be managed by the go runtime/GC.
-    if len(return_data) != len(g_return_data) {
-        panic("return_data must be the same length as g_return_data.")
-    }
+	// NOTE: for this to be correct, return_data must initially refer to an array with
+	// the same size and capacity (i.e. that copy doesn't re-size the data)
+	// Alternative could be to pass a pointer to a slice,
+	// but generally don't want this memory to be managed by the go runtime/GC.
+	if len(return_data) != len(g_return_data) {
+		panic("return_data must be the same length as g_return_data.")
+	}
 	copy(return_data, g_return_data)
 }
 
@@ -581,7 +589,8 @@ func SSZPreprocess(data []byte) int {
 
 		/* BlockHeader-specific invariants */
 		{
-			input.Block.ParentRoot = zrnt_ssz.SigningRoot(input.Pre.LatestBlockHeader, header.BeaconBlockHeaderSSZ)
+			// TODO make this randomly corrected?
+			input.Block.ParentRoot = zrnt_ssz.HashTreeRoot(input.Pre.LatestBlockHeader, header.BeaconBlockHeaderSSZ)
 		}
 
 		g_return_data = Encode(input)
@@ -659,7 +668,7 @@ func SSZPreprocess(data []byte) int {
 			return 0
 		}
 		// TODO update eth1data to match deposits?
-		correctBlock(&input.Pre, &input.Block)
+		correctBlock(&input.Pre, &input.SignedBlock)
 		g_return_data = Encode(input)
 		return len(g_return_data)
 	default:

@@ -1,9 +1,6 @@
 use ssz::{Decode, Encode};
 use ssz_derive::{Decode, Encode};
-use state_processing::{
-    per_block_processing::{process_block_header, VerifySignatures},
-    BlockProcessingError,
-};
+use state_processing::{per_block_processing::process_block_header, BlockProcessingError};
 use std::{ptr, slice};
 use types::{BeaconBlock, BeaconState, EthSpec, MainnetEthSpec};
 
@@ -19,13 +16,8 @@ impl<T: EthSpec> BlockHeaderTestCase<T> {
     fn process_header(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
         let spec = T::default_spec();
 
-        process_block_header(
-            &mut self.pre,
-            &self.block,
-            None,
-            VerifySignatures::False,
-            &spec,
-        )?;
+        // TODO(gnattishness) this no longer allows us to skip hash_tree_root validation
+        process_block_header(&mut self.pre, &self.block, &spec)?;
 
         Ok(self.pre)
     }

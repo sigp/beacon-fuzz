@@ -39,8 +39,8 @@ class NimOp : public Nim {
     size_t output_size = data.size() * 4;
     std::vector<uint8_t> output(output_size);
 
-    if (NIM_FUZZ_HANDLE(data.data(), data.size(), output.data(),
-                        &output_size) == false) {
+    if (NIM_FUZZ_HANDLE(data.data(), data.size(), output.data(), &output_size,
+                        this->bls_disabled) == false) {
       return std::nullopt;
     }
 

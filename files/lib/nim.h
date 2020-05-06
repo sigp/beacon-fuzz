@@ -16,8 +16,14 @@ class Nim : public Base {
       const std::vector<uint8_t>& data) = 0;
   std::string name_;
 
+ protected:
+  bool bls_disabled;
+
  public:
-  explicit Nim(const std::string& name = "nimbus") : Base() {
+  explicit Nim(const bool bls_disabled = true,
+               const std::string& name = "nimbus")
+      : Base() {
+    this->bls_disabled = bls_disabled;
     name_ = name;
     NimMain();
   }

@@ -24,7 +24,7 @@ make install
 
 cd /eth2 || exit
 # Get eth2.0-specs
-git clone --depth 1 --branch v0.9.1 https://github.com/ethereum/eth2.0-specs.git
+git clone --depth 1 --branch v0.10.1 https://github.com/ethereum/eth2.0-specs.git
 # TODO quote here?
 ETH2_SPECS_PATH=$(realpath eth2.0-specs/)
 # TODO do we care about this?
@@ -38,11 +38,11 @@ export PY_SPEC_VENV_PATH="$ETH2_SPECS_PATH"/venv
 # Way quicker to avoid rebuilding every time
 "$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$PY_SPEC_VENV_PATH"
 "$PY_SPEC_VENV_PATH"/bin/pip install --upgrade pip
-cd "$ETH2_SPECS_PATH"/test_libs/pyspec || exit
+cd "$ETH2_SPECS_PATH"/tests/core/pyspec || exit
 # don't need to use requirements.py as the setup.py contains pinned dependencies
 # TODO use editable install "-e ." once editable venvs are supported
 "$PY_SPEC_VENV_PATH"/bin/pip install --upgrade .
-cd "$ETH2_SPECS_PATH"/test_libs/config_helpers || exit
+cd "$ETH2_SPECS_PATH"/tests/core/config_helpers || exit
 # TODO use editable install "-e ." once editable venvs are supported
 "$PY_SPEC_VENV_PATH"/bin/pip install --upgrade .
 
@@ -52,18 +52,18 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 # as any modifications to the pyspec occur at runtime (monkey patching), its
 # ok to have a centralized pyspec codebase for all fuzzing targets
 
-# TODO specify Trinity tag/branch
-git clone --branch master https://github.com/ethereum/trinity.git /eth2/trinity
-cd /eth2/trinity || exit
-git checkout fcea7124effca010db62bd41a24dd7975825ba90 || exit
-export TRINITY_VENV_PATH="/eth2/trinity/venv"
-# NOTE: potential risk of not fully upgrading if already exists, but should be fine
-# Way quicker to avoid rebuilding every time
-"$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$TRINITY_VENV_PATH"
-"$TRINITY_VENV_PATH"/bin/pip install --upgrade pip
-"$TRINITY_VENV_PATH"/bin/pip install --upgrade .
-# Now any script run with the python executable below will have access to trinity
-export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
+# Trinity is currently on spec v0.9.4, TODO re-enable when compliant with v0.10.1
+#git clone --branch master https://github.com/ethereum/trinity.git /eth2/trinity
+#cd /eth2/trinity || exit
+#git checkout fcea7124effca010db62bd41a24dd7975825ba90 || exit
+#export TRINITY_VENV_PATH="/eth2/trinity/venv"
+## NOTE: potential risk of not fully upgrading if already exists, but should be fine
+## Way quicker to avoid rebuilding every time
+#"$CPYTHON_INSTALL_PATH"/bin/python3 -m venv "$TRINITY_VENV_PATH"
+#"$TRINITY_VENV_PATH"/bin/pip install --upgrade pip
+#"$TRINITY_VENV_PATH"/bin/pip install --upgrade .
+## Now any script run with the python executable below will have access to trinity
+#export TRINITY_BIN_PATH="$TRINITY_VENV_PATH"/bin/python3
 
 cd /eth2 || exit
 
@@ -71,13 +71,15 @@ cd /eth2 || exit
 GOROOT=$(realpath go)
 export GOROOT
 export PATH="$GOROOT/bin:$PATH"
-export GO111MODULE="off" # not supported by go-fuzz, keep it off unless explicitly enabled
+export GO111MODULE="on"
 
 # Nimbus
 
-# TODO change back to official branch & repo
-git clone --branch libnfuzz https://github.com/gnattishness/nim-beacon-chain.git /eth2/nim-beacon-chain
+git clone --branch master https://github.com/status-im/nim-beacon-chain.git /eth2/nim-beacon-chain
 cd /eth2/nim-beacon-chain || exit
+# commit before "initial 0.11.0 spec version update"
+git checkout 33687c3e412e7104288720ceba1360e21b340fc0 || exit
+# TODO could also be 68f166800d57cb10300c0945542616c6eb19b0e1 (before they updated test vectors)
 make build-system-checks
 # Nim staticlib call uses llvm-ar and doesn't look like it can be changed
 # https://github.com/nim-lang/Nim/blob/7e747d11c66405f08cc7c69e5afc18348663275e/compiler/extccomp.nim#L128
@@ -97,8 +99,11 @@ EXTRA_NIM_PATH="$(dirname "$(realpath "$(command -v clang-8)")")"
 # TODO(gnattishness) other relevant build flags
 # TODO(gnattishness) if we use a static lib, no linking happens right? so don't need to pass load flags
 # NOTE: -d:release should be fine currently, looks like it mainly turns on optimizations, shouldn't disable checks
+# TODO check if we can enable/use libbacktrace?
+# currently fails with "undefined reference to `get_backtrace_c`" if enabled
 PATH="$EXTRA_NIM_PATH:$PATH" \
     NIMFLAGS="--cc:clang --passC:'-fsanitize=fuzzer-no-link' -d:chronicles_log_level=ERROR -d:release -d:const_preset=mainnet --lineTrace:on --opt:speed" \
+    USE_LIBBACKTRACE=0 \
     make libnfuzz.a || exit
 export NIM_LDFLAGS="-L/eth2/nim-beacon-chain/build/"
 export NIM_LDLIBS="-lnfuzz -lrocksdb -lpcre"
@@ -110,57 +115,50 @@ cd /eth2/lib || exit
 # TODO || exit if make fails?
 make "-j$(nproc)"
 
-# Get and configure zrnt
-ZRNT_GOPATH="/eth2/zrnt_gopath/"
-ZRNT_TMP="/eth2/zrnt_tmp/"
-# TODO choose to error or remove if these paths already exist?
-rm -rf "$ZRNT_GOPATH"
-rm -rf "$ZRNT_TMP"
-mkdir -p "$ZRNT_TMP"
-cd "$ZRNT_TMP" || exit
-git clone --depth 1 --branch v0.9.1 https://github.com/protolambda/zrnt.git
-cd zrnt || exit
-# TODO variables for relevant spec release and tags - a manifest file?
-
-# hacky way to use module dependencies with go fuzz
-# see https://github.com/dvyukov/go-fuzz/issues/195#issuecomment-523526736
-# TODO avoid a single GOPATH passed everywhere
-# TODO have a zrnt go dependency section
-# turn GO111MODULE on in case it was set off or auto in go v1.12
-GO111MODULE="on" go mod vendor
-mkdir -p "$ZRNT_GOPATH"/src/
-# TODO does this copy the file or only the directories? i.e. does */ do any different to *?
-mv vendor/*/ "$ZRNT_GOPATH"/src/
-rm -rf vendor
-mkdir -p "$ZRNT_GOPATH"/src/github.com/protolambda
-cd .. || exit
-mv zrnt "$ZRNT_GOPATH"/src/github.com/protolambda/
-
-cd /eth2 || exit
-rm -rf $ZRNT_TMP
-# Now ZRNT_GOPATH contains (only) zrnt and all its dependencies.
+## Get and configure zrnt
+#ZRNT_GOPATH="/eth2/zrnt_gopath/"
+#ZRNT_TMP="/eth2/zrnt_tmp/"
+## TODO choose to error or remove if these paths already exist?
+#rm -rf "$ZRNT_GOPATH"
+#rm -rf "$ZRNT_TMP"
+#mkdir -p "$ZRNT_TMP"
+#cd "$ZRNT_TMP" || exit
+#git clone --depth 1 --branch v0.10.1 https://github.com/protolambda/zrnt.git
+#cd zrnt || exit
+## TODO variables for relevant spec release and tags - a manifest file?
+#
+## hacky way to use module dependencies with go fuzz
+## see https://github.com/dvyukov/go-fuzz/issues/195#issuecomment-523526736
+## TODO avoid a single GOPATH passed everywhere
+## TODO have a zrnt go dependency section
+## turn GO111MODULE on in case it was set off or auto in go v1.12
+## TODO this doesn't copy the .h files for herumi-bls-eth-go-binary, so fails to include
+## TODO use go-fuzz module support
+## See also: https://github.com/golang/go/issues/26366
+#GO111MODULE="on" go mod vendor
+#mkdir -p "$ZRNT_GOPATH"/src/
+## TODO does this copy the file or only the directories? i.e. does */ do any different to *?
+#mv vendor/*/ "$ZRNT_GOPATH"/src/
+#rm -rf vendor
+#mkdir -p "$ZRNT_GOPATH"/src/github.com/protolambda
+#cd .. || exit
+#mv zrnt "$ZRNT_GOPATH"/src/github.com/protolambda/
+#
+#cd /eth2 || exit
+#rm -rf $ZRNT_TMP
+## Now ZRNT_GOPATH contains (only) zrnt and all its dependencies.
 
 export GOPATH="$GOROOT"/packages
 mkdir "$GOPATH"
 export PATH="$GOPATH/bin:$PATH"
 
-# Get custom go-fuzz
-mkdir -p "$GOPATH"/src/github.com/dvyukov
-cd "$GOPATH"/src/github.com/dvyukov || exit
-git clone https://github.com/guidovranken/go-fuzz.git
-cd go-fuzz || exit
-git checkout libfuzzer-extensions
+cd /eth2/tools/go-bfuzz-build || exit
+make install "-j$(nproc)"
+
+# installed into PATH so don't need any special path to it
+export GO_BFUZZ_BUILD=go-bfuzz-build
 
 cd /eth2 || exit
-
-# TODO should this be in a ZRNT specific spot or common fuzzer?
-# common $GOPATH for now
-go get github.com/cespare/xxhash
-# TODO what is packages used for?
-go get golang.org/x/tools/go/packages
-go build github.com/dvyukov/go-fuzz/go-fuzz-build
-GO_FUZZ_BUILD_PATH=$(realpath go-fuzz-build)
-export GO_FUZZ_BUILD_PATH
 
 export GOPATH="$GOPATH:/eth2/lib/go:$ZRNT_GOPATH"
 

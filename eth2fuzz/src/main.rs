@@ -12,7 +12,7 @@ extern crate fs_extra;
 use std::env;
 use std::ffi::OsStr;
 use std::fs;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 use failure::{Error, ResultExt};
@@ -38,10 +38,7 @@ enum Cli {
         #[structopt(
             long = "fuzzer",
             default_value = "Honggfuzz",
-            raw(
-                possible_values = "&Fuzzer::variants()",
-                case_insensitive = "true"
-            )
+            raw(possible_values = "&Fuzzer::variants()", case_insensitive = "true")
         )]
         fuzzer: Fuzzer,
         // Run `cargo update` between cycles
@@ -60,10 +57,7 @@ enum Cli {
         #[structopt(
             long = "fuzzer",
             default_value = "Honggfuzz",
-            raw(
-                possible_values = "&Fuzzer::variants()",
-                case_insensitive = "true"
-            )
+            raw(possible_values = "&Fuzzer::variants()", case_insensitive = "true")
         )]
         fuzzer: Fuzzer,
         /// Set timeout
@@ -104,7 +98,12 @@ fn run() -> Result<(), Error> {
                 println!("{}", target);
             }
         }
-        Run { target, fuzzer, timeout, thread } => {
+        Run {
+            target,
+            fuzzer,
+            timeout,
+            thread,
+        } => {
             let targets = get_targets()?;
             if targets.iter().find(|x| *x == &target).is_none() {
                 bail!(
@@ -147,7 +146,7 @@ fn run() -> Result<(), Error> {
             infinite,
             fuzzer,
             cargo_update,
-            thread
+            thread,
         } => {
             let run = |target: &str| -> Result<(), Error> {
                 use Fuzzer::*;
@@ -318,7 +317,6 @@ fn prepare_fuzzer_workspace(fuzzer: Fuzzer, out_dir: &str) -> Result<(), Error> 
 
 // TODO: rework it with struct for targets and/or config
 fn corpora_target(target: &str) -> Result<PathBuf, Error> {
-
     let path = match target {
         "lighthouse_attestation" => corpora_dir()?.join("attestation"),
         "lighthouse_attester_slashing" => corpora_dir()?.join("attester_slashing"),
@@ -354,7 +352,8 @@ fn run_honggfuzz(target: &str, timeout: Option<i32>, thread: Option<i32>) -> Res
         } else {
             "".into()
         },
-        if let Some(n) = thread { // Set number of thread
+        if let Some(n) = thread {
+            // Set number of thread
             format!("-n {}", n)
         } else {
             "".into()
@@ -368,7 +367,10 @@ fn run_honggfuzz(target: &str, timeout: Option<i32>, thread: Option<i32>) -> Res
         .env("HFUZZ_RUN_ARGS", &args)
         //.env("HFUZZ_BUILD_ARGS", "opt-level=3")
         .env("HFUZZ_INPUT", corpora_dir)
-        .env("ETH2FUZZ_BEACONSTATE", format!("{}", state_dir()?.display()))
+        .env(
+            "ETH2FUZZ_BEACONSTATE",
+            format!("{}", state_dir()?.display()),
+        )
         .current_dir(&dir)
         .spawn()
         .context(format!("error starting {:?} to run {}", fuzzer, target))?
@@ -453,7 +455,6 @@ fn run_afl(target: &str, timeout: Option<i32>, _thread: Option<i32>) -> Result<(
         args.push(format!("-V {}", t));
     };
 
-
     // Run the fuzzer using cargo
     let fuzzer_bin = Command::new("cargo")
         .args(args)
@@ -465,7 +466,10 @@ fn run_afl(target: &str, timeout: Option<i32>, _thread: Option<i32>) -> Result<(
         .arg("-o")
         .arg(&corpus_dir)
         .args(&["--", &format!("./target/debug/{}", target)])
-        .env("ETH2FUZZ_BEACONSTATE", format!("{}", state_dir()?.display()))
+        .env(
+            "ETH2FUZZ_BEACONSTATE",
+            format!("{}", state_dir()?.display()),
+        )
         .current_dir(&dir)
         .spawn()
         .context(format!("error starting {:?} to run {}", fuzzer, target))?
@@ -575,7 +579,10 @@ fn run_libfuzzer(target: &str, timeout: Option<i32>, _thread: Option<i32>) -> Re
 
     // Launch the fuzzer using cargo
     let fuzzer_bin = Command::new("cargo")
-        .env("ETH2FUZZ_BEACONSTATE", format!("{}", state_dir()?.display()))
+        .env(
+            "ETH2FUZZ_BEACONSTATE",
+            format!("{}", state_dir()?.display()),
+        )
         .args(&["+nightly", "fuzz", "run", &target])
         .args(&args)
         .current_dir(&fuzz_dir)
@@ -628,7 +635,6 @@ fn write_fuzzer_target(fuzzer: Fuzzer, target: &str) -> Result<(), Error> {
     println!("[WARF] {}: {} created", fuzzer, target);
     Ok(())
 }
-
 
 fn prepare_debug_workspace(out_dir: &str) -> Result<(), Error> {
     let debug_init_dir = root_dir()?.join("debug");
@@ -707,7 +713,7 @@ fn write_debug_target(debug_dir: PathBuf, target: &str) -> Result<(), Error> {
     Ok(())
 }
 
-arg_enum!{
+arg_enum! {
     #[derive(StructOpt, Debug, Clone, Copy, PartialEq, Eq)]
     enum Fuzzer {
         Afl,

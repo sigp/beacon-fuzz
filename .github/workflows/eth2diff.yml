@@ -40,4 +40,19 @@ jobs:
       - name: Build
         run: cd eth2diff && make build
 
+  # Build eth2diff docker
+  build-docker:
+    name: Building docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd warf && make docker
+
   # TODO - add dockers compilation + tests

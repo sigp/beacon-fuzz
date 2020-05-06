@@ -91,13 +91,12 @@ arg_enum! {
         SignedBlockHeader,
         SignedVoluntaryExit,
         BeaconState,
-        //APIBeaconState,
         VoluntaryExit,
     }
 }
 
 impl SSZContainer {
-    /// eth2client name.
+    /// containers name
     fn name(&self) -> String {
         match self {
             Self::Attestation => "attestation".to_string(),

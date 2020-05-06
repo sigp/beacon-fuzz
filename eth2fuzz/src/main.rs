@@ -35,9 +35,6 @@ enum Cli {
         /// Set timeout per target
         #[structopt(short = "t", long = "timeout", default_value = "10")]
         timeout: i32,
-        // Run until the end of time (or Ctrl+C)
-        #[structopt(short = "i", long = "infinite")]
-        infinite: bool,
         /// Which fuzzer to run
         #[structopt(
             long = "fuzzer",
@@ -48,6 +45,9 @@ enum Cli {
         /// Set number of thread (only for hfuzz)
         #[structopt(short = "n", long = "thread")]
         thread: Option<i32>,
+        // Run until the end of time (or Ctrl+C)
+        #[structopt(short = "i", long = "infinite")]
+        infinite: bool,
     },
     /// Run one target with specific fuzzer
     #[structopt(name = "target")]
@@ -95,9 +95,7 @@ fn run() -> Result<(), Error> {
 
     match cli {
         ListTargets => {
-            for target in &fuzzers::get_targets()? {
-                println!("{}", target);
-            }
+            list_targets()?;
         }
         Run {
             target,
@@ -105,80 +103,85 @@ fn run() -> Result<(), Error> {
             timeout,
             thread,
         } => {
-            let targets = fuzzers::get_targets()?;
-            if targets.iter().find(|x| *x == &target).is_none() {
-                bail!(
-                    "Don't know target `{}`. {}",
-                    target,
-                    if let Some(alt) = did_you_mean(&target, &targets) {
-                        format!("Did you mean `{}`?", alt)
-                    } else {
-                        "".into()
-                    }
-                );
-            }
-
-            use fuzzers::Fuzzer::*;
-            match fuzzer {
-                Afl => fuzzers::run_afl(&target, timeout, None)?, // TODO - fix thread
-                Honggfuzz => fuzzers::run_honggfuzz(&target, timeout, thread)?,
-                Libfuzzer => fuzzers::run_libfuzzer(&target, timeout, None)?, // TODO - fix thread
-            }
+            run_target(&target, fuzzer, timeout, thread)?;
         }
         Debug { target } => {
-            let targets = fuzzers::get_targets()?;
-            if targets.iter().find(|x| *x == &target).is_none() {
-                bail!(
-                    "Don't know target `{}`. {}",
-                    target,
-                    if let Some(alt) = did_you_mean(&target, &targets) {
-                        format!("Did you mean `{}`?", alt)
-                    } else {
-                        "".into()
-                    }
-                );
-            }
-
             run_debug(&target)?;
         }
         Continuous {
             filter,
             timeout,
-            infinite,
             fuzzer,
             thread,
+            infinite,
         } => {
-            let run = |target: &str| -> Result<(), Error> {
-                match fuzzer {
-                    fuzzers::Fuzzer::Afl => fuzzers::run_afl(&target, Some(timeout), None)?, // TODO - fix thread
-                    fuzzers::Fuzzer::Honggfuzz => fuzzers::run_honggfuzz(&target, Some(timeout), thread)?,
-                    fuzzers::Fuzzer::Libfuzzer => fuzzers::run_libfuzzer(&target, Some(timeout), None)?, // TODO - fix thread
-                }
-                Ok(())
-            };
+            run_continuously(filter, fuzzer, Some(timeout), thread, infinite)?;
+        }
+    }
+    Ok(())
+}
 
-            let targets = fuzzers::get_targets()?;
-            let targets = targets
-                .iter()
-                .filter(|x| filter.as_ref().map(|f| x.contains(f)).unwrap_or(true));
+fn list_targets() -> Result<(), Error> {
+    for target in &fuzzers::get_targets()? {
+        println!("{}", target);
+    }
+    Ok(())
+}
 
-            'cycle: loop {
-                'targets_pass: for target in targets.clone() {
-                    if let Err(e) = run(target) {
-                        match e.downcast::<fuzzers::FuzzerQuit>() {
-                            Ok(_) => {
-                                println!("Fuzzer failed so we'll continue with the next one");
-                                continue 'targets_pass;
-                            }
-                            Err(other_error) => Err(other_error)?,
-                        }
+fn run_target(target: &str, fuzzer: fuzzers::Fuzzer, timeout: Option<i32>, thread: Option<i32>) -> Result<(), Error> {
+    let targets = fuzzers::get_targets()?;
+    if targets.iter().find(|x| *x == &target).is_none() {
+        bail!(
+            "Don't know target `{}`. {}",
+            target,
+            if let Some(alt) = did_you_mean(&target, &targets) {
+                format!("Did you mean `{}`?", alt)
+            } else {
+                "".into()
+            }
+        );
+    }
+
+    use fuzzers::Fuzzer::*;
+    match fuzzer {
+        Afl => fuzzers::run_afl(&target, timeout, None)?, // TODO - fix thread
+        Honggfuzz => fuzzers::run_honggfuzz(&target, timeout, thread)?,
+        Libfuzzer => fuzzers::run_libfuzzer(&target, timeout, None)?, // TODO - fix thread
+    }
+    Ok(())
+}
+
+fn run_continuously(filter: Option<String>, fuzzer: fuzzers::Fuzzer, timeout: Option<i32>, thread: Option<i32>, infinite: bool) -> Result<(), Error> {
+    let run = |target: &str| -> Result<(), Error> {
+        use fuzzers::Fuzzer::*;
+        match fuzzer {
+            Afl => fuzzers::run_afl(&target, timeout, None)?, // TODO - fix thread
+            Honggfuzz => fuzzers::run_honggfuzz(&target, timeout, thread)?,
+            Libfuzzer => fuzzers::run_libfuzzer(&target, timeout, None)?, // TODO - fix thread
+        }
+        Ok(())
+    };
+
+    let targets = fuzzers::get_targets()?;
+    let targets = targets
+        .iter()
+        .filter(|x| filter.as_ref().map(|f| x.contains(f)).unwrap_or(true));
+
+    'cycle: loop {
+        'targets_pass: for target in targets.clone() {
+            if let Err(e) = run(target) {
+                match e.downcast::<fuzzers::FuzzerQuit>() {
+                    Ok(_) => {
+                        println!("Fuzzer failed so we'll continue with the next one");
+                        continue 'targets_pass;
                     }
-                }
-
-                if !infinite {
-                    break 'cycle;
+                    Err(other_error) => Err(other_error)?,
                 }
             }
+        }
+
+        if !infinite {
+            break 'cycle;
         }
     }
     Ok(())
@@ -208,6 +211,20 @@ fn prepare_debug_workspace(out_dir: &str) -> Result<(), Error> {
 }
 
 fn run_debug(target: &str) -> Result<(), Error> {
+
+    let targets = fuzzers::get_targets()?;
+    if targets.iter().find(|x| *x == &target).is_none() {
+        bail!(
+            "Don't know target `{}`. {}",
+            target,
+            if let Some(alt) = did_you_mean(&target, &targets) {
+                format!("Did you mean `{}`?", alt)
+            } else {
+                "".into()
+            }
+        );
+    }
+
     let debug_dir = fuzzers::root_dir()?.join("workspace").join("debug");
 
     fuzzers::prepare_target_workspace()?;

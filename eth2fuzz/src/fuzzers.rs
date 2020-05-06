@@ -103,7 +103,7 @@ pub fn prepare_target_workspace() -> Result<(), Error> {
 }
 
 fn prepare_fuzzer_workspace(fuzzer: Fuzzer, out_dir: &str) -> Result<(), Error> {
-    let dir = root_dir()?.join("workspace");
+    let dir = workspace_dir()?;
 
     let hfuzz_dir = dir.join(out_dir);
     fs::create_dir_all(&hfuzz_dir)

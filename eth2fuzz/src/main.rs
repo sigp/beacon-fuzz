@@ -1,15 +1,9 @@
-#![allow(deprecated)]
-
 extern crate structopt;
 #[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate failure;
 extern crate regex;
-
-extern crate fs_extra;
-
-
 
 use std::fs;
 use std::path::PathBuf;
@@ -25,23 +19,25 @@ mod fuzzers;
 /// Run eth2fuzz fuzzing targets
 #[derive(StructOpt, Debug)]
 enum Cli {
-
     /// Run all fuzz targets
     #[structopt(name = "continuously")]
     Continuous {
         /// Only run target containing this string
         #[structopt(short = "q", long = "filter")]
         filter: Option<String>,
-        /// Set timeout per target
-        #[structopt(short = "t", long = "timeout", default_value = "10")]
-        timeout: i32,
         /// Which fuzzer to run
         #[structopt(
             long = "fuzzer",
             default_value = "Honggfuzz",
-            raw(possible_values = "&fuzzers::Fuzzer::variants()", case_insensitive = "true")
+            raw(
+                possible_values = "&fuzzers::Fuzzer::variants()",
+                case_insensitive = "true"
+            )
         )]
         fuzzer: fuzzers::Fuzzer,
+        /// Set timeout per target
+        #[structopt(short = "t", long = "timeout", default_value = "10")]
+        timeout: i32,
         /// Set number of thread (only for hfuzz)
         #[structopt(short = "n", long = "thread")]
         thread: Option<i32>,
@@ -58,7 +54,10 @@ enum Cli {
         #[structopt(
             long = "fuzzer",
             default_value = "Honggfuzz",
-            raw(possible_values = "&fuzzers::Fuzzer::variants()", case_insensitive = "true")
+            raw(
+                possible_values = "&fuzzers::Fuzzer::variants()",
+                case_insensitive = "true"
+            )
         )]
         fuzzer: fuzzers::Fuzzer,
         /// Set timeout
@@ -82,7 +81,7 @@ enum Cli {
 fn main() {
     if let Err(e) = run() {
         eprintln!("{}", e);
-        for cause in e.causes().skip(1) {
+        for cause in e.iter_chain().skip(1) {
             eprintln!("caused by: {}", cause);
         }
         ::std::process::exit(1);
@@ -128,7 +127,12 @@ fn list_targets() -> Result<(), Error> {
     Ok(())
 }
 
-fn run_target(target: &str, fuzzer: fuzzers::Fuzzer, timeout: Option<i32>, thread: Option<i32>) -> Result<(), Error> {
+fn run_target(
+    target: &str,
+    fuzzer: fuzzers::Fuzzer,
+    timeout: Option<i32>,
+    thread: Option<i32>,
+) -> Result<(), Error> {
     let targets = fuzzers::get_targets()?;
     if targets.iter().find(|x| *x == &target).is_none() {
         bail!(
@@ -144,20 +148,44 @@ fn run_target(target: &str, fuzzer: fuzzers::Fuzzer, timeout: Option<i32>, threa
 
     use fuzzers::Fuzzer::*;
     match fuzzer {
-        Afl => fuzzers::run_afl(&target, timeout, None)?, // TODO - fix thread
-        Honggfuzz => fuzzers::run_honggfuzz(&target, timeout, thread)?,
-        Libfuzzer => fuzzers::run_libfuzzer(&target, timeout, None)?, // TODO - fix thread
+        Afl => {
+            let hfuzz = fuzzers::FuzzerAfl::new(timeout, None)?; // TODO - fix thread
+            hfuzz.run(target.to_string())?;
+        }
+        Honggfuzz => {
+            let hfuzz = fuzzers::FuzzerHfuzz::new(timeout, thread)?;
+            hfuzz.run(target.to_string())?;
+        }
+        Libfuzzer => {
+            let hfuzz = fuzzers::FuzzerLibfuzzer::new(timeout, None)?; // TODO - fix thread
+            hfuzz.run(target.to_string())?;
+        }
     }
     Ok(())
 }
 
-fn run_continuously(filter: Option<String>, fuzzer: fuzzers::Fuzzer, timeout: Option<i32>, thread: Option<i32>, infinite: bool) -> Result<(), Error> {
+fn run_continuously(
+    filter: Option<String>,
+    fuzzer: fuzzers::Fuzzer,
+    timeout: Option<i32>,
+    thread: Option<i32>,
+    infinite: bool,
+) -> Result<(), Error> {
     let run = |target: &str| -> Result<(), Error> {
         use fuzzers::Fuzzer::*;
         match fuzzer {
-            Afl => fuzzers::run_afl(&target, timeout, None)?, // TODO - fix thread
-            Honggfuzz => fuzzers::run_honggfuzz(&target, timeout, thread)?,
-            Libfuzzer => fuzzers::run_libfuzzer(&target, timeout, None)?, // TODO - fix thread
+            Afl => {
+                let hfuzz = fuzzers::FuzzerAfl::new(timeout, None)?; // TODO - fix thread
+                hfuzz.run(target.to_string())?;
+            }
+            Honggfuzz => {
+                let hfuzz = fuzzers::FuzzerHfuzz::new(timeout, thread)?;
+                hfuzz.run(target.to_string())?;
+            }
+            Libfuzzer => {
+                let hfuzz = fuzzers::FuzzerLibfuzzer::new(timeout, None)?; // TODO - fix thread
+                hfuzz.run(target.to_string())?;
+            }
         }
         Ok(())
     };
@@ -187,7 +215,6 @@ fn run_continuously(filter: Option<String>, fuzzer: fuzzers::Fuzzer, timeout: Op
     Ok(())
 }
 
-
 fn prepare_debug_workspace(out_dir: &str) -> Result<(), Error> {
     let debug_init_dir = fuzzers::root_dir()?.join("debug");
     let dir = fuzzers::root_dir()?.join("workspace");
@@ -211,7 +238,6 @@ fn prepare_debug_workspace(out_dir: &str) -> Result<(), Error> {
 }
 
 fn run_debug(target: &str) -> Result<(), Error> {
-
     let targets = fuzzers::get_targets()?;
     if targets.iter().find(|x| *x == &target).is_none() {
         bail!(
@@ -227,7 +253,7 @@ fn run_debug(target: &str) -> Result<(), Error> {
 
     let debug_dir = fuzzers::root_dir()?.join("workspace").join("debug");
 
-    fuzzers::prepare_target_workspace()?;
+    fuzzers::prepare_targets_workspace()?;
     prepare_debug_workspace("debug")?;
 
     write_debug_target(debug_dir.clone(), target)?;
@@ -278,7 +304,6 @@ fn write_debug_target(debug_dir: PathBuf, target: &str) -> Result<(), Error> {
     file.write_all(source.as_bytes())?;
     Ok(())
 }
-
 
 /// Produces a string from a given list of possible values which is similar to
 /// the passed in value `v` with a certain confidence.

@@ -213,7 +213,7 @@ impl Eth2Client {
 
 fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
     let cwd = env::current_dir().context("Error getting current directory")?;
-    
+
     // Create crash dir
     let crashdir = cwd.join("shared").join("crashes");
     fs::create_dir_all(&crashdir)
@@ -228,9 +228,7 @@ fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
 
     // Create report name
     let now: DateTime<Utc> = Utc::now();
-    let report_name = format!("report_eth2diff_{}.md",
-            now,
-        );
+    let report_name = format!("report_eth2diff_{}.md", now,);
     let path = crashdir.join(report_name);
 
     // Create report file
@@ -247,8 +245,9 @@ fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
     // replace ???DIFF_RESULT??? inside report template
     let mut results = String::new();
     for client in eth2clients.iter() {
-        // stdout 
-        let cmd = format!("{} {}",
+        // stdout
+        let cmd = format!(
+            "{} {}",
             client.cmd_path.file_name().unwrap().to_str().unwrap(),
             client.cmd_arg.join(" ")
         );
@@ -264,8 +263,6 @@ fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
             results.push_str(&format!("{:?}\n", out.stderr));
         }
         results.push_str(&format!("\n\n"));
-
-
     }
     let source = template.replace("???DETAILS_RESULTS???", &results);
     file.write_all(source.as_bytes())?;
@@ -280,7 +277,7 @@ fn compare_results(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
     // all return 0 or 1
     if codes.all(|x| x == Some(0)) || codes.all(|x| x == Some(1)) {
         println!("{}", "[X] ALL GOOD\n".green());
-        return Ok(())
+        return Ok(());
     }
 
     create_report(&eth2clients)?;

@@ -20,20 +20,30 @@ Architecture of this tool came from this [project](https://github.com/rust-fuzz/
 
 ## Installation
 
-You need to install the different fuzzing engine and cargo subcommands:
+- Install Rust nightly
 ``` sh
-# Ideally using cargo +nightly and --force to to sure your version is updated
+# Install Rust and Cargo
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+```
 
-# installs hfuzz and honggfuzz subcommands in cargo
+- Install system dependencies (Ubuntu/Debian):
+``` sh
+# Install LLVM
+sudo apt install -y llvm curl
+# Install honggfuzz-rs and subcommand in cargo
+sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
 cargo +nightly install --force honggfuzz
-
-# cargo-fuzz (i.e. libfuzzer for Rust)
+# Install cargo-fuzz (libfuzzer for Rust) and subcommand in cargo
 cargo +nightly install --force cargo-fuzz
-
-# afl-rs
+# Install afl-rs and subcommand in cargo
+sudo apt install -y build-essential libtool-bin python3 cmake automake bison libglib2.0-dev libpixman-1-dev clang python-setuptools
 cargo +nightly install --force afl
 ```
 
+- Build eth2fuzz:
+``` sh
+make build
+```
 
 ## Available targets
 

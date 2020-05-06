@@ -1,0 +1,116 @@
+name: Rust
+
+on:
+  push:
+    paths:
+      - 'eth2fuzz/**'
+  pull_request:
+    paths: 
+      - 'eth2fuzz/**'
+
+jobs:
+  # Check code style quickly by running `rustfmt` over all code
+  rustfmt:
+    name: Check Rust fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt
+
+      - name: Run cargo fmt
+        run: cd eth2fuzz && make check-fmt
+
+  # Build only eth2fuzz tool
+  build:
+    name: Building eth2fuzz cli tool
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build
+        run: cd eth2fuzz && make build
+
+  # Try to compile one debug target and run it 
+  test-debug:
+    name: Test one debug target
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Test debug 'lighthouse_attestation'
+        run: cd eth2fuzz && make test-debug
+
+  # Run one fuzzing hardness over libfuzzer during 2s
+  test-libfuzzer:
+    name: Test libfuzzer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+  
+      - name: install cargo-fuzz
+        run: cargo +nightly install --force cargo-fuzz
+      - name: Test libfuzzer
+        run: cd eth2fuzz && make test-libfuzzer
+
+  # Run one fuzzing hardness over honggfuzz during 2s
+  test-honggfuzz:
+    name: Test honggfuzz
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: install honggfuzz dependencies
+        run: |
+          sudo apt-get update
+          sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
+      - name: install honggfuzz
+        run: cargo +nightly install --force honggfuzz
+      - name: Test honggfuzz
+        run: cd eth2fuzz && make test-hfuzz
+
+
+  # Try to run all target over afl
+  test-afl:
+    name: Test afl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: install afl dependencies
+        run: |
+          sudo apt-get update
+          sudo apt install -y llvm build-essential libtool-bin python3 cmake automake bison libglib2.0-dev libpixman-1-dev clang python-setuptools
+      - name: install afl
+        run: cargo +nightly install --force afl
+      - name: Test afl
+        run: cd eth2fuzz && make test-afl

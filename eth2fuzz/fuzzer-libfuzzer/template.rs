@@ -144,5 +144,5 @@ lazy_static! {
 }
 
 fuzz_target!(|data: &[u8]| {
-    fuzz_target(data, BEACONSTATE.clone());
+    fuzz_target(BEACONSTATE.clone(), data);
 });

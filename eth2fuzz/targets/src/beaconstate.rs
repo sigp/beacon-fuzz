@@ -1,6 +1,4 @@
-//use ssz::{Decode, Encode};
-
-use types::{BeaconState, ChainSpec, MainnetEthSpec, RelativeEpoch}; // EthSpec
+use types::{BeaconState, ChainSpec, MainnetEthSpec, RelativeEpoch};
 
 // https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#beacon-state-accessors
 pub fn fuzz_beaconstate_accessors(beaconstate: &mut BeaconState<MainnetEthSpec>) {

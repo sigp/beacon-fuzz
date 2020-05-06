@@ -23,7 +23,7 @@ RUN USER=root cargo new --bin eth2diff
 WORKDIR /eth2diff
 
 # copy over your manifests
-COPY ./Cargo.lock ./Cargo.lock
+# COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
 # this build step will cache your dependencies

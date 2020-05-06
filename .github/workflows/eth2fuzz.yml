@@ -123,4 +123,4 @@ jobs:
       - name: Install afl
         run: cargo +nightly install --force afl
       - name: Test afl
-        run: cd eth2fuzz && AFL_SKIP_CPUFREQ=1 make test-afl
+        run: cd eth2fuzz && make test-afl

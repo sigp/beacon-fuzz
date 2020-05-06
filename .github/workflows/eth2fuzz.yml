@@ -36,7 +36,9 @@ jobs:
         with:
             toolchain: nightly
             override: true
-
+      
+      - name: Submodule update
+        run: git submodule update --init
       - name: Build
         run: cd eth2fuzz && make build
 
@@ -52,6 +54,8 @@ jobs:
             toolchain: nightly
             override: true
 
+      - name: Submodule update
+        run: git submodule update --init
       - name: Test debug 'lighthouse_attestation'
         run: cd eth2fuzz && make test-debug
 
@@ -67,7 +71,9 @@ jobs:
             toolchain: nightly
             override: true
   
-      - name: install cargo-fuzz
+      - name: Submodule update
+        run: git submodule update --init
+      - name: Install cargo-fuzz
         run: cargo +nightly install --force cargo-fuzz
       - name: Test libfuzzer
         run: cd eth2fuzz && make test-libfuzzer
@@ -84,11 +90,13 @@ jobs:
             toolchain: nightly
             override: true
 
-      - name: install honggfuzz dependencies
+      - name: Submodule update
+        run: git submodule update --init
+      - name: Install honggfuzz dependencies
         run: |
           sudo apt-get update
           sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
-      - name: install honggfuzz
+      - name: Install honggfuzz
         run: cargo +nightly install --force honggfuzz
       - name: Test honggfuzz
         run: cd eth2fuzz && make test-hfuzz
@@ -106,11 +114,11 @@ jobs:
             toolchain: nightly
             override: true
 
-      - name: install afl dependencies
+      - name: Install afl dependencies
         run: |
           sudo apt-get update
           sudo apt install -y llvm build-essential libtool-bin python3 cmake automake bison libglib2.0-dev libpixman-1-dev clang python-setuptools
-      - name: install afl
+      - name: Install afl
         run: cargo +nightly install --force afl
       - name: Test afl
         run: cd eth2fuzz && make test-afl

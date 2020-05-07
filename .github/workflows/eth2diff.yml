@@ -40,21 +40,6 @@ jobs:
       - name: Build
         run: cd eth2diff && make build
 
-  # Test eth2diff tool
-  test:
-    name: Test eth2diff cli tool
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
-      - name: Test
-        run: cd eth2diff && make test
-
   # Build and test eth2diff docker
   docker:
     name: Building docker

@@ -283,7 +283,6 @@ fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
 
 /// Process eth2clients list and run commands
 fn process_eth2clients(eth2clients: &mut std::vec::Vec<Eth2Client>) -> Result<(), Error> {
-
     for eth2_client in eth2clients.iter_mut() {
         println!("[+] {}", eth2_client.name);
 
@@ -359,7 +358,9 @@ fn hash_tree_root(ssztype: SSZContainer, input: String) -> Result<(), Error> {
     // NIMBUS
     eth2_clients.push(Eth2Client::new(
         "NIMBUS".into(),
-        cwd.join("shared").join("nimbus").join("ncli_hash_tree_root"),
+        cwd.join("shared")
+            .join("nimbus")
+            .join("ncli_hash_tree_root"),
         [
             format!("--kind={}", ssztype.name()),
             format!("--file={}", input),

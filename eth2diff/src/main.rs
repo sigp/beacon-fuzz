@@ -46,6 +46,15 @@ enum Cli {
         /// Input path
         input: String,
     },
+    /// Hash tree root SSZ data
+    #[structopt(name = "hash_tree_root")]
+    HashTreeRoot {
+        /// SSZ Container Type (e.g. Attestation)
+        #[structopt(possible_values = &SSZContainer::variants(), case_insensitive = true)]
+        ssztype: SSZContainer,
+        /// Input path
+        input: String,
+    },
 }
 
 fn run() -> Result<(), Error> {
@@ -58,6 +67,9 @@ fn run() -> Result<(), Error> {
         }
         Pretty { ssztype, input } => {
             pretty(ssztype, input)?;
+        }
+        HashTreeRoot { ssztype, input } => {
+            hash_tree_root(ssztype, input)?;
         }
     }
     Ok(())
@@ -269,6 +281,20 @@ fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
     Ok(())
 }
 
+/// Process eth2clients list and run commands
+fn process_eth2clients(eth2clients: &mut std::vec::Vec<Eth2Client>) -> Result<(), Error> {
+
+    for eth2_client in eth2clients.iter_mut() {
+        println!("[+] {}", eth2_client.name);
+
+        match eth2_client.run_cmd() {
+            Ok(_) => eth2_client.log()?,
+            Err(e) => println!("[-] {} failed: {}\n", eth2_client.name, e),
+        };
+    }
+    Ok(())
+}
+
 /// Compare eth2clients status_code and create report if differents
 fn compare_results(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
     let mut codes = eth2clients.iter().map(|client| client.status_code);
@@ -308,14 +334,41 @@ fn pretty(ssztype: SSZContainer, input: String) -> Result<(), Error> {
         .to_vec(),
     ));
 
-    for eth2_client in eth2_clients.iter_mut() {
-        println!("[+] {}", eth2_client.name);
+    // run all eth2clients
+    process_eth2clients(&mut eth2_clients)?;
 
-        match eth2_client.run_cmd() {
-            Ok(_) => eth2_client.log()?,
-            Err(e) => println!("[-] {} failed: {}\n", eth2_client.name, e),
-        };
-    }
+    // compare the result
+    compare_results(&eth2_clients)?;
+
+    Ok(())
+}
+
+fn hash_tree_root(ssztype: SSZContainer, input: String) -> Result<(), Error> {
+    let mut eth2_clients: Vec<Eth2Client> = Vec::new();
+    let cwd = env::current_dir().context("[X] Error getting current directory")?;
+
+    println!("== HASH TREE ROOT ==");
+
+    // ZCLI
+    eth2_clients.push(Eth2Client::new(
+        "ZCLI".into(),
+        cwd.join("shared").join("zcli").join("zcli"),
+        ["hash-tree-root".into(), ssztype.name(), input.to_owned()].to_vec(),
+    ));
+
+    // NIMBUS
+    eth2_clients.push(Eth2Client::new(
+        "NIMBUS".into(),
+        cwd.join("shared").join("nimbus").join("ncli_hash_tree_root"),
+        [
+            format!("--kind={}", ssztype.name()),
+            format!("--file={}", input),
+        ]
+        .to_vec(),
+    ));
+
+    // run all eth2clients
+    process_eth2clients(&mut eth2_clients)?;
 
     // compare the result
     compare_results(&eth2_clients)?;
@@ -397,14 +450,7 @@ fn state_transition(beaconstate: String, block: String) -> Result<(), Error> {
     ));
 
     // run all eth2clients
-    for eth2_client in eth2_clients.iter_mut() {
-        println!("[+] {}", eth2_client.name);
-
-        match eth2_client.run_cmd() {
-            Ok(_) => eth2_client.log()?,
-            Err(e) => println!("[-] {} failed: {}\n", eth2_client.name, e),
-        };
-    }
+    process_eth2clients(&mut eth2_clients)?;
 
     // compare the result
     compare_results(&eth2_clients)?;

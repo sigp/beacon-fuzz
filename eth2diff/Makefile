@@ -51,7 +51,8 @@ docker:
 # Expected result: exit code 0 for all.
 test: build
 	./eth2diff transition shared/corpora/pre.ssz shared/corpora/block.ssz # test transition
-	./eth2diff pretty Attestation shared/corpora/attestation.ssz
+	./eth2diff pretty Attestation shared/corpora/attestation.ssz # test pretty
+	./eth2diff hash_tree_root Attestation shared/corpora/attestation.ssz # test hash_tree_root
 
 # Simple test with invalid ssz.
 # Expected result: exit code 1 for all.
@@ -67,7 +68,9 @@ docker-test:
 	docker run -it \
 		-v `pwd`/shared:/shared \
 		eth2diff pretty Attestation shared/corpora/attestation.ssz
-
+	docker run -it \
+		-v `pwd`/shared:/shared \
+		eth2diff hash_tree_root Attestation shared/corpora/attestation.ssz
 
 #
 # Utils for eth2-client tools.

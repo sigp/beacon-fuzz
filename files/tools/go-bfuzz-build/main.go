@@ -497,7 +497,10 @@ func {{ $h.ExportPrefix -}} BFUZZGolangTestOneInput(data *C.uchar, size C.size_t
 	// returns size of result
 	// errnum is set to 1 if an error occured
 
-	input := (*[1<<31]byte)(unsafe.Pointer(data))[:size:size]
+	var input []byte
+	if size > 0 {
+		input = (*[1<<31]byte)(unsafe.Pointer(data))[:size:size]
+	}
 
 	var result []byte
 

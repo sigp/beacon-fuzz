@@ -52,7 +52,7 @@ jobs:
             toolchain: nightly
             override: true
 
-      - name: Build
+      - name: Test
         run: cd eth2diff && make test
 
   # Build and test eth2diff docker

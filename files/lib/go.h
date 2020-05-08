@@ -57,6 +57,7 @@ class Go : public Base {
     // TODO(gnattishness) any value in static casting to unsigned char?
     // TODO(gnattishness) copy instead of the dodgy const cast? Will linking
     // work if I say it is const?
+    // NOTE: data.data() may be a nullptr if an empty vector
     struct GO_LLVMFuzzerResult result = GO_LLVMFuzzerTestOneInput(
         const_cast<unsigned char *>(data.data()), data.size());
 

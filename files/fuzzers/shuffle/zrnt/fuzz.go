@@ -4,9 +4,16 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"helper"
+
 	"github.com/protolambda/zrnt/eth2/core"
 	"github.com/protolambda/zrnt/eth2/util/shuffle"
 )
+
+// Temporary for testing
+func init() {
+	helper.SetInputType(helper.INPUT_TYPE_DEPOSIT)
+}
 
 func Fuzz(data []byte) ([]byte, error) {
 	if len(data) < 32+2 {

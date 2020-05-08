@@ -114,9 +114,7 @@ zrnt.a : zrnt/fuzz.go
 		-o ../zrnt.a $(zrnt_prefix),fuzz,Fuzz
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
-	rm -rf lighthouse.a
-	rm -rf lighthouse_out/
-	mkdir lighthouse_out/
+	mkdir -p lighthouse_out/
 	# NOTE: we can't pass coverage flags via RUSTFLAGS, so rely on a custom .cargo/config
 	# until https://github.com/rust-lang/cargo/issues/6139 is resolved
 	cargo build \
@@ -139,7 +137,7 @@ lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)
 # TODO depend on lib header files here?
 # TODO build to enable/disable bls in trinity, pyspec, nimbus
 
-fuzzer.o : CXXFLAGS += $(NIM_CXXFLAGS)
+fuzzer.o : CXXFLAGS += $(NIM_CXXFLAGS) $(JAVA_CXXFLAGS)
 fuzzer.o : fuzzer.cpp
 	#test -d $(TRINITY_VENV_PATH)
 	test -d $(PY_SPEC_VENV_PATH)

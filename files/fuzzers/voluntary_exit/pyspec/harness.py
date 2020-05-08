@@ -1,3 +1,4 @@
+import logging
 import typing
 
 from eth2spec.fuzzing.decoder import translate_typ, translate_value
@@ -39,5 +40,6 @@ def FuzzerRunOne(input_data: bytes) -> typing.Optional[bytes]:
             state=test_case.pre, signed_voluntary_exit=test_case.exit
         )
         return serialize(test_case.pre)
-    except (AssertionError, IndexError):
+    except (AssertionError, IndexError) as e:
+        logging.exception("Caught expected error.")
         return None

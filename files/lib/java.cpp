@@ -4,14 +4,9 @@
 
 #include <cinttypes>
 #include <cstdint>
+#include <cstdio>
 #include <optional>
 #include <vector>
-
-namespace {
-
-// TODO(gnattishness) wrapper class that dereferences java objects?
-// TODO(gnattishness) use smart pointers for jvm etc?
-}  // namespace
 
 namespace fuzzing {
 
@@ -24,19 +19,22 @@ class Java::Impl {
     // classes to be moved around after compilation
     JavaVMInitArgs vmArgs;
     std::string classPathOption = "-Djava.class.path=" + classPath;
-    JavaVMOption* options = new JavaVMOption[1];
+    // NOTE: leaking this for now, for testing
+    JavaVMOption* options = new JavaVMOption[2];
     // do this instead of directly passing the literal, as optionString wants a
     // char* not a const char*
     options[0].optionString = classPathOption.data();
+    // options[1].optionString = (char*)"-verbose:jni";
+
     // TODO(gnattishness) abort and exit hooks if it doesn't immediately abort
     // already?
     // https://docs.oracle.com/en/java/javase/11/docs/specs/jni/invocation.html#jni_createjavavm
-    vmArgs.version = JNI_VERSION_1_8;
+    // TODO(gnattishness) what version should I use?
+    vmArgs.version = JNI_VERSION_10;
     vmArgs.nOptions = 1;
     vmArgs.options = options;
     vmArgs.ignoreUnrecognized = false;
     jint err = JNI_CreateJavaVM(&jvm, reinterpret_cast<void**>(&env), &vmArgs);
-    delete[] options;
     if (err != JNI_OK) {
       printf("Fatal: JNI_CreateJavaVM() initialization failed: %" PRId32 "\n",
              (int32_t)err);

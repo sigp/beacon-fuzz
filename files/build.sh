@@ -68,7 +68,7 @@ export PY_SPEC_BIN_PATH="$PY_SPEC_VENV_PATH"/bin/python3
 # Teku
 cd /eth2/teku || exit
 # This should be a NOOP unless files have changed since the docker image was created
-./gradlew installDist -x test --stacktrace
+./gradlew installDist -x test --stacktrace || exit
 JDK_DIR="$(dirname "$(dirname "$(realpath -e "$(command -v java)")")")"
 # e.g on ubuntu this resolved to JDK_DIR=/usr/lib/jvm/java-11-openjdk-amd64
 export JAVA_CXXFLAGS="-I\"$JDK_DIR/include\" -I\"$JDK_DIR/include/linux\""

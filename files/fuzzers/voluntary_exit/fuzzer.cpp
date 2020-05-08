@@ -31,10 +31,10 @@
 // // python venv containing dependencies
 // #error TRINITY_VENV_PATH undefined
 // #endif
-#ifndef BFUZZ_JAVA_CLASSPATH
-// TODO(gnattishness) move to bfuzz_config with validation
-#error BFUZZ_JAVA_CLASSPATH undefined
-#endif
+// #ifndef BFUZZ_JAVA_CLASSPATH
+// // TODO(gnattishness) move to bfuzz_config with validation
+// #error BFUZZ_JAVA_CLASSPATH undefined
+// #endif
 
 std::unique_ptr<fuzzing::Differential> differential = nullptr;
 
@@ -49,11 +49,11 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   //    "trinity", (*argv)[0], TRINITY_HARNESS_PATH, std::nullopt,
   //    TRINITY_VENV_PATH, fuzzing::config::disable_bls));
   differential->AddModule(std::make_shared<fuzzing::LighthouseOp>());
-  /*differential->AddModule(
-      std::make_shared<fuzzing::NimOp>(fuzzing::config::disable_bls));*/
-  differential->AddModule(std::make_shared<fuzzing::Java>(
+  differential->AddModule(
+      std::make_shared<fuzzing::NimOp>(fuzzing::config::disable_bls));
+  /*differential->AddModule(std::make_shared<fuzzing::Java>(
       "tech/pegasys/artemis/statetransition/util/FuzzUtil", "fuzzVoluntaryExit",
-      BFUZZ_JAVA_CLASSPATH));
+      BFUZZ_JAVA_CLASSPATH));*/
 
   return 0;
 }

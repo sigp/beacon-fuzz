@@ -5,7 +5,7 @@ use state_processing::{
     BlockProcessingError,
 };
 use std::{ptr, slice};
-use types::{BeaconState, EthSpec, MainnetEthSpec, SignedVoluntaryExit};
+use types::{BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch, SignedVoluntaryExit};
 
 #[derive(Decode, Encode)]
 struct VoluntaryExitTestCase<T: EthSpec> {
@@ -18,9 +18,19 @@ impl<T: EthSpec> VoluntaryExitTestCase<T> {
     /// `BlockProcessingError` on failure.
     fn process_voluntary_exit(mut self) -> Result<BeaconState<T>, BlockProcessingError> {
         let spec = T::default_spec();
+        let mut state = &mut self.pre;
+        // Ensure the current epoch cache is built.
+        // Required by process_exits->initiate_validator_exit->get_churn_limit
+        match state.build_committee_cache(RelativeEpoch::Current, &spec) {
+            Err(e) => panic!(
+                "Unable to build committee cache, invalid state? Error: {:?}",
+                e
+            ),
+            _ => (),
+        };
 
         process_exits(
-            &mut self.pre,
+            &mut state,
             &[self.exit],
             // TODO(gnattishness) check whether we validate these consistently
             VerifySignatures::False,

@@ -107,3 +107,24 @@ pub fn fuzz_lighthouse_beaconstate(_beaconstate: BeaconState<MainnetEthSpec>, da
 
     beaconstate::fuzz_beaconstate_accessors(&mut beaconstate);
 }
+
+
+/* libp2p */
+
+#[inline(always)]
+pub fn fuzz_lighthouse_enr(_beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
+
+    // We are not using the provided beaconstate here
+
+    // TODO - could be improved
+    // will be better to craft "enr:" + base64encode(data)
+    use std::str::FromStr;
+    use std::str;
+    use eth2_libp2p::Enr;
+    // data will be convert into str first
+    let d = match str::from_utf8(&data) {
+        Ok(d) => d,
+        _ => return,
+    };
+    let _ = Enr::from_str(d);
+}

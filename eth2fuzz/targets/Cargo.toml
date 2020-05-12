@@ -10,3 +10,4 @@ eth2_ssz = { path = "../lighthouse/eth2/utils/ssz/"}
 eth2_ssz_derive = { path = "../lighthouse/eth2/utils/ssz_derive/" }
 state_processing = { path = "../lighthouse/eth2/state_processing/" }
 types = { path = "../lighthouse/eth2/types"}
+eth2-libp2p =  { path = "../lighthouse/beacon_node/eth2-libp2p" }

@@ -79,6 +79,7 @@ fn corpora_target(target: &str) -> Result<PathBuf, Error> {
         "lighthouse_proposer_slashing" => corpora_dir()?.join("proposer_slashing"),
         "lighthouse_voluntary_exit" => corpora_dir()?.join("voluntary_exit"),
         "lighthouse_beaconstate" => corpora_dir()?.join("beaconstate"),
+        "lighthouse_enr" => corpora_dir()?.join("enr"),
         _ => panic!(format!("corpora_target unknown for {}", target)),
     };
     Ok(path)
@@ -155,12 +156,14 @@ impl FuzzerHfuzz {
         let args = format!(
             "{} \
              {} \
+             {} \
              {}",
             if let Some(t) = self.timeout {
                 format!("--run_time {}", t)
             } else {
                 "".into()
             },
+            "-t 60",
             if let Some(n) = self.thread {
                 // Set number of thread
                 format!("-n {}", n)

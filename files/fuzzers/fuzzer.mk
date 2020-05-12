@@ -107,10 +107,14 @@ all: fuzzer
 
 # TODO N depend on lib or GO_BFUZZ_BUILD?
 # TODO check GO_BFUZZ_BUILD is accessible?
+# NOTE: BLS is currently always disabled for zrnt until we can reliably link herumi/bls static lib
+# TODO N allow configurable BLS setting when we can enable for zrnt
+#-tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),,$(comma)bls_off)'
+
 zrnt.a : zrnt/fuzz.go
 	cd zrnt && \
 		GO111MODULE=on $(GO_BFUZZ_BUILD) \
-		-tags 'preset_mainnet$(if $(BFUZZ_NO_DISABLE_BLS),,$(comma)bls_off)' \
+		-tags 'preset_mainnet,bls_off' \
 		-o ../zrnt.a $(zrnt_prefix),fuzz,Fuzz
 
 lighthouse.a : lighthouse $(lighthouse_dir_contents) $(CARGO_CONFIG_PATH)

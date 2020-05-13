@@ -213,7 +213,7 @@ fn run_continuously(
         Ok(())
     };
 
-    let targets = fuzzers::get_targets()?;
+    let targets = targets::get_targets();
     let targets = targets
         .iter()
         .filter(|x| filter.as_ref().map(|f| x.contains(f)).unwrap_or(true));

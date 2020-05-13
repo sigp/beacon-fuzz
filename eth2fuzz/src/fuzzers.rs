@@ -1,50 +1,17 @@
-extern crate clap;
-extern crate failure;
-extern crate regex;
-extern crate structopt;
-
-extern crate fs_extra;
-
+use failure::{Error, ResultExt};
+//use regex::Regex;
 use std::env;
-
 use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
-
-use failure::{Error, ResultExt};
-use regex::Regex;
 use structopt::StructOpt;
+use strum::IntoEnumIterator;
 
-pub fn root_dir() -> Result<PathBuf, Error> {
-    let p = env::var("CARGO_MANIFEST_DIR")
-        .map(From::from)
-        .or_else(|_| env::current_dir())?;
-    Ok(p)
-}
+use crate::env::{corpora_dir, state_dir, targets_dir, workspace_dir};
+use crate::targets::Targets;
 
-pub fn targets_dir() -> Result<PathBuf, Error> {
-    let p = root_dir()?.join("targets");
-    Ok(p)
-}
-
-pub fn workspace_dir() -> Result<PathBuf, Error> {
-    let p = root_dir()?.join("workspace");
-    fs::create_dir_all(&p).context(format!("unable to create workspace dir"))?;
-    Ok(p)
-}
-
-pub fn corpora_dir() -> Result<PathBuf, Error> {
-    let p = workspace_dir()?.join("corpora");
-    Ok(p)
-}
-
-pub fn state_dir() -> Result<PathBuf, Error> {
-    let seed_dir = corpora_dir()?.join("beaconstate");
-    fs::create_dir_all(&seed_dir).context(format!("unable to create corpora/beaconstate dir"))?;
-    Ok(seed_dir)
-}
-
+/*
 pub fn get_targets() -> Result<Vec<String>, Error> {
     let source = targets_dir()?.join("src/lib.rs");
     let targets_rs = fs::read_to_string(&source).context(format!("unable to read {:?}", source))?;
@@ -54,6 +21,7 @@ pub fn get_targets() -> Result<Vec<String>, Error> {
         .map(|x| x[1].to_string());
     Ok(target_names.collect())
 }
+*/
 
 pub fn prepare_targets_workspace() -> Result<(), Error> {
     use fs_extra::dir::{copy, CopyOptions};
@@ -66,23 +34,6 @@ pub fn prepare_targets_workspace() -> Result<(), Error> {
     options.copy_inside = true;
     copy(from, workspace, &options)?;
     Ok(())
-}
-
-// TODO: rework it with struct for targets and/or config
-fn corpora_target(target: &str) -> Result<PathBuf, Error> {
-    let path = match target {
-        "lighthouse_attestation" => corpora_dir()?.join("attestation"),
-        "lighthouse_attester_slashing" => corpora_dir()?.join("attester_slashing"),
-        "lighthouse_block" => corpora_dir()?.join("block"),
-        "lighthouse_block_header" => corpora_dir()?.join("block_header"),
-        "lighthouse_deposit" => corpora_dir()?.join("deposit"),
-        "lighthouse_proposer_slashing" => corpora_dir()?.join("proposer_slashing"),
-        "lighthouse_voluntary_exit" => corpora_dir()?.join("voluntary_exit"),
-        "lighthouse_beaconstate" => corpora_dir()?.join("beaconstate"),
-        "lighthouse_enr" => corpora_dir()?.join("enr"),
-        _ => panic!(format!("corpora_target unknown for {}", target)),
-    };
-    Ok(path)
 }
 
 arg_enum! {
@@ -139,19 +90,23 @@ impl FuzzerHfuzz {
 
         fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
         fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
+        fs::copy(
+            self.dir.join("simple_template.rs"),
+            hfuzz_dir.join("simple_template.rs"),
+        )?;
         fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
         Ok(())
     }
 
-    pub fn run(&self, target: String) -> Result<(), Error> {
-        let corpora_dir = corpora_target(&target)?;
+    pub fn run(&self, target: Targets) -> Result<(), Error> {
+        let corpora_dir = corpora_dir()?.join(target.corpora());
 
         prepare_targets_workspace()?;
         // create hfuzz folder inside workspace/
         self.prepare_fuzzer_workspace()?;
         // write all fuzz targets inside hfuzz folder
-        write_fuzzer_target(&self.dir, &self.work_dir, &target)?;
-        println!("[eth2diff] {}: {} created", self.name, target);
+        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        println!("[eth2diff] {}: {} created", self.name, target.name());
 
         let args = format!(
             "{} \
@@ -175,7 +130,7 @@ impl FuzzerHfuzz {
 
         // Honggfuzz will first build than run the fuzzer using cargo
         let fuzzer_bin = Command::new("cargo")
-            .args(&["+nightly", "hfuzz", "run", &target])
+            .args(&["+nightly", "hfuzz", "run", &target.name()])
             .env("HFUZZ_RUN_ARGS", &args)
             //.env("HFUZZ_BUILD_ARGS", "opt-level=3")
             .env("HFUZZ_INPUT", corpora_dir)
@@ -185,11 +140,16 @@ impl FuzzerHfuzz {
             )
             .current_dir(&self.work_dir)
             .spawn()
-            .context(format!("error starting {} to run {}", self.name, target))?
+            .context(format!(
+                "error starting {} to run {}",
+                self.name,
+                target.name()
+            ))?
             .wait()
             .context(format!(
                 "error while waiting for {} running {}",
-                self.name, target
+                self.name,
+                target.name()
             ))?;
 
         if !fuzzer_bin.success() {
@@ -200,9 +160,9 @@ impl FuzzerHfuzz {
 
     /// Build all targets with honggfuzz
     pub fn build_honggfuzz(&self) -> Result<(), Error> {
-        for target in &get_targets()? {
-            write_fuzzer_target(&self.dir, &self.work_dir, &target)?;
-            println!("[eth2diff] {}: {} created", self.name, target);
+        for target in Targets::iter() {
+            write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+            println!("[eth2diff] {}: {} created", self.name, target.name());
         }
         let dir = &self.dir;
 
@@ -268,38 +228,44 @@ impl FuzzerAfl {
 
         fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
         fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
+        fs::copy(
+            self.dir.join("simple_template.rs"),
+            hfuzz_dir.join("simple_template.rs"),
+        )?;
         fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
         Ok(())
     }
 
     /// Build all targets with afl
     fn build_targets_afl(&self) -> Result<(), Error> {
-        for target in &get_targets()? {
-            self.build_afl(&target.to_string())?;
+        for target in Targets::iter() {
+            self.build_afl(target)?;
         }
         Ok(())
     }
 
     /// Build single target with afl
-    pub fn build_afl(&self, target: &String) -> Result<(), Error> {
+    pub fn build_afl(&self, target: Targets) -> Result<(), Error> {
         prepare_targets_workspace()?;
         // create afl folder inside workspace/
         self.prepare_fuzzer_workspace()?;
 
-        write_fuzzer_target(&self.dir, &self.work_dir, &target)?;
+        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
 
         let build_cmd = Command::new("cargo")
-            .args(&["+nightly", "afl", "build", "--bin", &target]) // TODO: not sure we want to compile afl in "--release"
+            .args(&["+nightly", "afl", "build", "--bin", &target.name()]) // TODO: not sure we want to compile afl in "--release"
             .current_dir(&self.work_dir)
             .spawn()
             .context(format!(
                 "error starting build for {} of {}",
-                self.name, target
+                self.name,
+                target.name()
             ))?
             .wait()
             .context(format!(
                 "error while waiting for build for {} of {}",
-                self.name, target
+                self.name,
+                target.name()
             ))?;
 
         if !build_cmd.success() {
@@ -309,11 +275,11 @@ impl FuzzerAfl {
         Ok(())
     }
 
-    pub fn run(&self, target: String) -> Result<(), Error> {
+    pub fn run(&self, target: Targets) -> Result<(), Error> {
         let dir = &self.work_dir;
-        let corpora_dir = corpora_target(&target)?;
+        let corpora_dir = corpora_dir()?.join(target.corpora());
 
-        self.build_afl(&target)?;
+        self.build_afl(target)?;
 
         // TODO - modify to use same corpus than other fuzzer
         let corpus_dir = &self.workspace_dir;
@@ -346,18 +312,23 @@ impl FuzzerAfl {
             .arg(&input_arg)
             .arg("-o")
             .arg(&corpus_dir)
-            .args(&["--", &format!("./target/debug/{}", target)])
+            .args(&["--", &format!("./target/debug/{}", target.name())])
             .env(
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
             .current_dir(&dir)
             .spawn()
-            .context(format!("error starting {:?} to run {}", self.name, target))?
+            .context(format!(
+                "error starting {:?} to run {}",
+                self.name,
+                target.name()
+            ))?
             .wait()
             .context(format!(
                 "error while waiting for {:?} running {}",
-                self.name, target
+                self.name,
+                target.name()
             ))?;
 
         if !fuzzer_bin.success() {
@@ -412,11 +383,15 @@ impl FuzzerLibfuzzer {
 
         fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
         fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
+        fs::copy(
+            self.dir.join("simple_template.rs"),
+            hfuzz_dir.join("simple_template.rs"),
+        )?;
         fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
         Ok(())
     }
 
-    pub fn run(&self, target: String) -> Result<(), Error> {
+    pub fn run(&self, target: Targets) -> Result<(), Error> {
         prepare_targets_workspace()?;
         // create afl folder inside workspace/
         self.prepare_fuzzer_workspace()?;
@@ -441,12 +416,12 @@ impl FuzzerLibfuzzer {
             fuzz_dir.join("Cargo.toml"),
         )?;
 
-        for target in &get_targets()? {
+        for target in Targets::iter() {
             write_libfuzzer_target(&self.work_dir, target)?;
         }
 
         let fuzz_dir = self.work_dir.join("fuzz");
-        let corpus_dir = corpora_target(&target)?;
+        let corpus_dir = corpora_dir()?.join(target.corpora());
 
         // create arguments
         // corpora dir
@@ -464,15 +439,20 @@ impl FuzzerLibfuzzer {
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
-            .args(&["+nightly", "fuzz", "run", &target])
+            .args(&["+nightly", "fuzz", "run", &target.name()])
             .args(&args)
             .current_dir(&fuzz_dir)
             .spawn()
-            .context(format!("error starting {:?} to run {}", self.name, target))?
+            .context(format!(
+                "error starting {:?} to run {}",
+                self.name,
+                target.name()
+            ))?
             .wait()
             .context(format!(
                 "error while waiting for {:?} running {}",
-                self.name, target
+                self.name,
+                target.name()
             ))?;
 
         if !fuzzer_bin.success() {
@@ -482,12 +462,12 @@ impl FuzzerLibfuzzer {
     }
 }
 
-fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: &str) -> Result<(), Error> {
+fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: Targets) -> Result<(), Error> {
     use std::io::Write;
 
     let fuzz_dir = fuzzer_dir.join("fuzz");
+    let template_path = fuzzer_dir.join(target.template());
 
-    let template_path = fuzzer_dir.join("template.rs");
     let template = fs::read_to_string(&template_path).context(format!(
         "error reading template file {}",
         template_path.display()
@@ -497,16 +477,16 @@ fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: &str) -> Result<(), Erro
     // and create fuzz_targets dir
     // and create target.rs
     let _ = Command::new("cargo")
-        .args(&["+nightly", "fuzz", "add", &target])
+        .args(&["+nightly", "fuzz", "add", &target.name()])
         .current_dir(&fuzzer_dir)
         .spawn()
-        .context(format!("error adding {}", target))?
+        .context(format!("error adding {}", target.name()))?
         .wait()
-        .context(format!("error while adding {}", target));
+        .context(format!("error while adding {}", target.name()));
 
     let target_dir = fuzz_dir.join("fuzz_targets");
 
-    let path = target_dir.join(&format!("{}.rs", target));
+    let path = target_dir.join(&format!("{}.rs", target.name()));
 
     let mut file = fs::OpenOptions::new()
         .write(true)
@@ -518,7 +498,7 @@ fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: &str) -> Result<(), Erro
             path.display()
         ))?;
 
-    let source = template.replace("###TARGET###", &target);
+    let source = template.replace("###TARGET###", &target.name());
     file.write_all(source.as_bytes())?;
     Ok(())
 }
@@ -530,11 +510,11 @@ fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: &str) -> Result<(), Erro
 fn write_fuzzer_target(
     fuzzer_dir: &PathBuf,
     fuzzer_workdir: &PathBuf,
-    target: &str,
+    target: Targets,
 ) -> Result<(), Error> {
     use std::io::Write;
 
-    let template_path = fuzzer_dir.join("template.rs");
+    let template_path = fuzzer_dir.join(target.template());
     let template = fs::read_to_string(&template_path).context(format!(
         "error reading template file {}",
         template_path.display()
@@ -545,7 +525,7 @@ fn write_fuzzer_target(
         "error creating fuzz target dir {}",
         target_dir.display()
     ))?;
-    let path = target_dir.join(&format!("{}.rs", target));
+    let path = target_dir.join(&format!("{}.rs", target.name()));
 
     let mut file = fs::OpenOptions::new()
         .write(true)
@@ -557,7 +537,7 @@ fn write_fuzzer_target(
             path.display()
         ))?;
 
-    let source = template.replace("###TARGET###", &target);
+    let source = template.replace("###TARGET###", &target.name());
     file.write_all(source.as_bytes())?;
     Ok(())
 }

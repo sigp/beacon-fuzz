@@ -96,15 +96,12 @@ pub fn fuzz_lighthouse_voluntary_exit(beaconstate: BeaconState<MainnetEthSpec>, 
 
 mod beaconstate;
 #[inline(always)]
-pub fn fuzz_lighthouse_beaconstate(_beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
-    // We are not using the provided beaconstate here
+pub fn fuzz_lighthouse_beaconstate(data: &[u8]) {
 
     let mut beaconstate = match BeaconState::from_ssz_bytes(&data) {
         Ok(beaconstate) => beaconstate,
         _ => return,
     };
-
     beaconstate::fuzz_beaconstate_accessors(&mut beaconstate);
 }
 
@@ -112,9 +109,7 @@ pub fn fuzz_lighthouse_beaconstate(_beaconstate: BeaconState<MainnetEthSpec>, da
 /* libp2p */
 
 #[inline(always)]
-pub fn fuzz_lighthouse_enr(_beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
-    // We are not using the provided beaconstate here
+pub fn fuzz_lighthouse_enr(data: &[u8]) {
 
     // TODO - could be improved
     // will be better to craft "enr:" + base64encode(data)
@@ -127,4 +122,14 @@ pub fn fuzz_lighthouse_enr(_beaconstate: BeaconState<MainnetEthSpec>, data: &[u8
         _ => return,
     };
     let _ = Enr::from_str(d);
+}
+
+/* BLS */
+
+
+#[inline(always)]
+pub fn fuzz_lighthouse_bls(data: &[u8]) {
+
+    use bls::Signature;
+    let _ = Signature::from_bytes(data);
 }

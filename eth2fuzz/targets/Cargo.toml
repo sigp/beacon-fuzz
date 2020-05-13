@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 walkdir = "2"
 eth2_ssz = { path = "../lighthouse/eth2/utils/ssz/"}
+bls = { path = "../lighthouse/eth2/utils/bls/"}
 eth2_ssz_derive = { path = "../lighthouse/eth2/utils/ssz_derive/" }
 state_processing = { path = "../lighthouse/eth2/state_processing/" }
 types = { path = "../lighthouse/eth2/types"}

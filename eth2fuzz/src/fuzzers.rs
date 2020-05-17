@@ -105,8 +105,16 @@ pub struct FuzzerHfuzz {
 }
 
 impl FuzzerHfuzz {
+    fn is_available() -> Result<(), Error> {
+        // TODO
+        Ok(())
+    }
+
     /// Create a new FuzzerHfuzz
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerHfuzz, Error> {
+        // Test if fuzzer engine installed
+        FuzzerHfuzz::is_available()?;
+
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerHfuzz {
             name: "Honggfuzz".to_string(),
@@ -253,8 +261,16 @@ pub struct FuzzerAfl {
 }
 
 impl FuzzerAfl {
+    fn is_available() -> Result<(), Error> {
+        // TODO
+        Ok(())
+    }
+
     /// Create a new FuzzerAfl
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerAfl, Error> {
+        // Test if fuzzer engine installed
+        FuzzerAfl::is_available()?;
+
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerAfl {
             name: "Afl++".to_string(),
@@ -416,8 +432,16 @@ pub struct FuzzerLibfuzzer {
 }
 
 impl FuzzerLibfuzzer {
+    fn is_available() -> Result<(), Error> {
+        // TODO
+        Ok(())
+    }
+
     /// Create a new FuzzerLibfuzzer
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerLibfuzzer, Error> {
+        // Test if fuzzer engine installed
+        FuzzerLibfuzzer::is_available()?;
+
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerLibfuzzer {
             name: "Libfuzzer".to_string(),
@@ -433,23 +457,10 @@ impl FuzzerLibfuzzer {
         Ok(fuzzer)
     }
 
-    // TODO - simplify that
     fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let hfuzz_dir = &self.work_dir;
-        fs::create_dir_all(&hfuzz_dir)
-            .context(format!("unable to create {} dir", hfuzz_dir.display()))?;
-
-        let src_dir = hfuzz_dir.join("src");
-        fs::create_dir_all(&src_dir)
-            .context(format!("unable to create {} dir", src_dir.display()))?;
-
-        fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
-        fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
-        fs::copy(
-            self.dir.join("simple_template.rs"),
-            hfuzz_dir.join("simple_template.rs"),
-        )?;
-        fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
+        let from = &self.dir;
+        let workspace = &self.work_dir;
+        copy_dir(from.to_path_buf(), workspace.to_path_buf())?;
         Ok(())
     }
 
@@ -484,7 +495,7 @@ impl FuzzerLibfuzzer {
             fuzz_dir.join("Cargo.toml"),
         )?;
 
-        for target in Targets::iter() {
+        for target in Targets::iter().find(|x| x.language() == "rust") {
             write_libfuzzer_target(&self.work_dir, target)?;
         }
 
@@ -592,8 +603,19 @@ pub struct FuzzerJsFuzz {
 }
 
 impl FuzzerJsFuzz {
+    fn is_available() -> Result<(), Error> {
+        let fuzzer_output = Command::new("jsfuzz").arg("--help").output()?;
+
+        if !fuzzer_output.status.success() {
+            bail!("jsfuzz not available, install with `npm i -g jsfuzz`");
+        }
+        Ok(())
+    }
+
     /// Create a new FuzzerJsFuzz
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerJsFuzz, Error> {
+        // Test if fuzzer engine installed
+        FuzzerJsFuzz::is_available()?;
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerJsFuzz {
             name: "JsFuzz".to_string(),

@@ -7,7 +7,7 @@ authors = ["The rust-fuzz Project Developers"]
 afl = "0.7"
 walkdir = "2"
 rand = "0.6"
-fuzz-targets = {path = "../targets"}
+fuzz-targets = {path = "../targets/rust"}
 eth2_ssz = { path = "../lighthouse/eth2/utils/ssz/" }
 eth2_ssz_derive = { path = "../lighthouse/eth2/utils/ssz_derive/" }
 state_processing = { path = "../lighthouse/eth2/state_processing/" }

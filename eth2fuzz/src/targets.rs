@@ -12,11 +12,13 @@ pub enum Targets {
     LighthouseBeaconstate,
     LighthouseEnr,
     LighthouseBLS,
+    LodestarBlock,
 }
 
 impl Targets {
     pub fn name(&self) -> String {
         let name = match &self {
+            // Lighthouse
             Targets::LighthouseAttestation => "lighthouse_attestation",
             Targets::LighthouseAttesterSlashing => "lighthouse_attester_slashing",
             Targets::LighthouseBlock => "lighthouse_block",
@@ -27,12 +29,15 @@ impl Targets {
             Targets::LighthouseBeaconstate => "lighthouse_beaconstate",
             Targets::LighthouseEnr => "lighthouse_enr",
             Targets::LighthouseBLS => "lighthouse_bls",
+            //Lodestar
+            Targets::LodestarBlock => "lodestar_block",
         };
         name.to_string()
     }
 
     pub fn corpora(&self) -> String {
         let corpora_name = match &self {
+            // Lighthouse
             Targets::LighthouseAttestation => "attestation",
             Targets::LighthouseAttesterSlashing => "attester_slashing",
             Targets::LighthouseBlock => "block",
@@ -43,6 +48,8 @@ impl Targets {
             Targets::LighthouseBeaconstate => "beaconstate",
             Targets::LighthouseEnr => "enr",
             Targets::LighthouseBLS => "bls",
+            //Lodestar
+            Targets::LodestarBlock => "block",
         };
         corpora_name.to_string()
     }
@@ -50,6 +57,7 @@ impl Targets {
     // TODO - change templae enr and bls and beaconstate
     pub fn template(&self) -> String {
         let template_name = match &self {
+            // Lighthouse
             Targets::LighthouseAttestation
             | Targets::LighthouseAttesterSlashing
             | Targets::LighthouseBlock
@@ -60,12 +68,15 @@ impl Targets {
             Targets::LighthouseBeaconstate | Targets::LighthouseEnr | Targets::LighthouseBLS => {
                 "simple_template.rs"
             }
+            //Lodestar
+            Targets::LodestarBlock => "simple_template.js",
         };
         template_name.to_string()
     }
 
     pub fn language(&self) -> String {
         let lang = match &self {
+            // Lighthouse
             Targets::LighthouseAttestation
             | Targets::LighthouseAttesterSlashing
             | Targets::LighthouseBlock
@@ -76,6 +87,8 @@ impl Targets {
             | Targets::LighthouseBeaconstate
             | Targets::LighthouseEnr
             | Targets::LighthouseBLS => "rust",
+            //Lodestar
+            Targets::LodestarBlock => "js",
         };
         lang.to_string()
     }

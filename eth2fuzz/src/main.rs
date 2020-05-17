@@ -170,6 +170,10 @@ fn run_target(
             let hfuzz = fuzzers::FuzzerLibfuzzer::new(timeout, None)?; // TODO - fix thread
             hfuzz.run(target)?;
         }
+        Jsfuzz => {
+            let jfuzz = fuzzers::FuzzerJsFuzz::new(timeout, None)?;
+            jfuzz.run(target)?;
+        }
     }
     Ok(())
 }
@@ -208,6 +212,10 @@ fn run_continuously(
             Libfuzzer => {
                 let hfuzz = fuzzers::FuzzerLibfuzzer::new(timeout, None)?; // TODO - fix thread
                 hfuzz.run(target)?;
+            }
+            Jsfuzz => {
+                let jfuzz = fuzzers::FuzzerJsFuzz::new(timeout, None)?;
+                jfuzz.run(target)?;
             }
         }
         Ok(())

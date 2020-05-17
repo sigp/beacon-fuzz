@@ -1,17 +1,10 @@
 [package]
-name = "fuzz-targets-honggfuzz"
+name = "fuzz-targets-libfuzzer"
 version = "0.1.0"
 authors = ["The rust-fuzz Project Developers"]
 
 [dependencies]
-fuzz-targets = {path = "../targets"}
-walkdir = "2"
-honggfuzz = "0.5"
-rand = "0.6"
-eth2_ssz = { path = "../lighthouse/eth2/utils/ssz/" }
-eth2_ssz_derive = { path = "../lighthouse/eth2/utils/ssz_derive/" }
-state_processing = { path = "../lighthouse/eth2/state_processing/" }
-types = { path = "../lighthouse/eth2/types" }
+fuzz-targets = {path = "../targets/rust"}
 
 [patch.crates-io]
 # Needed to provide paths to some relevant dependencies

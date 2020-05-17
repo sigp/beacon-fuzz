@@ -10,29 +10,63 @@ use strum::IntoEnumIterator;
 
 use crate::env::{corpora_dir, state_dir, targets_dir, workspace_dir};
 use crate::targets::Targets;
-
-/*
-pub fn get_targets() -> Result<Vec<String>, Error> {
-    let source = targets_dir()?.join("src/lib.rs");
-    let targets_rs = fs::read_to_string(&source).context(format!("unable to read {:?}", source))?;
-    let match_fuzz_fs = Regex::new(r"pub fn fuzz_(\w+)\(")?;
-    let target_names = match_fuzz_fs
-        .captures_iter(&targets_rs)
-        .map(|x| x[1].to_string());
-    Ok(target_names.collect())
-}
-*/
+use crate::utils::copy_dir;
 
 pub fn prepare_targets_workspace() -> Result<(), Error> {
-    use fs_extra::dir::{copy, CopyOptions};
     let from = targets_dir()?;
     let workspace = workspace_dir()?;
+    copy_dir(from, workspace)?;
+    Ok(())
+}
 
-    let mut options = CopyOptions::new();
-    options.overwrite = true;
-    options.skip_exist = true;
-    options.copy_inside = true;
-    copy(from, workspace, &options)?;
+/// Write the fuzzing target
+///
+/// Copy the fuzzer/template.rs
+/// Replace ###TARGET### by the target
+fn write_fuzzer_target(
+    fuzzer_dir: &PathBuf,
+    fuzzer_workdir: &PathBuf,
+    target: Targets,
+) -> Result<(), Error> {
+    use std::io::Write;
+
+    let template_path = fuzzer_dir.join(target.template());
+    let template = fs::read_to_string(&template_path).context(format!(
+        "error reading template file {}",
+        template_path.display()
+    ))?;
+
+    let target_dir: PathBuf = match target.language().as_str() {
+        "rust" => fuzzer_workdir.join("src").join("bin"),
+        "js" => fuzzer_workdir.to_path_buf(),
+        _ => bail!("target_dir for this language not defined"),
+    };
+
+    fs::create_dir_all(&target_dir).context(format!(
+        "error creating fuzz target dir {}",
+        target_dir.display()
+    ))?;
+
+    let ext: &str = match target.language().as_str() {
+        "rust" => "rs",
+        "js" => "js",
+        _ => bail!("ext for this language not defined"),
+    };
+
+    let path = target_dir.join(&format!("{}.{}", target.name(), ext));
+
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(&path)
+        .context(format!(
+            "error writing fuzz target binary {}",
+            path.display()
+        ))?;
+
+    let source = template.replace("###TARGET###", &target.name());
+    file.write_all(source.as_bytes())?;
     Ok(())
 }
 
@@ -41,13 +75,19 @@ arg_enum! {
     pub enum Fuzzer {
         Afl,
         Honggfuzz,
-        Libfuzzer
+        Libfuzzer,
+        Jsfuzz,
     }
 }
 
 #[derive(Fail, Debug)]
 #[fail(display = "[eth2fuzz] Fuzzer quit")]
 pub struct FuzzerQuit;
+
+/***********************************************
+name: honggfuzz-rs
+github: https://github.com/rust-fuzz/honggfuzz-rs
+***********************************************/
 
 pub struct FuzzerHfuzz {
     /// Fuzzer name.
@@ -65,12 +105,20 @@ pub struct FuzzerHfuzz {
 }
 
 impl FuzzerHfuzz {
+    fn is_available() -> Result<(), Error> {
+        // TODO
+        Ok(())
+    }
+
     /// Create a new FuzzerHfuzz
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerHfuzz, Error> {
+        // Test if fuzzer engine installed
+        FuzzerHfuzz::is_available()?;
+
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerHfuzz {
             name: "Honggfuzz".to_string(),
-            dir: cwd.join("fuzzer-honggfuzz"),
+            dir: cwd.join("fuzzers").join("rust-honggfuzz"),
             work_dir: cwd.join("workspace").join("hfuzz"),
             workspace_dir: cwd.join("workspace").join("hfuzz").join("hfuzz_workspace"),
             timeout: timeout,
@@ -99,6 +147,12 @@ impl FuzzerHfuzz {
     }
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
+        // check if target is supported by this fuzzer
+        // TODO - change to make it automatic
+        if target.language() != "rust" {
+            bail!("FuzzerHfuzz incompatible for this target");
+        }
+
         let corpora_dir = corpora_dir()?.join(target.corpora());
 
         prepare_targets_workspace()?;
@@ -186,6 +240,11 @@ impl FuzzerHfuzz {
     }
 }
 
+/***********************************************
+name: afl-rs
+github: https://github.com/rust-fuzz/afl.rs
+***********************************************/
+
 pub struct FuzzerAfl {
     /// Fuzzer name.
     pub name: String,
@@ -202,12 +261,20 @@ pub struct FuzzerAfl {
 }
 
 impl FuzzerAfl {
+    fn is_available() -> Result<(), Error> {
+        // TODO
+        Ok(())
+    }
+
     /// Create a new FuzzerAfl
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerAfl, Error> {
+        // Test if fuzzer engine installed
+        FuzzerAfl::is_available()?;
+
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerAfl {
             name: "Afl++".to_string(),
-            dir: cwd.join("fuzzer-afl"),
+            dir: cwd.join("fuzzers").join("rust-afl"),
             work_dir: cwd.join("workspace").join("afl"),
             workspace_dir: cwd.join("workspace").join("afl").join("afl_workspace"),
             timeout: timeout,
@@ -276,6 +343,12 @@ impl FuzzerAfl {
     }
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
+        // check if target is supported by this fuzzer
+        // TODO - change to make it automatic
+        if target.language() != "rust" {
+            bail!("FuzzerAfl incompatible for this target");
+        }
+
         let dir = &self.work_dir;
         let corpora_dir = corpora_dir()?.join(target.corpora());
 
@@ -338,6 +411,11 @@ impl FuzzerAfl {
     }
 }
 
+/***********************************************
+name: libfuzzer/cargo-fuzz
+github: https://github.com/rust-fuzz/cargo-fuzz
+***********************************************/
+
 pub struct FuzzerLibfuzzer {
     /// Fuzzer name.
     pub name: String,
@@ -354,12 +432,20 @@ pub struct FuzzerLibfuzzer {
 }
 
 impl FuzzerLibfuzzer {
+    fn is_available() -> Result<(), Error> {
+        // TODO
+        Ok(())
+    }
+
     /// Create a new FuzzerLibfuzzer
     pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerLibfuzzer, Error> {
+        // Test if fuzzer engine installed
+        FuzzerLibfuzzer::is_available()?;
+
         let cwd = env::current_dir().context("error getting current directory")?;
         let fuzzer = FuzzerLibfuzzer {
             name: "Libfuzzer".to_string(),
-            dir: cwd.join("fuzzer-libfuzzer"),
+            dir: cwd.join("fuzzers").join("rust-libfuzzer"),
             work_dir: cwd.join("workspace").join("libfuzzer"),
             workspace_dir: cwd
                 .join("workspace")
@@ -371,27 +457,20 @@ impl FuzzerLibfuzzer {
         Ok(fuzzer)
     }
 
-    // TODO - simplify that
     fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let hfuzz_dir = &self.work_dir;
-        fs::create_dir_all(&hfuzz_dir)
-            .context(format!("unable to create {} dir", hfuzz_dir.display()))?;
-
-        let src_dir = hfuzz_dir.join("src");
-        fs::create_dir_all(&src_dir)
-            .context(format!("unable to create {} dir", src_dir.display()))?;
-
-        fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
-        fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
-        fs::copy(
-            self.dir.join("simple_template.rs"),
-            hfuzz_dir.join("simple_template.rs"),
-        )?;
-        fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
+        let from = &self.dir;
+        let workspace = &self.work_dir;
+        copy_dir(from.to_path_buf(), workspace.to_path_buf())?;
         Ok(())
     }
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
+        // check if target is supported by this fuzzer
+        // TODO - change to make it automatic
+        if target.language() != "rust" {
+            bail!("FuzzerLibfuzzer incompatible for this target");
+        }
+
         prepare_targets_workspace()?;
         // create afl folder inside workspace/
         self.prepare_fuzzer_workspace()?;
@@ -416,7 +495,7 @@ impl FuzzerLibfuzzer {
             fuzz_dir.join("Cargo.toml"),
         )?;
 
-        for target in Targets::iter() {
+        for target in Targets::iter().find(|x| x.language() == "rust") {
             write_libfuzzer_target(&self.work_dir, target)?;
         }
 
@@ -503,41 +582,101 @@ fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: Targets) -> Result<(), E
     Ok(())
 }
 
-/// Write the fuzzing target
-///
-/// Copy the fuzzer/template.rs
-/// Replace ###TARGET### by the target
-fn write_fuzzer_target(
-    fuzzer_dir: &PathBuf,
-    fuzzer_workdir: &PathBuf,
-    target: Targets,
-) -> Result<(), Error> {
-    use std::io::Write;
+/***********************************************
+name: jsfuzz
+github: https://github.com/fuzzitdev/jsfuzz
+***********************************************/
 
-    let template_path = fuzzer_dir.join(target.template());
-    let template = fs::read_to_string(&template_path).context(format!(
-        "error reading template file {}",
-        template_path.display()
-    ))?;
+pub struct FuzzerJsFuzz {
+    /// Fuzzer name.
+    pub name: String,
+    /// Source code / template dir
+    pub dir: PathBuf,
+    /// Workspace dir
+    pub work_dir: PathBuf,
+    /// Internal workspace dir
+    pub workspace_dir: PathBuf,
+    /// timeout
+    pub timeout: Option<i32>,
+    /// thread
+    pub thread: Option<i32>,
+}
 
-    let target_dir = fuzzer_workdir.join("src").join("bin");
-    fs::create_dir_all(&target_dir).context(format!(
-        "error creating fuzz target dir {}",
-        target_dir.display()
-    ))?;
-    let path = target_dir.join(&format!("{}.rs", target.name()));
+impl FuzzerJsFuzz {
+    fn is_available() -> Result<(), Error> {
+        let fuzzer_output = Command::new("jsfuzz").arg("--help").output()?;
 
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(&path)
-        .context(format!(
-            "error writing fuzz target binary {}",
-            path.display()
-        ))?;
+        if !fuzzer_output.status.success() {
+            bail!("jsfuzz not available, install with `npm i -g jsfuzz`");
+        }
+        Ok(())
+    }
 
-    let source = template.replace("###TARGET###", &target.name());
-    file.write_all(source.as_bytes())?;
-    Ok(())
+    /// Create a new FuzzerJsFuzz
+    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerJsFuzz, Error> {
+        // Test if fuzzer engine installed
+        FuzzerJsFuzz::is_available()?;
+        let cwd = env::current_dir().context("error getting current directory")?;
+        let fuzzer = FuzzerJsFuzz {
+            name: "JsFuzz".to_string(),
+            dir: cwd.join("fuzzers").join("js-jsfuzz"),
+            work_dir: cwd.join("workspace").join("jsfuzz"),
+            workspace_dir: cwd
+                .join("workspace")
+                .join("jsfuzz")
+                .join("jsfuzz_workspace"),
+            timeout: timeout,
+            thread: thread,
+        };
+        Ok(fuzzer)
+    }
+
+    fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
+        let from = &self.dir;
+        let workspace = &self.work_dir;
+        copy_dir(from.to_path_buf(), workspace.to_path_buf())?;
+        Ok(())
+    }
+
+    pub fn run(&self, target: Targets) -> Result<(), Error> {
+        // check if target is supported by this fuzzer
+        // TODO - change to make it automatic
+        if target.language() != "js" {
+            bail!("FuzzerJsFuzz incompatible for this target");
+        }
+
+        // get corpora dit of the target
+        let corpora_dir = corpora_dir()?.join(target.corpora());
+        // copy targets source files
+        prepare_targets_workspace()?;
+        // create fuzzer folder inside workspace/
+        self.prepare_fuzzer_workspace()?;
+
+        // write all fuzz targets inside workspace folder
+        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        println!("[eth2fuzz] {}: {} created", self.name, target.name());
+
+        //
+        let fuzzer_bin = Command::new("jsfuzz")
+            .arg(&target.name())
+            .arg(corpora_dir)
+            .current_dir(&self.work_dir)
+            .spawn()
+            .context(format!(
+                "error starting {} to run {}",
+                self.name,
+                target.name()
+            ))?
+            .wait()
+            .context(format!(
+                "error while waiting for {} running {}",
+                self.name,
+                target.name()
+            ))?;
+
+        if !fuzzer_bin.success() {
+            Err(FuzzerQuit)?;
+        }
+        Ok(())
+    }
 }

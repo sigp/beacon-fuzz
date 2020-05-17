@@ -5,7 +5,7 @@ authors = ["Patrick Ventuzelo <ventuzelo.patrick@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-fuzz-targets = {path = "../targets"}
+fuzz-targets = {path = "../targets/rust"}
 eth2_ssz = { path = "../lighthouse/eth2/utils/ssz/" }
 types = { path = "../lighthouse/eth2/types" }
 

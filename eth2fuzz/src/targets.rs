@@ -1,4 +1,8 @@
+use failure::{Error};
 use strum::IntoEnumIterator;
+
+use crate::utils::copy_dir;
+use crate::env::{targets_dir, workspace_dir};
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Targets {
@@ -96,4 +100,11 @@ impl Targets {
 
 pub fn get_targets() -> Vec<String> {
     Targets::iter().map(|x| x.name()).collect()
+}
+
+pub fn prepare_targets_workspace() -> Result<(), Error> {
+    let from = targets_dir()?;
+    let workspace = workspace_dir()?;
+    copy_dir(from, workspace)?;
+    Ok(())
 }

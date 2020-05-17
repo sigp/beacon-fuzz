@@ -10,9 +10,9 @@ extern crate strum;
 #[macro_use]
 extern crate strum_macros;
 
-use failure::{Error};
-use structopt::StructOpt;
 use crate::strum::IntoEnumIterator;
+use failure::Error;
+use structopt::StructOpt;
 
 // load fuzzers
 mod env;
@@ -28,7 +28,6 @@ mod js_fuzzers;
 mod rust_fuzzers;
 // load debugging stuff
 mod debug;
-
 
 /// Run eth2fuzz fuzzing targets
 #[derive(StructOpt, Debug)]

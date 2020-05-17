@@ -1,8 +1,8 @@
-use failure::{Error};
+use failure::Error;
 use strum::IntoEnumIterator;
 
-use crate::utils::copy_dir;
 use crate::env::{targets_dir, workspace_dir};
+use crate::utils::copy_dir;
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Targets {

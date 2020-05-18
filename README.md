@@ -192,6 +192,8 @@ TODO
 - [Teku: `IndexOutOfBoundsException` when passed *invalid* `BeaconState` and committee size is inconsistent with attestation aggregation bits](https://github.com/PegaSysEng/teku/issues/1685). (See [1](#invalidState)) **fixed**
 - [Lighthouse: out-of-bounds offset in variable list SSZ decoding](https://github.com/sigp/lighthouse/pull/974) **fixed**
 - [Lighthouse: multiplication overflow in `compute_proposer_index`](https://github.com/sigp/lighthouse/pull/1009) (See [1](#invalidState)) **fixed**
+- [Lighthouse: ENR panic](https://github.com/AgeManning/enr/pull/12) **fixed**
+- [Lighthouse: Underflow in Snappy (external dependency)](https://github.com/BurntSushi/rust-snappy/pull/30)
 
 <a name="invalidState">1</a>: **NOTE** `BeaconState` objects are not untrusted input, so client state transition functions are not expected to handle invalid `BeaconState` values.
 

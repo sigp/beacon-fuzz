@@ -121,7 +121,8 @@ pub fn fuzz_lighthouse_enr(data: &[u8]) {
         Ok(d) => d,
         _ => return,
     };
-    let _ = Enr::from_str(d);
+    let _a = Enr::from_str(d);
+    //println!("{:?}", a);
 }
 
 /* BLS */

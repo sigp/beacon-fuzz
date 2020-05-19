@@ -101,6 +101,21 @@ function fuzz_lodestar_beaconstate(buf) {
     }
 }
 
+// Test parsing ENR base64 encoded string
+// install with
+// npm i @chainsafe/discv5
+function fuzz_lodestar_enr(buf) {
+    var discv5 = require("@chainsafe/discv5");
+    try {
+        discv5.ENR.decodeTxt(buf.toString());
+    } catch (e) {
+        if (e.name == "Error") {}
+        else if (e.message == "Cannot read property 'toString' of undefined") {}
+        else {throw e;}
+        //is_lodestar_valid_exception(e);
+    }
+}
+
 module.exports = {
     fuzz_lodestar_attestation,
     fuzz_lodestar_attester_slashing,
@@ -110,4 +125,5 @@ module.exports = {
     fuzz_lodestar_proposer_slashing,
     fuzz_lodestar_voluntary_exit,
     fuzz_lodestar_beaconstate,
+    fuzz_lodestar_enr,
 }

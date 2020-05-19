@@ -24,6 +24,7 @@ pub enum Targets {
     LodestarProposerSlashing,
     LodestarVoluntaryExit,
     LodestarBeaconstate,
+    LodestarEnr,
 }
 
 impl Targets {
@@ -49,6 +50,7 @@ impl Targets {
             Targets::LodestarProposerSlashing => "lodestar_proposer_slashing",
             Targets::LodestarVoluntaryExit => "lodestar_voluntary_exit",
             Targets::LodestarBeaconstate => "lodestar_beaconstate",
+            Targets::LodestarEnr => "lodestar_enr",
         };
         name.to_string()
     }
@@ -75,6 +77,7 @@ impl Targets {
             Targets::LodestarProposerSlashing => "proposer_slashing",
             Targets::LodestarVoluntaryExit => "voluntary_exit",
             Targets::LodestarBeaconstate => "beaconstate",
+            Targets::LodestarEnr => "enr",
         };
         corpora_name.to_string()
     }
@@ -101,7 +104,8 @@ impl Targets {
             | Targets::LodestarDeposit
             | Targets::LodestarProposerSlashing
             | Targets::LodestarVoluntaryExit
-            | Targets::LodestarBeaconstate => "simple_template.js",
+            | Targets::LodestarBeaconstate
+            | Targets::LodestarEnr => "simple_template.js",
         };
         template_name.to_string()
     }
@@ -127,7 +131,8 @@ impl Targets {
             | Targets::LodestarDeposit
             | Targets::LodestarProposerSlashing
             | Targets::LodestarVoluntaryExit
-            | Targets::LodestarBeaconstate => "js",
+            | Targets::LodestarBeaconstate
+            | Targets::LodestarEnr => "js",
         };
         lang.to_string()
     }

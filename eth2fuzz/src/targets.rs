@@ -16,7 +16,14 @@ pub enum Targets {
     LighthouseBeaconstate,
     LighthouseEnr,
     LighthouseBLS,
+    LodestarAttestation,
+    LodestarAttesterSlashing,
     LodestarBlock,
+    LodestarBlockHeader,
+    LodestarDeposit,
+    LodestarProposerSlashing,
+    LodestarVoluntaryExit,
+    LodestarBeaconstate,
 }
 
 impl Targets {
@@ -34,7 +41,15 @@ impl Targets {
             Targets::LighthouseEnr => "lighthouse_enr",
             Targets::LighthouseBLS => "lighthouse_bls",
             //Lodestar
+            Targets::LodestarAttestation => "lodestar_attestation",
+            Targets::LodestarAttesterSlashing => "lodestar_attester_slashing",
             Targets::LodestarBlock => "lodestar_block",
+            Targets::LodestarBlockHeader => "lodestar_block_header",
+            Targets::LodestarDeposit => "lodestar_deposit",
+            Targets::LodestarProposerSlashing => "lodestar_proposer_slashing",
+            Targets::LodestarVoluntaryExit => "lodestar_voluntary_exit",
+            Targets::LodestarBeaconstate => "lodestar_beaconstate",
+            
         };
         name.to_string()
     }
@@ -53,7 +68,14 @@ impl Targets {
             Targets::LighthouseEnr => "enr",
             Targets::LighthouseBLS => "bls",
             //Lodestar
+            Targets::LodestarAttestation => "attestation",
+            Targets::LodestarAttesterSlashing => "attester_slashing",
             Targets::LodestarBlock => "block",
+            Targets::LodestarBlockHeader => "block_header",
+            Targets::LodestarDeposit => "deposit",
+            Targets::LodestarProposerSlashing => "proposer_slashing",
+            Targets::LodestarVoluntaryExit => "voluntary_exit",
+            Targets::LodestarBeaconstate => "beaconstate",
         };
         corpora_name.to_string()
     }
@@ -69,11 +91,20 @@ impl Targets {
             | Targets::LighthouseDeposit
             | Targets::LighthouseProposerSlashing
             | Targets::LighthouseVoluntaryExit => "template.rs",
-            Targets::LighthouseBeaconstate | Targets::LighthouseEnr | Targets::LighthouseBLS => {
+            Targets::LighthouseBeaconstate
+            |Targets::LighthouseEnr
+            | Targets::LighthouseBLS => {
                 "simple_template.rs"
             }
             //Lodestar
-            Targets::LodestarBlock => "simple_template.js",
+            Targets::LodestarAttestation
+            | Targets::LodestarAttesterSlashing
+            | Targets::LodestarBlock
+            | Targets::LodestarBlockHeader
+            | Targets::LodestarDeposit
+            | Targets::LodestarProposerSlashing
+            | Targets::LodestarVoluntaryExit
+            | Targets::LodestarBeaconstate => "simple_template.js",
         };
         template_name.to_string()
     }
@@ -92,7 +123,14 @@ impl Targets {
             | Targets::LighthouseEnr
             | Targets::LighthouseBLS => "rust",
             //Lodestar
-            Targets::LodestarBlock => "js",
+            Targets::LodestarAttestation
+            | Targets::LodestarAttesterSlashing
+            | Targets::LodestarBlock
+            | Targets::LodestarBlockHeader
+            | Targets::LodestarDeposit
+            | Targets::LodestarProposerSlashing
+            | Targets::LodestarVoluntaryExit
+            | Targets::LodestarBeaconstate => "js",
         };
         lang.to_string()
     }

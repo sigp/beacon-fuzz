@@ -58,7 +58,7 @@ See [corpora](https://github.com/sigp/beacon-fuzz-corpora) for examples and expl
 Quickstart:
 
 ```console
-$ git clone --depth 1 https://github.com/sigp/beacon-fuzz.git
+$ git clone --depth 1 --recurse-submodules https://github.com/sigp/beacon-fuzz.git
 $ git clone --depth 1 https://github.com/sigp/beacon-fuzz-corpora.git
 $ cd beacon-fuzz
 $ sudo ./runfuzzer.sh block_header ../beacon-fuzz-corpora/0-9-1/mainnet/block_header/ ../beacon-fuzz-corpora/0-9-1/mainnet/beaconstate
@@ -67,7 +67,7 @@ $ sudo ./runfuzzer.sh block_header ../beacon-fuzz-corpora/0-9-1/mainnet/block_he
 Interactive usage:
 
 ```console
-$ git clone --depth 1 https://github.com/sigp/beacon-fuzz.git
+$ git clone --depth 1 --recurse-submodules https://github.com/sigp/beacon-fuzz.git
 $ cd beacon-fuzz
 $ sudo docker build . -t beacon_fuzz
 $ sudo docker run -it beacon_fuzz bash
@@ -194,8 +194,10 @@ TODO
 - [Lighthouse: multiplication overflow in `compute_proposer_index`](https://github.com/sigp/lighthouse/pull/1009) (See [1](#invalidState)) **fixed**
 - [Lighthouse: ENR panic](https://github.com/AgeManning/enr/pull/12) **fixed**
 - [Lighthouse: Underflow in Snappy (external dependency)](https://github.com/BurntSushi/rust-snappy/pull/30)
+- [Lodestar: `TypeError` when SSZ decoding a `Block` with invalid `BigInt` parent scope](https://github.com/ChainSafe/ssz/issues/22)
+- [Lodestar: `RangeError` when SSZ decoding an empty `Block` container](https://github.com/ChainSafe/ssz/issues/23)
 
-<a name="invalidState">1</a>: **NOTE** `BeaconState` objects are not untrusted input, so client state transition functions are not expected to handle invalid `BeaconState` values.
+<a name="invalidState">1</a>: **NOTE** `BeaconState` objects are consider as trusted input (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values.
 
 ## License
 

@@ -11,6 +11,9 @@ npm i @chainsafe/lodestar-types
 // but also processing function
 // need to deal with beaconstate and config loading
 
+// state-transition
+// https://github.com/ChainSafe/lodestar/tree/master/packages/lodestar-beacon-state-transition
+
 
 function is_lodestar_valid_exception(e)  {
     // Those are "valid" exceptions. 

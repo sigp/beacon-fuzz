@@ -49,7 +49,6 @@ impl Targets {
             Targets::LodestarProposerSlashing => "lodestar_proposer_slashing",
             Targets::LodestarVoluntaryExit => "lodestar_voluntary_exit",
             Targets::LodestarBeaconstate => "lodestar_beaconstate",
-            
         };
         name.to_string()
     }
@@ -91,9 +90,7 @@ impl Targets {
             | Targets::LighthouseDeposit
             | Targets::LighthouseProposerSlashing
             | Targets::LighthouseVoluntaryExit => "template.rs",
-            Targets::LighthouseBeaconstate
-            |Targets::LighthouseEnr
-            | Targets::LighthouseBLS => {
+            Targets::LighthouseBeaconstate | Targets::LighthouseEnr | Targets::LighthouseBLS => {
                 "simple_template.rs"
             }
             //Lodestar

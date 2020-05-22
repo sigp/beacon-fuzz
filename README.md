@@ -198,7 +198,7 @@ TODO
 - [Lodestar: `RangeError` when SSZ decoding an empty `Block` container](https://github.com/ChainSafe/ssz/issues/23)
 - [Lodestar: `TypeError` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/56)
 
-<a name="invalidState">1</a>: **NOTE** `BeaconState` objects are consider as trusted input (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values.
+<a name="invalidState">1</a>: **NOTE** `BeaconState` objects are considered trusted inputs (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values, for now.
 
 ## License
 

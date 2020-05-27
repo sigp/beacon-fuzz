@@ -6,6 +6,7 @@ use crate::utils::copy_dir;
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Targets {
+    // Lighthouse
     LighthouseAttestation,
     LighthouseAttesterSlashing,
     LighthouseBlock,
@@ -16,6 +17,7 @@ pub enum Targets {
     LighthouseBeaconstate,
     LighthouseEnr,
     LighthouseBLS,
+    // Lodestar
     LodestarAttestation,
     LodestarAttesterSlashing,
     LodestarBlock,
@@ -25,6 +27,16 @@ pub enum Targets {
     LodestarVoluntaryExit,
     LodestarBeaconstate,
     LodestarEnr,
+    // Nimbus
+    NimbusAttestation,
+    NimbusAttesterSlashing,
+    NimbusBlock,
+    NimbusBlockHeader,
+    NimbusDeposit,
+    NimbusProposerSlashing,
+    NimbusVoluntaryExit,
+    NimbusBeaconstate,
+    NimbusEnr,
 }
 
 impl Targets {
@@ -51,6 +63,16 @@ impl Targets {
             Targets::LodestarVoluntaryExit => "lodestar_voluntary_exit",
             Targets::LodestarBeaconstate => "lodestar_beaconstate",
             Targets::LodestarEnr => "lodestar_enr",
+            // Nimbus
+            Targets::NimbusAttestation => "nimbus_attestation",
+            Targets::NimbusAttesterSlashing => "nimbus_attester_slashing",
+            Targets::NimbusBlock => "nimbus_block",
+            Targets::NimbusBlockHeader => "nimbus_block_header",
+            Targets::NimbusDeposit => "nimbus_deposit",
+            Targets::NimbusProposerSlashing => "nimbus_proposer_slashing",
+            Targets::NimbusVoluntaryExit => "nimbus_voluntary_exit",
+            Targets::NimbusBeaconstate => "nimbus_beaconstate",
+            Targets::NimbusEnr => "nimbus_enr",
         };
         name.to_string()
     }
@@ -78,6 +100,16 @@ impl Targets {
             Targets::LodestarVoluntaryExit => "voluntary_exit",
             Targets::LodestarBeaconstate => "beaconstate",
             Targets::LodestarEnr => "enr",
+            // Nimbus
+            Targets::NimbusAttestation => "attestation",
+            Targets::NimbusAttesterSlashing => "attester_slashing",
+            Targets::NimbusBlock => "block",
+            Targets::NimbusBlockHeader => "block_header",
+            Targets::NimbusDeposit => "deposit",
+            Targets::NimbusProposerSlashing => "proposer_slashing",
+            Targets::NimbusVoluntaryExit => "voluntary_exit",
+            Targets::NimbusBeaconstate => "beaconstate",
+            Targets::NimbusEnr => "enr",
         };
         corpora_name.to_string()
     }
@@ -106,6 +138,16 @@ impl Targets {
             | Targets::LodestarVoluntaryExit
             | Targets::LodestarBeaconstate
             | Targets::LodestarEnr => "simple_template.js",
+            // Nimbus
+            Targets::NimbusAttestation
+            | Targets::NimbusAttesterSlashing
+            | Targets::NimbusBlock
+            | Targets::NimbusBlockHeader
+            | Targets::NimbusDeposit
+            | Targets::NimbusProposerSlashing
+            | Targets::NimbusVoluntaryExit
+            | Targets::NimbusBeaconstate
+            | Targets::NimbusEnr => "simple_template.nim",
         };
         template_name.to_string()
     }
@@ -133,6 +175,16 @@ impl Targets {
             | Targets::LodestarVoluntaryExit
             | Targets::LodestarBeaconstate
             | Targets::LodestarEnr => "js",
+            // Nimbus
+            Targets::NimbusAttestation
+            | Targets::NimbusAttesterSlashing
+            | Targets::NimbusBlock
+            | Targets::NimbusBlockHeader
+            | Targets::NimbusDeposit
+            | Targets::NimbusProposerSlashing
+            | Targets::NimbusVoluntaryExit
+            | Targets::NimbusBeaconstate
+            | Targets::NimbusEnr => "nim",
         };
         lang.to_string()
     }

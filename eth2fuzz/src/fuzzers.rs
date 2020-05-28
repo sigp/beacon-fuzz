@@ -17,6 +17,7 @@ arg_enum! {
         Libfuzzer,
         Jsfuzz,
         NimAfl,
+        NimLibfuzzer,
     }
 }
 

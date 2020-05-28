@@ -1,6 +1,6 @@
 import
     chronicles,
-    nimafl/fuzztest,
+    nimlibfuzzer/fuzztest,
     ../targets/nim/lib
 
 test:

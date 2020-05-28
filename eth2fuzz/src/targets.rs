@@ -139,8 +139,8 @@ impl Targets {
             | Targets::LodestarBeaconstate
             | Targets::LodestarEnr => "simple_template.js",
             // Nimbus
-            Targets::NimbusAttestation
-            | Targets::NimbusAttesterSlashing
+            Targets::NimbusAttestation => "template.nim",
+            Targets::NimbusAttesterSlashing
             | Targets::NimbusBlock
             | Targets::NimbusBlockHeader
             | Targets::NimbusDeposit

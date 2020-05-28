@@ -6,12 +6,19 @@ import
     ../../nim-beacon-chain/beacon_chain/spec/crypto,
     ../../nim-beacon-chain/beacon_chain/spec/datatypes,
     ../../nim-beacon-chain/beacon_chain/spec/digest,
+    ../../nim-beacon-chain/beacon_chain/spec/validator,
+    ../../nim-beacon-chain/beacon_chain/spec/beaconstate,
+    ../../nim-beacon-chain/beacon_chain/spec/state_transition_block,
     ../../nim-beacon-chain/beacon_chain/ssz,
+    ../../nim-beacon-chain/beacon_chain/extras,
+    ../../nim-beacon-chain/beacon_chain/state_transition,
     ../../nim-beacon-chain/beacon_chain/eth2_discovery
 
+# state: BeaconState, 
 proc fuzz_nimbus_attestation*(payload: openarray[byte]): bool = 
     try:
         discard SSZ.decode(payload, Attestation)
+
     except CatchableError:
         discard
     true

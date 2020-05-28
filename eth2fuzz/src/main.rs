@@ -183,6 +183,10 @@ fn run_target(
             let nfuzz = nim_fuzzers::FuzzerNimAfl::new(timeout, None)?;
             nfuzz.run(target)?;
         }
+        NimLibfuzzer => {
+            let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(timeout, None)?;
+            nfuzz.run(target)?;
+        }
     }
     Ok(())
 }
@@ -228,6 +232,10 @@ fn run_continuously(
             }
             NimAfl => {
                 let nfuzz = nim_fuzzers::FuzzerNimAfl::new(timeout, None)?;
+                nfuzz.run(target)?;
+            }
+            NimLibfuzzer => {
+                let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(timeout, None)?;
                 nfuzz.run(target)?;
             }
         }

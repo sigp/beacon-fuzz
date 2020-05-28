@@ -2,11 +2,12 @@
 # github: https://github.com/status-im/nim-beacon-chain/
 
 import
-  chronicles,
-  ../../beacon_chain/spec/[crypto, datatypes, digest],
-  ../../beacon_chain/[ssz],
-  ../../beacon_chain/eth2_discovery,
-  ../fuzztest
+    chronicles,
+    ../../nim-beacon-chain/beacon_chain/spec/crypto,
+    ../../nim-beacon-chain/beacon_chain/spec/datatypes,
+    ../../nim-beacon-chain/beacon_chain/spec/digest,
+    ../../nim-beacon-chain/beacon_chain/ssz,
+    ../../nim-beacon-chain/beacon_chain/eth2_discovery
 
 proc fuzz_nimbus_attestation*(payload: openarray[byte]): bool = 
     try:

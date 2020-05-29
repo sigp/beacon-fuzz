@@ -65,7 +65,7 @@ clean-all: clean
 
 # Simple test to check if eth2fuzz is working.
 test: build
-	./eth2fuzz list-targets
+	./eth2fuzz list
 
 # Test running a simple wasm to a debugging tool.
 test-debug: build

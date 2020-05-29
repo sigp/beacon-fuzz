@@ -1,3 +1,6 @@
 [submodule "eth2fuzz/workspace/lighthouse"]
 	path = eth2fuzz/workspace/lighthouse
 	url = https://github.com/sigp/lighthouse
+[submodule "eth2fuzz/workspace/nim-beacon-chain"]
+	path = eth2fuzz/workspace/nim-beacon-chain
+	url = https://github.com/status-im/nim-beacon-chain

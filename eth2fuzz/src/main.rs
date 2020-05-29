@@ -24,6 +24,8 @@ mod targets;
 mod fuzzers;
 // load javascript fuzzers
 mod js_fuzzers;
+// load Nim fuzzers
+mod nim_fuzzers;
 // load rust fuzzers
 mod rust_fuzzers;
 // load debugging stuff
@@ -162,20 +164,28 @@ fn run_target(
     use fuzzers::Fuzzer::*;
     match fuzzer {
         Afl => {
-            let hfuzz = rust_fuzzers::FuzzerAfl::new(timeout, None)?; // TODO - fix thread
-            hfuzz.run(target)?;
+            let afl = rust_fuzzers::FuzzerAfl::new(timeout, None)?; // TODO - fix thread
+            afl.run(target)?;
         }
         Honggfuzz => {
             let hfuzz = rust_fuzzers::FuzzerHfuzz::new(timeout, thread)?;
             hfuzz.run(target)?;
         }
         Libfuzzer => {
-            let hfuzz = rust_fuzzers::FuzzerLibfuzzer::new(timeout, None)?; // TODO - fix thread
-            hfuzz.run(target)?;
+            let lfuzz = rust_fuzzers::FuzzerLibfuzzer::new(timeout, None)?; // TODO - fix thread
+            lfuzz.run(target)?;
         }
         Jsfuzz => {
             let jfuzz = js_fuzzers::FuzzerJsFuzz::new(timeout, None)?;
             jfuzz.run(target)?;
+        }
+        NimAfl => {
+            let nfuzz = nim_fuzzers::FuzzerNimAfl::new(timeout, None)?;
+            nfuzz.run(target)?;
+        }
+        NimLibfuzzer => {
+            let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(timeout, None)?;
+            nfuzz.run(target)?;
         }
     }
     Ok(())
@@ -220,6 +230,14 @@ fn run_continuously(
                 let jfuzz = js_fuzzers::FuzzerJsFuzz::new(timeout, None)?;
                 jfuzz.run(target)?;
             }
+            NimAfl => {
+                let nfuzz = nim_fuzzers::FuzzerNimAfl::new(timeout, None)?;
+                nfuzz.run(target)?;
+            }
+            NimLibfuzzer => {
+                let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(timeout, None)?;
+                nfuzz.run(target)?;
+            }
         }
         Ok(())
     };
@@ -237,7 +255,7 @@ fn run_continuously(
                         println!("Fuzzer failed so we'll continue with the next one");
                         continue 'targets_pass;
                     }
-                    Err(other_error) => Err(other_error)?,
+                    Err(other_error) => return Err(other_error),
                 }
             }
         }

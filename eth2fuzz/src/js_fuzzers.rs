@@ -3,7 +3,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::env::corpora_dir;
+use crate::env::{corpora_dir, state_dir};
 use crate::fuzzers::{write_fuzzer_target, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
@@ -52,8 +52,8 @@ impl FuzzerJsFuzz {
                 .join("workspace")
                 .join("jsfuzz")
                 .join("jsfuzz_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -87,6 +87,10 @@ impl FuzzerJsFuzz {
 
         // Run the fuzzer
         let fuzzer_bin = Command::new("jsfuzz")
+            .env(
+                "ETH2FUZZ_BEACONSTATE",
+                format!("{}", state_dir()?.display()),
+            )
             .arg(&target.name())
             .arg(corpora_dir)
             .current_dir(&self.work_dir)
@@ -105,7 +109,7 @@ impl FuzzerJsFuzz {
 
         // TODO - needed?
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }

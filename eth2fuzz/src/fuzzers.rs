@@ -16,6 +16,8 @@ arg_enum! {
         Honggfuzz,
         Libfuzzer,
         Jsfuzz,
+        NimAfl,
+        NimLibfuzzer,
     }
 }
 
@@ -39,6 +41,7 @@ pub fn write_fuzzer_target(
     let target_dir: PathBuf = match target.language().as_str() {
         "rust" => fuzzer_workdir.join("src").join("bin"),
         "js" => fuzzer_workdir.to_path_buf(),
+        "nim" => fuzzer_workdir.to_path_buf(),
         _ => bail!("target_dir for this language not defined"),
     };
 
@@ -50,6 +53,7 @@ pub fn write_fuzzer_target(
     let ext: &str = match target.language().as_str() {
         "rust" => "rs",
         "js" => "js",
+        "nim" => "nim",
         _ => bail!("ext for this language not defined"),
     };
 

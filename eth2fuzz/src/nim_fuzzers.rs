@@ -3,7 +3,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::env::{corpora_dir, workspace_dir};
+use crate::env::{corpora_dir, state_dir, workspace_dir};
 use crate::fuzzers::{write_fuzzer_target, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
@@ -85,10 +85,6 @@ impl FuzzerNimAfl {
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
         // build the target
-        // ../../env.sh nim c -d:afl -d:release -d:chronicles_log_level=fatal
-        // -d:noSignalHandler --cc=gcc --gcc.exe=afl-gcc --gcc.linkerexe=afl-gcc
-        //-d:const_preset=mainnet attester_slashing.nim
-
         let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
         let compile_bin = Command::new(envsh)
             .arg("nim") // nim compiler
@@ -126,6 +122,10 @@ impl FuzzerNimAfl {
 
         // Run the fuzzer
         let fuzzer_bin = Command::new("afl-fuzz")
+            .env(
+                "ETH2FUZZ_BEACONSTATE",
+                format!("{}", state_dir()?.display()),
+            )
             .arg("-m") // remove memory limit
             .arg("none") // remove memory limit
             .arg("-i")
@@ -278,6 +278,10 @@ impl FuzzerNimLibfuzzer {
 
         // Run the fuzzer
         let fuzzer_bin = Command::new(&format!("./{}", target.name()))
+            .env(
+                "ETH2FUZZ_BEACONSTATE",
+                format!("{}", state_dir()?.display()),
+            )
             .args(&args)
             .current_dir(&self.work_dir)
             .spawn()

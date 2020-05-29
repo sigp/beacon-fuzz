@@ -23,7 +23,23 @@ jobs:
             components: rustfmt
 
       - name: Run cargo fmt
-        run: cd eth2fuzz && make check-fmt
+        run: cd eth2fuzz && cargo fmt --all -- --check
+
+  # Check clippy
+  clippy:
+    name: Check clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt, clippy
+
+      - name: Run cargo clippy
+        run: cd eth2fuzz && cargo clippy
 
   # Build only eth2fuzz tool
   build:

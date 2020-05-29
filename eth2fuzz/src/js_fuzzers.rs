@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use crate::env::{corpora_dir, state_dir};
-use crate::fuzzers::{write_fuzzer_target, FuzzerQuit};
+use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
 
@@ -22,10 +22,8 @@ pub struct FuzzerJsFuzz {
     pub work_dir: PathBuf,
     /// Internal workspace dir
     pub workspace_dir: PathBuf,
-    /// timeout
-    pub timeout: Option<i32>,
-    /// thread
-    pub thread: Option<i32>,
+    /// fuzzing config
+    pub config: FuzzerConfig,
 }
 
 impl FuzzerJsFuzz {
@@ -40,7 +38,7 @@ impl FuzzerJsFuzz {
     }
 
     /// Create a new FuzzerJsFuzz
-    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerJsFuzz, Error> {
+    pub fn new(config: FuzzerConfig) -> Result<FuzzerJsFuzz, Error> {
         // Test if fuzzer engine installed
         FuzzerJsFuzz::is_available()?;
         let cwd = env::current_dir().context("error getting current directory")?;
@@ -52,8 +50,7 @@ impl FuzzerJsFuzz {
                 .join("workspace")
                 .join("jsfuzz")
                 .join("jsfuzz_workspace"),
-            timeout,
-            thread,
+            config,
         };
         Ok(fuzzer)
     }
@@ -84,6 +81,16 @@ impl FuzzerJsFuzz {
         // write all fuzz targets inside workspace folder
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
+
+        if self.config.timeout != None {
+            println!("[eth2fuzz] {}: timeout not supported", self.name);
+        }
+        if self.config.thread != None {
+            println!("[eth2fuzz] {}: thread not supported", self.name);
+        }
+        if self.config.sanitizer != None {
+            println!("[eth2fuzz] {}: sanitizer not supported", self.name);
+        }
 
         // Run the fuzzer
         let fuzzer_bin = Command::new("jsfuzz")

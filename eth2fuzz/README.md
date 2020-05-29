@@ -15,9 +15,6 @@ Main features are:
 - Crash report/detection
 - *Automatic and pseudo-random selection of new beaconstate per fuzzing thread.*
 
-
-Architecture of this tool came from this [project](https://github.com/rust-fuzz/targets).
-
 ## Installation
 
 - Install Rust nightly

@@ -7,7 +7,7 @@ use std::process::Command;
 use strum::IntoEnumIterator;
 
 use crate::env::{corpora_dir, state_dir};
-use crate::fuzzers::{write_fuzzer_target, FuzzerQuit};
+use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
 
@@ -25,10 +25,8 @@ pub struct FuzzerHfuzz {
     pub work_dir: PathBuf,
     /// Internal workspace dir
     pub workspace_dir: PathBuf,
-    /// timeout
-    pub timeout: Option<i32>,
-    /// thread
-    pub thread: Option<i32>,
+    /// fuzzing config
+    pub config: FuzzerConfig,
 }
 
 impl FuzzerHfuzz {
@@ -42,7 +40,7 @@ impl FuzzerHfuzz {
     }
 
     /// Create a new FuzzerHfuzz
-    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerHfuzz, Error> {
+    pub fn new(config: FuzzerConfig) -> Result<FuzzerHfuzz, Error> {
         // Test if fuzzer engine installed
         FuzzerHfuzz::is_available()?;
 
@@ -52,8 +50,7 @@ impl FuzzerHfuzz {
             dir: cwd.join("fuzzers").join("rust-honggfuzz"),
             work_dir: cwd.join("workspace").join("hfuzz"),
             workspace_dir: cwd.join("workspace").join("hfuzz").join("hfuzz_workspace"),
-            timeout,
-            thread,
+            config,
         };
         Ok(fuzzer)
     }
@@ -93,18 +90,31 @@ impl FuzzerHfuzz {
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2diff] {}: {} created", self.name, target.name());
 
-        let args = format!(
+        // sanitizers
+        let rust_args = format!(
+            "{} \
+            {}",
+            if let Some(san) = self.config.sanitizer {
+                format!("-Z sanitizer={}", san.name())
+            } else {
+                "".into()
+            },
+            env::var("RUSTFLAGS").unwrap_or_default()
+        );
+
+        // prepare arguments
+        let hfuzz_args = format!(
             "{} \
              {} \
              {} \
              {}",
-            if let Some(t) = self.timeout {
+            if let Some(t) = self.config.timeout {
                 format!("--run_time {}", t)
             } else {
                 "".into()
             },
             "-t 60",
-            if let Some(n) = self.thread {
+            if let Some(n) = self.config.thread {
                 // Set number of thread
                 format!("-n {}", n)
             } else {
@@ -116,7 +126,8 @@ impl FuzzerHfuzz {
         // Honggfuzz will first build than run the fuzzer using cargo
         let fuzzer_bin = Command::new("cargo")
             .args(&["+nightly", "hfuzz", "run", &target.name()])
-            .env("HFUZZ_RUN_ARGS", &args)
+            .env("RUSTFLAGS", &rust_args)
+            .env("HFUZZ_RUN_ARGS", &hfuzz_args)
             //.env("HFUZZ_BUILD_ARGS", "opt-level=3")
             .env("HFUZZ_INPUT", corpora_dir)
             .env(
@@ -158,10 +169,8 @@ pub struct FuzzerAfl {
     pub work_dir: PathBuf,
     /// Internal workspace dir
     pub workspace_dir: PathBuf,
-    /// timeout
-    pub timeout: Option<i32>,
-    /// thread
-    pub thread: Option<i32>,
+    /// fuzzing config
+    pub config: FuzzerConfig,
 }
 
 impl FuzzerAfl {
@@ -174,7 +183,7 @@ impl FuzzerAfl {
     }
 
     /// Create a new FuzzerAfl
-    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerAfl, Error> {
+    pub fn new(config: FuzzerConfig) -> Result<FuzzerAfl, Error> {
         // Test if fuzzer engine installed
         FuzzerAfl::is_available()?;
 
@@ -184,8 +193,7 @@ impl FuzzerAfl {
             dir: cwd.join("fuzzers").join("rust-afl"),
             work_dir: cwd.join("workspace").join("afl"),
             workspace_dir: cwd.join("workspace").join("afl").join("afl_workspace"),
-            timeout,
-            thread,
+            config,
         };
         Ok(fuzzer)
     }
@@ -218,8 +226,21 @@ impl FuzzerAfl {
 
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
 
+        // sanitizers
+        let rust_args = format!(
+            "{} \
+            {}",
+            if let Some(san) = self.config.sanitizer {
+                format!("-Z sanitizer={}", san.name())
+            } else {
+                "".into()
+            },
+            env::var("RUSTFLAGS").unwrap_or_default()
+        );
+
         let build_cmd = Command::new("cargo")
             .args(&["+nightly", "afl", "build", "--bin", &target.name()]) // TODO: not sure we want to compile afl in "--release"
+            .env("RUSTFLAGS", &rust_args)
             .current_dir(&self.work_dir)
             .spawn()
             .context(format!(
@@ -270,7 +291,7 @@ impl FuzzerAfl {
         args.push("+nightly".to_string());
         args.push("afl".to_string());
         args.push("fuzz".to_string());
-        if let Some(t) = self.timeout {
+        if let Some(t) = self.config.timeout {
             args.push(format!("-V {}", t));
         };
 
@@ -328,10 +349,8 @@ pub struct FuzzerLibfuzzer {
     pub work_dir: PathBuf,
     /// Internal workspace dir
     pub workspace_dir: PathBuf,
-    /// timeout
-    pub timeout: Option<i32>,
-    /// thread
-    pub thread: Option<i32>,
+    /// fuzzing config
+    pub config: FuzzerConfig,
 }
 
 impl FuzzerLibfuzzer {
@@ -347,7 +366,7 @@ impl FuzzerLibfuzzer {
     }
 
     /// Create a new FuzzerLibfuzzer
-    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerLibfuzzer, Error> {
+    pub fn new(config: FuzzerConfig) -> Result<FuzzerLibfuzzer, Error> {
         // Test if fuzzer engine installed
         FuzzerLibfuzzer::is_available()?;
 
@@ -360,8 +379,7 @@ impl FuzzerLibfuzzer {
                 .join("workspace")
                 .join("libfuzzer")
                 .join("libfuzzer_workspace"),
-            timeout,
-            thread,
+            config,
         };
         Ok(fuzzer)
     }
@@ -412,24 +430,40 @@ impl FuzzerLibfuzzer {
         let fuzz_dir = self.work_dir.join("fuzz");
         let corpus_dir = corpora_dir()?.join(target.corpora());
 
+        // sanitizers
+        let rust_args = format!(
+            "{} \
+            {}",
+            if let Some(san) = self.config.sanitizer {
+                format!("-Z sanitizer={}", san.name())
+            } else {
+                "".into()
+            },
+            env::var("RUSTFLAGS").unwrap_or_default()
+        );
+
         // create arguments
         // corpora dir
         // max_time if provided (i.e. continuously fuzzing)
         let mut args: Vec<String> = Vec::new();
-        args.push(format!("{}", &corpus_dir.display()));
-        if let Some(timeout) = self.timeout {
+        if let Some(timeout) = self.config.timeout {
             args.push("--".to_string());
             args.push(format!("-max_total_time={}", timeout));
         };
-
+        if let Some(thread) = self.config.thread {
+            args.push(format!("-workers={}", thread));
+            args.push(format!("-jobs={}", thread));
+        };
+        args.push(format!("{}", &corpus_dir.display()));
         // Launch the fuzzer using cargo
         let fuzzer_bin = Command::new("cargo")
+            .args(&["+nightly", "fuzz", "run", &target.name()])
+            .args(&args)
             .env(
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
-            .args(&["+nightly", "fuzz", "run", &target.name()])
-            .args(&args)
+            .env("RUSTFLAGS", &rust_args)
             .current_dir(&fuzz_dir)
             .spawn()
             .context(format!(

@@ -44,7 +44,6 @@ function fuzz_lodestar_attester_slashing(buf) {
     try {
         mainnet_1.types.AttesterSlashing.deserialize(buf);
     } catch (e) {
-        // verify if it's a valid exception
         is_lodestar_valid_exception(e);
     }
 }
@@ -109,6 +108,7 @@ function fuzz_lodestar_enr(buf) {
     try {
         discv5.ENR.decodeTxt(buf.toString());
     } catch (e) {
+        // TODO
         if (e.name == "Error") {}
         else if (e.message == "Cannot read property 'toString' of undefined") {}
         else {throw e;}

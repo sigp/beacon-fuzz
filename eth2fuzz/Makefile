@@ -58,6 +58,9 @@ clean-all: clean
 	rm -rf workspace/afl
 	rm -rf workspace/hfuzz
 	rm -rf workspace/libfuzzer
+	rm -rf workspace/jsfuzz
+	rm -rf workspace/nimafl
+	rm -rf workspace/nimlibfuzzer
 
 #
 # Testing utils

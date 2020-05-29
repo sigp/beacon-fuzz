@@ -94,7 +94,14 @@ pub fn write_fuzzer_target(
     ))?;
 
     // Check which file extension to use
-    let path = target_dir.join(&format!("{}.{}", target.name(), target.language().as_str()));
+    let ext: &str = match target.language().as_str() {
+        "rust" => "rs",
+        "js" => "js",
+        "nim" => "nim",
+        _ => bail!("ext for this language not defined"),
+    };
+
+    let path = target_dir.join(&format!("{}.{}", target.name(), ext));
 
     // Create the target harness file
     let mut file = fs::OpenOptions::new()

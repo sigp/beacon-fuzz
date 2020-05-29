@@ -55,6 +55,7 @@ impl FuzzerHfuzz {
         Ok(fuzzer)
     }
 
+    // TODO - simplify this function
     fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
         let hfuzz_dir = &self.work_dir;
         fs::create_dir_all(&hfuzz_dir)
@@ -446,6 +447,7 @@ impl FuzzerLibfuzzer {
         // corpora dir
         // max_time if provided (i.e. continuously fuzzing)
         let mut args: Vec<String> = Vec::new();
+        args.push(format!("{}", &corpus_dir.display()));
         if let Some(timeout) = self.config.timeout {
             args.push("--".to_string());
             args.push(format!("-max_total_time={}", timeout));
@@ -454,7 +456,7 @@ impl FuzzerLibfuzzer {
             args.push(format!("-workers={}", thread));
             args.push(format!("-jobs={}", thread));
         };
-        args.push(format!("{}", &corpus_dir.display()));
+
         // Launch the fuzzer using cargo
         let fuzzer_bin = Command::new("cargo")
             .args(&["+nightly", "fuzz", "run", &target.name()])

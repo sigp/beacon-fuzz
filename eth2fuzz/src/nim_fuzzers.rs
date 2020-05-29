@@ -81,20 +81,29 @@ impl FuzzerNimAfl {
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
+        let mut args: Vec<String> = Vec::new();
+        args.push("nim".to_string()); // nim compiler
+        args.push("c".to_string()); // compile arg
+        args.push("-d:afl".to_string()); // afl flag
+        args.push("-d:release".to_string()); // release flag
+        args.push("-d:chronicles_log_level=fatal".to_string());
+        args.push("-d:noSignalHandler".to_string());
+        args.push("-d:clangfast".to_string());
+        args.push("--cc=clang".to_string());
+        args.push("--clang.exe=afl-clang-fast".to_string());
+        args.push("--clang.linkerexe=afl-clang-fast".to_string());
+        args.push("-d:const_preset=mainnet".to_string()); // mainnet config
+
+        // handle fuzzer config - sanitizer
+        if let Some(san) = self.config.sanitizer {
+            args.push(format!("--passC=\"-fsanitize={}\"", san.name()));
+            args.push(format!("--passL=\"-fsanitize={}\"", san.name()));
+        }
+
         // build the target
         let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
         let compile_bin = Command::new(envsh)
-            .arg("nim") // nim compiler
-            .arg("c") // compile arg
-            .arg("-d:afl")
-            .arg("-d:release")
-            .arg("-d:chronicles_log_level=fatal")
-            .arg("-d:noSignalHandler")
-            .arg("--cc=clang")
-            .arg("--clang.exe=afl-clang-fast")
-            .arg("--clang.linkerexe=afl-clang-fast")
-            .arg("-d:clangfast")
-            .arg("-d:const_preset=mainnet") // mainnet config
+            .args(args)
             .arg(&format!("{}.{}", target.name(), target.language()))
             .current_dir(&self.work_dir)
             .spawn()
@@ -122,9 +131,6 @@ impl FuzzerNimAfl {
         }
         if self.config.thread != None {
             println!("[eth2fuzz] {}: thread not supported", self.name);
-        }
-        if self.config.sanitizer != None {
-            println!("[eth2fuzz] {}: sanitizer not supported", self.name);
         }
 
         // Run the fuzzer
@@ -247,9 +253,7 @@ impl FuzzerNimLibfuzzer {
 
         // handle fuzzer config - sanitizer
         if let Some(san) = self.config.sanitizer {
-            println!("[eth2fuzz] {}: thread not supported / TODO", self.name);
             args.push(format!("--passC=\"-fsanitize=fuzzer,{}\"", san.name()));
-
             args.push(format!("--passL=\"-fsanitize=fuzzer,{}\"", san.name()));
         } else {
             args.push("--passC=\"-fsanitize=fuzzer\"".to_string());

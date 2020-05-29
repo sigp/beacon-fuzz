@@ -41,7 +41,7 @@ pub enum Targets {
 
 impl Targets {
     pub fn name(&self) -> String {
-        let name = match &self {
+        match &self {
             // Lighthouse
             Targets::LighthouseAttestation => "lighthouse_attestation",
             Targets::LighthouseAttesterSlashing => "lighthouse_attester_slashing",
@@ -73,12 +73,12 @@ impl Targets {
             Targets::NimbusVoluntaryExit => "nimbus_voluntary_exit",
             Targets::NimbusBeaconstate => "nimbus_beaconstate",
             Targets::NimbusEnr => "nimbus_enr",
-        };
-        name.to_string()
+        }
+        .to_string()
     }
 
     pub fn corpora(&self) -> String {
-        let corpora_name = match &self {
+        match &self {
             // Lighthouse
             Targets::LighthouseAttestation => "attestation",
             Targets::LighthouseAttesterSlashing => "attester_slashing",
@@ -110,13 +110,13 @@ impl Targets {
             Targets::NimbusVoluntaryExit => "voluntary_exit",
             Targets::NimbusBeaconstate => "beaconstate",
             Targets::NimbusEnr => "enr",
-        };
-        corpora_name.to_string()
+        }
+        .to_string()
     }
 
     // TODO - change templae enr and bls and beaconstate
     pub fn template(&self) -> String {
-        let template_name = match &self {
+        match &self {
             // Lighthouse
             Targets::LighthouseAttestation
             | Targets::LighthouseAttesterSlashing
@@ -148,12 +148,12 @@ impl Targets {
             | Targets::NimbusVoluntaryExit
             | Targets::NimbusBeaconstate
             | Targets::NimbusEnr => "simple_template.nim",
-        };
-        template_name.to_string()
+        }
+        .to_string()
     }
 
     pub fn language(&self) -> String {
-        let lang = match &self {
+        match &self {
             // Lighthouse
             Targets::LighthouseAttestation
             | Targets::LighthouseAttesterSlashing
@@ -185,8 +185,8 @@ impl Targets {
             | Targets::NimbusVoluntaryExit
             | Targets::NimbusBeaconstate
             | Targets::NimbusEnr => "nim",
-        };
-        lang.to_string()
+        }
+        .to_string()
     }
 }
 

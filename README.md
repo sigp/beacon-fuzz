@@ -197,6 +197,7 @@ TODO
 - [Lodestar: `TypeError` when SSZ decoding a `Block` with invalid `BigInt` parent scope](https://github.com/ChainSafe/ssz/issues/22)
 - [Lodestar: `RangeError` when SSZ decoding an empty `Block` container](https://github.com/ChainSafe/ssz/issues/23)
 - [Lodestar: `TypeError` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/56)
+- [Lodestar: `TypeError: public key must be a Buffer` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/59)
 
 <a name="invalidState">1</a>: **NOTE** `BeaconState` objects are considered trusted inputs (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values, for now.
 

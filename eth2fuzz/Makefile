@@ -80,17 +80,11 @@ test-hfuzz: build
 
 # Run one fuzzing hardness over afl during 2s
 test-afl: build
-	AFL_SKIP_CPUFREQ=1 \
-	AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 \
-	./eth2fuzz target lighthouse_attestation \
-		--fuzzer afl \
-		-t 2
+	./eth2fuzz target lighthouse_attestation --fuzzer afl -t 2
 
 # Run one fuzzing hardness over libfuzzer during 2s
 test-libfuzzer: build
-	./eth2fuzz target lighthouse_attestation \
-		--fuzzer libfuzzer \
-		-t 2
+	./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer -t 2
 
 # Run one fuzzing hardness over all fuzzer
 test-all: test-hfuzz test-afl test-libfuzzer

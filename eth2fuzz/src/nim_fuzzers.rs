@@ -52,8 +52,8 @@ impl FuzzerNimAfl {
                 .join("workspace")
                 .join("nimafl")
                 .join("nimafl_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -115,7 +115,7 @@ impl FuzzerNimAfl {
 
         // TODO - needed?
         if !compile_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
 
         let corpus_dir = &self.workspace_dir;
@@ -149,7 +149,7 @@ impl FuzzerNimAfl {
 
         // TODO - needed?
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }
@@ -199,8 +199,8 @@ impl FuzzerNimLibfuzzer {
                 .join("workspace")
                 .join("nimlibfuzzer")
                 .join("nimlibfuzzer_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -262,10 +262,10 @@ impl FuzzerNimLibfuzzer {
 
         // TODO - needed?
         if !compile_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
 
-        let corpus_dir = &self.workspace_dir;
+        let _corpus_dir = &self.workspace_dir;
 
         // create arguments
         // corpora dir
@@ -299,7 +299,7 @@ impl FuzzerNimLibfuzzer {
 
         // TODO - needed?
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }

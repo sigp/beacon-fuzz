@@ -52,8 +52,8 @@ impl FuzzerJsFuzz {
                 .join("workspace")
                 .join("jsfuzz")
                 .join("jsfuzz_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -109,7 +109,7 @@ impl FuzzerJsFuzz {
 
         // TODO - needed?
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }

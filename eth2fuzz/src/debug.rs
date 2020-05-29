@@ -11,6 +11,7 @@ use crate::fuzzers::FuzzerQuit;
 use crate::targets::{get_targets, prepare_targets_workspace, Targets};
 use crate::utils::did_you_mean;
 
+// TODO - simplify
 pub fn prepare_debug_workspace(out_dir: &str) -> Result<(), Error> {
     let debug_init_dir = root_dir()?.join("debug");
     let dir = root_dir()?.join("workspace");
@@ -70,7 +71,7 @@ pub fn run_debug(target: String) -> Result<(), Error> {
         .context(format!("error while waiting for {}", target.name()))?;
 
     if !debug_bin.success() {
-        Err(FuzzerQuit)?;
+        return Err(FuzzerQuit.into());
     }
     println!(
         "[WARF] Debug: {} compiled",
@@ -93,7 +94,8 @@ pub fn write_debug_target(debug_dir: PathBuf, target: Targets) -> Result<(), Err
 
     let target_dir: PathBuf = match target.language().as_str() {
         "rust" => debug_dir.join("src").join("bin"),
-        "js" => debug_dir.to_path_buf(),
+        "js" => debug_dir,
+        "nim" => debug_dir,
         _ => bail!("target_dir for this language not defined"),
     };
 
@@ -105,6 +107,7 @@ pub fn write_debug_target(debug_dir: PathBuf, target: Targets) -> Result<(), Err
     let ext: &str = match target.language().as_str() {
         "rust" => "rs",
         "js" => "js",
+        "nim" => "nim",
         _ => bail!("ext for this language not defined"),
     };
     let path = target_dir.join(&format!("debug_{}.{}", target.name(), ext));

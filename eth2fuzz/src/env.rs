@@ -17,7 +17,7 @@ pub fn targets_dir() -> Result<PathBuf, Error> {
 
 pub fn workspace_dir() -> Result<PathBuf, Error> {
     let p = root_dir()?.join("workspace");
-    fs::create_dir_all(&p).context(format!("unable to create workspace dir"))?;
+    fs::create_dir_all(&p).context("unable to create workspace dir".to_string())?;
     Ok(p)
 }
 
@@ -28,6 +28,7 @@ pub fn corpora_dir() -> Result<PathBuf, Error> {
 
 pub fn state_dir() -> Result<PathBuf, Error> {
     let seed_dir = corpora_dir()?.join("beaconstate");
-    fs::create_dir_all(&seed_dir).context(format!("unable to create corpora/beaconstate dir"))?;
+    fs::create_dir_all(&seed_dir)
+        .context("unable to create corpora/beaconstate dir".to_string())?;
     Ok(seed_dir)
 }

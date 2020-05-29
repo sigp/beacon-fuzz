@@ -255,7 +255,7 @@ fn run_continuously(
                         println!("Fuzzer failed so we'll continue with the next one");
                         continue 'targets_pass;
                     }
-                    Err(other_error) => Err(other_error)?,
+                    Err(other_error) => return Err(other_error),
                 }
             }
         }

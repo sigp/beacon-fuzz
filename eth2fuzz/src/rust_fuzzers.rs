@@ -52,8 +52,8 @@ impl FuzzerHfuzz {
             dir: cwd.join("fuzzers").join("rust-honggfuzz"),
             work_dir: cwd.join("workspace").join("hfuzz"),
             workspace_dir: cwd.join("workspace").join("hfuzz").join("hfuzz_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -138,7 +138,7 @@ impl FuzzerHfuzz {
             ))?;
 
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }
@@ -184,8 +184,8 @@ impl FuzzerAfl {
             dir: cwd.join("fuzzers").join("rust-afl"),
             work_dir: cwd.join("workspace").join("afl"),
             workspace_dir: cwd.join("workspace").join("afl").join("afl_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -235,7 +235,7 @@ impl FuzzerAfl {
             ))?;
 
         if !build_cmd.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
 
         Ok(())
@@ -308,7 +308,7 @@ impl FuzzerAfl {
             ))?;
 
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }
@@ -360,8 +360,8 @@ impl FuzzerLibfuzzer {
                 .join("workspace")
                 .join("libfuzzer")
                 .join("libfuzzer_workspace"),
-            timeout: timeout,
-            thread: thread,
+            timeout,
+            thread,
         };
         Ok(fuzzer)
     }
@@ -405,7 +405,7 @@ impl FuzzerLibfuzzer {
         )?;
 
         // Add all targets to libfuzzer
-        for target in Targets::iter().find(|x| x.language() == "rust") {
+        for target in Targets::iter().filter(|x| x.language() == "rust") {
             write_libfuzzer_target(&self.work_dir, target)?;
         }
 
@@ -445,7 +445,7 @@ impl FuzzerLibfuzzer {
             ))?;
 
         if !fuzzer_bin.success() {
-            Err(FuzzerQuit)?;
+            return Err(FuzzerQuit.into());
         }
         Ok(())
     }

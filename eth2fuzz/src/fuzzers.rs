@@ -60,6 +60,8 @@ pub struct FuzzerConfig {
     pub thread: Option<i32>,
     // Sanitizer
     pub sanitizer: Option<Sanitizer>,
+    // Seed
+    pub seed: Option<i32>,
 }
 
 /// Write the fuzzing target

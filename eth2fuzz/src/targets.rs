@@ -114,7 +114,6 @@ impl Targets {
         .to_string()
     }
 
-    // TODO - change templae enr and bls and beaconstate
     pub fn template(&self) -> String {
         match &self {
             // Lighthouse
@@ -139,7 +138,7 @@ impl Targets {
             | Targets::LodestarBeaconstate
             | Targets::LodestarEnr => "simple_template.js",
             // Nimbus
-            Targets::NimbusAttestation => "template.nim",
+            Targets::NimbusAttestation => "template.nim", // testing
             Targets::NimbusAttesterSlashing
             | Targets::NimbusBlock
             | Targets::NimbusBlockHeader

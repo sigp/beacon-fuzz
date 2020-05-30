@@ -30,7 +30,7 @@ pub struct FuzzerHfuzz {
 }
 
 impl FuzzerHfuzz {
-    /// Check if hfuzz is installed
+    /// Check if `cargo hfuzz` is installed
     pub fn is_available() -> Result<(), Error> {
         let fuzzer_output = Command::new("cargo").arg("hfuzz").arg("version").output()?;
         if !fuzzer_output.status.success() {
@@ -82,14 +82,18 @@ impl FuzzerHfuzz {
             bail!("FuzzerHfuzz incompatible for this target");
         }
 
+        // get path to corpora
         let corpora_dir = corpora_dir()?.join(target.corpora());
 
+        // copy targets folder into workspace
         prepare_targets_workspace()?;
+
         // create hfuzz folder inside workspace/
         self.prepare_fuzzer_workspace()?;
+
         // write all fuzz targets inside hfuzz folder
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
-        println!("[eth2diff] {}: {} created", self.name, target.name());
+        println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
         // sanitizers
         let rust_args = format!(
@@ -103,6 +107,11 @@ impl FuzzerHfuzz {
             env::var("RUSTFLAGS").unwrap_or_default()
         );
 
+        // Handle seed option
+        if self.config.seed != None {
+            println!("[eth2fuzz] {}: seed not supported", self.name);
+        }
+
         // prepare arguments
         let hfuzz_args = format!(
             "{} \
@@ -115,9 +124,9 @@ impl FuzzerHfuzz {
                 "".into()
             },
             "-t 60",
+            // Set number of thread
             if let Some(n) = self.config.thread {
-                // Set number of thread
-                format!("-n {}", n)
+                format!("--threads {}", n)
             } else {
                 "".into()
             },
@@ -175,6 +184,7 @@ pub struct FuzzerAfl {
 }
 
 impl FuzzerAfl {
+    /// Check if `cargo afl` is installed
     pub fn is_available() -> Result<(), Error> {
         let fuzzer_output = Command::new("cargo").arg("afl").arg("--version").output()?;
         if !fuzzer_output.status.success() {
@@ -295,6 +305,9 @@ impl FuzzerAfl {
         if let Some(t) = self.config.timeout {
             args.push(format!("-V {}", t));
         };
+        if let Some(seed) = self.config.seed {
+            args.push(format!("-s {}", seed));
+        };
 
         // Run the fuzzer using cargo
         let fuzzer_bin = Command::new("cargo")
@@ -355,6 +368,7 @@ pub struct FuzzerLibfuzzer {
 }
 
 impl FuzzerLibfuzzer {
+    /// Check if `cargo fuzz` is installed
     pub fn is_available() -> Result<(), Error> {
         let fuzzer_output = Command::new("cargo")
             .arg("fuzz")
@@ -452,11 +466,15 @@ impl FuzzerLibfuzzer {
             args.push("--".to_string());
             args.push(format!("-max_total_time={}", timeout));
         };
+        // threading
         if let Some(thread) = self.config.thread {
             args.push(format!("-workers={}", thread));
             args.push(format!("-jobs={}", thread));
         };
-
+        // handle seed option
+        if let Some(seed) = self.config.seed {
+            args.push(format!("-seed={}", seed));
+        };
         // Launch the fuzzer using cargo
         let fuzzer_bin = Command::new("cargo")
             .args(&["+nightly", "fuzz", "run", &target.name()])
@@ -487,6 +505,7 @@ impl FuzzerLibfuzzer {
     }
 }
 
+/// Add new target for libfuzzer using `cargo fuzz add`
 fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: Targets) -> Result<(), Error> {
     use std::io::Write;
 

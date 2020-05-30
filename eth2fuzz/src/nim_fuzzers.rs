@@ -32,7 +32,7 @@ impl FuzzerNimAfl {
         let fuzzer_output = Command::new("afl-fuzz").output()?;
 
         if fuzzer_output.status.code() != Some(1) {
-            bail!("afl-fuzz not available, install with `apt install afl`");
+            bail!("afl-fuzz not available, install with `apt install afl++`");
         }
         Ok(())
     }
@@ -286,16 +286,20 @@ impl FuzzerNimLibfuzzer {
 
         let _corpus_dir = &self.workspace_dir;
 
-        // create arguments
-        // fuzzing config (time, thread, ...)
-        // corpora dir
+        // create fuzzing config arguments
+        // handle timeout option
         let mut args: Vec<String> = Vec::new();
         if let Some(timeout) = self.config.timeout {
             args.push(format!("-max_total_time={}", timeout));
         };
+        // handle threading option
         if let Some(thread) = self.config.thread {
             args.push(format!("-workers={}", thread));
             args.push(format!("-jobs={}", thread));
+        };
+        // handle seed option
+        if let Some(seed) = self.config.seed {
+            args.push(format!("-seed={}", seed));
         };
         args.push(format!("{}", &corpora_dir.display()));
 

@@ -89,6 +89,10 @@ test-afl: build
 test-libfuzzer: build
 	./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer -t 2
 
+# Run one fuzzing hardness over nim-libfuzzer during 2s
+test-nim-libfuzzer: build
+	./eth2fuzz target nimbus_enr --fuzzer NimLibfuzzer -t 2
+
 # Run one fuzzing hardness over all fuzzer
 test-all: test-hfuzz test-afl test-libfuzzer
 

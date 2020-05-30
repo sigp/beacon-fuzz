@@ -54,12 +54,14 @@ enum Cli {
         /// Set timeout per target
         #[structopt(short = "t", long = "timeout", default_value = "10")]
         timeout: i32,
-        /// Set number of thread (only for hfuzz)
+        /// Set number of thread
         #[structopt(short = "n", long = "thread")]
         thread: Option<i32>,
+        /// Set seed
+        #[structopt(short = "s", long = "seed")]
+        seed: Option<i32>,
         /// Set a compilation Sanitizer (advanced)
         #[structopt(
-            short = "s",
             long = "sanitizer",
             raw(
                 possible_values = "&fuzzers::Sanitizer::variants()",
@@ -93,9 +95,11 @@ enum Cli {
         /// Set number of thread (only for hfuzz)
         #[structopt(short = "n", long = "thread")]
         thread: Option<i32>,
+        /// Set seed
+        #[structopt(short = "s", long = "seed")]
+        seed: Option<i32>,
         /// Set a compilation Sanitizer (advanced)
         #[structopt(
-            short = "s",
             long = "sanitizer",
             raw(
                 possible_values = "&fuzzers::Sanitizer::variants()",
@@ -142,12 +146,14 @@ fn run() -> Result<(), Error> {
             fuzzer,
             timeout,
             thread,
+            seed,
             sanitizer,
         } => {
             let config = fuzzers::FuzzerConfig {
                 timeout,
                 thread,
                 sanitizer,
+                seed,
             };
             run_target(target, fuzzer, config)?;
         }
@@ -161,6 +167,7 @@ fn run() -> Result<(), Error> {
             timeout,
             fuzzer,
             thread,
+            seed,
             sanitizer,
             infinite,
         } => {
@@ -168,6 +175,7 @@ fn run() -> Result<(), Error> {
                 timeout: Some(timeout),
                 thread,
                 sanitizer,
+                seed,
             };
             run_continuously(filter, fuzzer, config, infinite)?;
         }

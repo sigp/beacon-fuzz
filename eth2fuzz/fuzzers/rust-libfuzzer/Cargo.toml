@@ -16,4 +16,4 @@ eth2_ssz = { path = "../lighthouse/consensus/ssz" }
 eth2_ssz_derive = { path = "../lighthouse/consensus/ssz_derive" }
 eth2_ssz_types = { path = "../lighthouse/consensus/ssz_types" }
 eth2_hashing = { path = "../lighthouse/crypto/eth2_hashing" }
-web3 = { git = "https://github.com/tomusdrw/rust-web3" }
+# web3 = { git = "https://github.com/tomusdrw/rust-web3" }

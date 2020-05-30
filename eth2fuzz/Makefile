@@ -58,6 +58,9 @@ clean-all: clean
 	rm -rf workspace/afl
 	rm -rf workspace/hfuzz
 	rm -rf workspace/libfuzzer
+	rm -rf workspace/jsfuzz
+	rm -rf workspace/nimafl
+	rm -rf workspace/nimlibfuzzer
 
 #
 # Testing utils
@@ -65,7 +68,7 @@ clean-all: clean
 
 # Simple test to check if eth2fuzz is working.
 test: build
-	./eth2fuzz list-targets
+	./eth2fuzz list
 
 # Test running a simple wasm to a debugging tool.
 test-debug: build
@@ -80,17 +83,11 @@ test-hfuzz: build
 
 # Run one fuzzing hardness over afl during 2s
 test-afl: build
-	AFL_SKIP_CPUFREQ=1 \
-	AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 \
-	./eth2fuzz target lighthouse_attestation \
-		--fuzzer afl \
-		-t 2
+	./eth2fuzz target lighthouse_attestation --fuzzer afl -t 2
 
 # Run one fuzzing hardness over libfuzzer during 2s
 test-libfuzzer: build
-	./eth2fuzz target lighthouse_attestation \
-		--fuzzer libfuzzer \
-		-t 2
+	./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer -t 2
 
 # Run one fuzzing hardness over all fuzzer
 test-all: test-hfuzz test-afl test-libfuzzer
@@ -105,8 +102,6 @@ test-continuously-libfuzzer: build
 
 # Run all fuzzing hardness over afl
 test-continuously-afl: build
-	AFL_SKIP_CPUFREQ=1 \
-	AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 \
 	./eth2fuzz continuously -t 2 --fuzzer afl
 
 #

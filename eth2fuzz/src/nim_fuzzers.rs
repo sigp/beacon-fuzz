@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use crate::env::{corpora_dir, state_dir, workspace_dir};
-use crate::fuzzers::{write_fuzzer_target, FuzzerQuit};
+use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
 
@@ -22,10 +22,8 @@ pub struct FuzzerNimAfl {
     pub work_dir: PathBuf,
     /// Internal workspace dir
     pub workspace_dir: PathBuf,
-    /// timeout
-    pub timeout: Option<i32>,
-    /// thread
-    pub thread: Option<i32>,
+    /// fuzzing config
+    pub config: FuzzerConfig,
 }
 
 impl FuzzerNimAfl {
@@ -40,7 +38,7 @@ impl FuzzerNimAfl {
     }
 
     /// Create a new FuzzerNimAfl
-    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerNimAfl, Error> {
+    pub fn new(config: FuzzerConfig) -> Result<FuzzerNimAfl, Error> {
         // Test if fuzzer engine installed
         FuzzerNimAfl::is_available()?;
         let cwd = env::current_dir().context("error getting current directory")?;
@@ -52,8 +50,7 @@ impl FuzzerNimAfl {
                 .join("workspace")
                 .join("nimafl")
                 .join("nimafl_workspace"),
-            timeout,
-            thread,
+            config,
         };
         Ok(fuzzer)
     }
@@ -84,20 +81,29 @@ impl FuzzerNimAfl {
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
+        let mut args: Vec<String> = Vec::new();
+        args.push("nim".to_string()); // nim compiler
+        args.push("c".to_string()); // compile arg
+        args.push("-d:afl".to_string()); // afl flag
+        args.push("-d:release".to_string()); // release flag
+        args.push("-d:chronicles_log_level=fatal".to_string());
+        args.push("-d:noSignalHandler".to_string());
+        args.push("-d:clangfast".to_string());
+        args.push("--cc=clang".to_string());
+        args.push("--clang.exe=afl-clang-fast".to_string());
+        args.push("--clang.linkerexe=afl-clang-fast".to_string());
+        args.push("-d:const_preset=mainnet".to_string()); // mainnet config
+
+        // handle fuzzer config - sanitizer
+        if let Some(san) = self.config.sanitizer {
+            args.push(format!("--passC=\"-fsanitize={}\"", san.name()));
+            args.push(format!("--passL=\"-fsanitize={}\"", san.name()));
+        }
+
         // build the target
         let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
         let compile_bin = Command::new(envsh)
-            .arg("nim") // nim compiler
-            .arg("c") // compile arg
-            .arg("-d:afl")
-            .arg("-d:release")
-            .arg("-d:chronicles_log_level=fatal")
-            .arg("-d:noSignalHandler")
-            .arg("--cc=clang")
-            .arg("--clang.exe=afl-clang-fast")
-            .arg("--clang.linkerexe=afl-clang-fast")
-            .arg("-d:clangfast")
-            .arg("-d:const_preset=mainnet") // mainnet config
+            .args(args)
             .arg(&format!("{}.{}", target.name(), target.language()))
             .current_dir(&self.work_dir)
             .spawn()
@@ -119,6 +125,13 @@ impl FuzzerNimAfl {
         }
 
         let corpus_dir = &self.workspace_dir;
+
+        if self.config.timeout != None {
+            println!("[eth2fuzz] {}: timeout not supported", self.name);
+        }
+        if self.config.thread != None {
+            println!("[eth2fuzz] {}: thread not supported", self.name);
+        }
 
         // Run the fuzzer
         let fuzzer_bin = Command::new("afl-fuzz")
@@ -169,10 +182,8 @@ pub struct FuzzerNimLibfuzzer {
     pub work_dir: PathBuf,
     /// Internal workspace dir
     pub workspace_dir: PathBuf,
-    /// timeout
-    pub timeout: Option<i32>,
-    /// thread
-    pub thread: Option<i32>,
+    /// fuzzing config
+    pub config: FuzzerConfig,
 }
 
 impl FuzzerNimLibfuzzer {
@@ -187,7 +198,7 @@ impl FuzzerNimLibfuzzer {
     }
 
     /// Create a new FuzzerNimLibfuzzer
-    pub fn new(timeout: Option<i32>, thread: Option<i32>) -> Result<FuzzerNimLibfuzzer, Error> {
+    pub fn new(config: FuzzerConfig) -> Result<FuzzerNimLibfuzzer, Error> {
         // Test if fuzzer engine installed
         FuzzerNimLibfuzzer::is_available()?;
         let cwd = env::current_dir().context("error getting current directory")?;
@@ -199,8 +210,7 @@ impl FuzzerNimLibfuzzer {
                 .join("workspace")
                 .join("nimlibfuzzer")
                 .join("nimlibfuzzer_workspace"),
-            timeout,
-            thread,
+            config,
         };
         Ok(fuzzer)
     }
@@ -231,20 +241,29 @@ impl FuzzerNimLibfuzzer {
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
+        let mut args: Vec<String> = Vec::new();
+        args.push("nim".to_string()); // nim compiler
+        args.push("c".to_string()); // compile arg
+        args.push("-d:libFuzzer".to_string()); // libfuzzer flag
+        args.push("-d:release".to_string()); // release flag
+        args.push("-d:chronicles_log_level=fatal".to_string());
+        args.push("--noMain".to_string());
+        args.push("--cc=clang".to_string());
+        args.push("-d:const_preset=mainnet".to_string()); // mainnet config
+
+        // handle fuzzer config - sanitizer
+        if let Some(san) = self.config.sanitizer {
+            args.push(format!("--passC=\"-fsanitize=fuzzer,{}\"", san.name()));
+            args.push(format!("--passL=\"-fsanitize=fuzzer,{}\"", san.name()));
+        } else {
+            args.push("--passC=\"-fsanitize=fuzzer\"".to_string());
+            args.push("--passL=\"-fsanitize=fuzzer\"".to_string());
+        }
+
         // build the target
         let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
         let compile_bin = Command::new(envsh)
-            .arg("nim") // nim compiler
-            .arg("c") // compile arg
-            .arg("-d:libFuzzer")
-            .arg("-d:release")
-            .arg("-d:chronicles_log_level=fatal")
-            .arg("--noMain")
-            .arg("--cc=clang")
-            .arg("--passC=\"-fsanitize=fuzzer\"")
-            .arg("--passL=\"-fsanitize=fuzzer\"")
-            // mainnet config
-            .arg("-d:const_preset=mainnet")
+            .args(args)
             .arg(&format!("{}.{}", target.name(), target.language()))
             .current_dir(&self.work_dir)
             .spawn()
@@ -268,13 +287,17 @@ impl FuzzerNimLibfuzzer {
         let _corpus_dir = &self.workspace_dir;
 
         // create arguments
+        // fuzzing config (time, thread, ...)
         // corpora dir
-        // max_time if provided (i.e. continuously fuzzing)
         let mut args: Vec<String> = Vec::new();
-        args.push(format!("{}", &corpora_dir.display()));
-        if let Some(timeout) = self.timeout {
+        if let Some(timeout) = self.config.timeout {
             args.push(format!("-max_total_time={}", timeout));
         };
+        if let Some(thread) = self.config.thread {
+            args.push(format!("-workers={}", thread));
+            args.push(format!("-jobs={}", thread));
+        };
+        args.push(format!("{}", &corpora_dir.display()));
 
         // Run the fuzzer
         let fuzzer_bin = Command::new(&format!("./{}", target.name()))

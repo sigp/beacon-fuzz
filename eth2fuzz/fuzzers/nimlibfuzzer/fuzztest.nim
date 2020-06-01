@@ -64,6 +64,8 @@ template init*(body: untyped) {.dirty.} =
   ## the test block.
   when defined(libFuzzer):
     template initImpl() {.dirty.} =
+      bind NimMain
+
       proc fuzzerInit(): cint {.exportc: "LLVMFuzzerInitialize".} =
         NimMain()
 

@@ -21,7 +21,7 @@ arg_enum! {
         // Javascript fuzzers
         Jsfuzz,
         // Nim fuzzers
-        NimAfl,
+        //NimAfl,
         NimLibfuzzer,
     }
 }

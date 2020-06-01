@@ -1,4 +1,4 @@
-.PHONY: default update check-fmt help build docker corpora fmt clean clean-all test test-debug test-hfuzz test-afl test-libfuzzer test-all
+.PHONY: default update check-fmt help build docker corpora fmt clippy clean clean-all test test-debug test-hfuzz test-afl test-libfuzzer test-nim-libfuzzer test-all
 
 #
 # User utils
@@ -47,6 +47,10 @@ corpora:
 fmt:
 	cargo fmt --all
 
+# Run Rust clippy to make code cleaner
+clippy:
+	cargo clippy --all
+
 # Clean only eth2fuzz target
 clean:
 	rm -rf target/
@@ -94,7 +98,7 @@ test-nim-libfuzzer: build
 	./eth2fuzz target nimbus_enr --fuzzer NimLibfuzzer -t 2
 
 # Run one fuzzing hardness over all fuzzer
-test-all: test-hfuzz test-afl test-libfuzzer
+test-all: test-hfuzz test-afl test-libfuzzer test-nim-libfuzzer
 
 # Run all fuzzing hardness over honggfuzz
 test-continuously-hfuzz: build
@@ -115,3 +119,7 @@ test-continuously-afl: build
 # Check code style quickly by running `rustfmt` over all code
 check-fmt:
 	cargo fmt --all -- --check
+
+# Check code quality by running `clippy` over all code
+check-clippy:
+	cargo clippy --all -- --check

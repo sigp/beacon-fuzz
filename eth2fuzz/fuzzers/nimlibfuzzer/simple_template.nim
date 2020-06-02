@@ -1,6 +1,6 @@
 import
     chronicles,
-    fuzztest,
+    ../nim-testutils/testutils/fuzzing,
     ../targets/nim/lib
 
 test:

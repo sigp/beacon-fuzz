@@ -4,3 +4,6 @@
 [submodule "eth2fuzz/workspace/nim-beacon-chain"]
 	path = eth2fuzz/workspace/nim-beacon-chain
 	url = https://github.com/status-im/nim-beacon-chain
+[submodule "eth2fuzz/workspace/nim-testutils"]
+	path = eth2fuzz/workspace/nim-testutils
+	url = https://github.com/status-im/nim-testutils

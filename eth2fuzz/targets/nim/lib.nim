@@ -17,54 +17,68 @@ import
 
 
 # state: BeaconState, 
-proc fuzz_nimbus_attestation*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_attestation*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        discard SSZ.decode(payload, Attestation)
-        # var cache = get_empty_per_epoch_cache()
-        #         let done = process_attestation(preState[], attestation, {}, cache)
-
+        var cache = get_empty_per_epoch_cache()
+        let attestation = SSZ.decode(payload, Attestation)        
+        discard process_attestation(state, attestation, {}, cache)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_attester_slashing*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_attester_slashing*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        discard SSZ.decode(payload, AttesterSlashing)
+        var cache = get_empty_per_epoch_cache()
+        let attester =  SSZ.decode(payload, AttesterSlashing)
+        discard process_attester_slashing(state, attester, {}, cache)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_block*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool = 
+    # There's not a perfect approach here, but it's not worth switching the rest
+    # and requiring HashedBeaconState (yet). So to keep consistent, puts wrapper
+    # only in one function.
+
     try:
-        discard SSZ.decode(payload, BeaconBlock)
+        let blck = SSZ.decode(payload, SignedBeaconBlock)
+        var hashedState =
+            HashedBeaconState(data: state, root: hash_tree_root(state))
+        discard state_transition(hashedState, blck, {}, noRollback)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_block_header*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_block_header*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        discard SSZ.decode(payload, BeaconBlockHeader)
+        var cache = get_empty_per_epoch_cache()
+        let blck = SSZ.decode(payload, BeaconBlock)
+        discard process_block_header(state, blck, {}, cache)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_deposit*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_deposit*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        discard SSZ.decode(payload, Deposit)
+        let deposit = SSZ.decode(payload, Deposit)
+        discard process_deposit(state, deposit, {})
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_proposer_slashing*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_proposer_slashing*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        discard SSZ.decode(payload, ProposerSlashing)
+        var cache = get_empty_per_epoch_cache()
+        let proposer =  SSZ.decode(payload, ProposerSlashing)
+        discard process_proposer_slashing(state, proposer, {}, cache)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_voluntary_exit*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_voluntary_exit*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        discard SSZ.decode(payload, VoluntaryExit)
+        let exit = SSZ.decode(payload, SignedVoluntaryExit)
+        discard process_voluntary_exit(state, exit, {})
     except SSZError: #CatchableError:
         discard
     true

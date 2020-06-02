@@ -228,10 +228,10 @@ fn run_target(
             let jfuzz = js_fuzzers::FuzzerJsFuzz::new(config)?;
             jfuzz.run(target)?;
         }
-        NimAfl => {
-            let nfuzz = nim_fuzzers::FuzzerNimAfl::new(config)?;
-            nfuzz.run(target)?;
-        }
+        //NimAfl => {
+        //    let nfuzz = nim_fuzzers::FuzzerNimAfl::new(config)?;
+        //    nfuzz.run(target)?;
+        //}
         NimLibfuzzer => {
             let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(config)?;
             nfuzz.run(target)?;
@@ -279,10 +279,10 @@ fn run_continuously(
                 let jfuzz = js_fuzzers::FuzzerJsFuzz::new(config)?;
                 jfuzz.run(target)?;
             }
-            NimAfl => {
-                let nfuzz = nim_fuzzers::FuzzerNimAfl::new(config)?;
-                nfuzz.run(target)?;
-            }
+            //NimAfl => {
+            //    let nfuzz = nim_fuzzers::FuzzerNimAfl::new(config)?;
+            //    nfuzz.run(target)?;
+            //}
             NimLibfuzzer => {
                 let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(config)?;
                 nfuzz.run(target)?;

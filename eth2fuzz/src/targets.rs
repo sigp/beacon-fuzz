@@ -138,15 +138,14 @@ impl Targets {
             | Targets::LodestarBeaconstate
             | Targets::LodestarEnr => "simple_template.js",
             // Nimbus
-            Targets::NimbusAttestation => "template.nim", // testing
-            Targets::NimbusAttesterSlashing
+            Targets::NimbusAttestation
+            | Targets::NimbusAttesterSlashing
             | Targets::NimbusBlock
             | Targets::NimbusBlockHeader
             | Targets::NimbusDeposit
             | Targets::NimbusProposerSlashing
-            | Targets::NimbusVoluntaryExit
-            | Targets::NimbusBeaconstate
-            | Targets::NimbusEnr => "simple_template.nim",
+            | Targets::NimbusVoluntaryExit => "template.nim",
+            Targets::NimbusBeaconstate | Targets::NimbusEnr => "simple_template.nim",
         }
         .to_string()
     }

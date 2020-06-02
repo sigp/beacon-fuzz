@@ -47,5 +47,5 @@ fn main() {
     // call the fuzzing target
     fuzz_target(beaconstate, &data);
 
-    println!("No crash, everything is OK\n");
+    println!("No crash\n");
 }

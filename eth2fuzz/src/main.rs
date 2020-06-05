@@ -28,6 +28,8 @@ mod js_fuzzers;
 mod nim_fuzzers;
 // load rust fuzzers
 mod rust_fuzzers;
+// load go fuzzers
+mod go_fuzzers;
 // load debugging stuff
 mod debug;
 
@@ -236,6 +238,10 @@ fn run_target(
             let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(config)?;
             nfuzz.run(target)?;
         }
+        GoLibfuzzer => {
+            let gofuzz = go_fuzzers::FuzzerGoLibfuzzer::new(config)?;
+            gofuzz.run(target)?;
+        }
     }
     Ok(())
 }
@@ -286,6 +292,10 @@ fn run_continuously(
             NimLibfuzzer => {
                 let nfuzz = nim_fuzzers::FuzzerNimLibfuzzer::new(config)?;
                 nfuzz.run(target)?;
+            }
+            GoLibfuzzer => {
+                let gofuzz = go_fuzzers::FuzzerGoLibfuzzer::new(config)?;
+                gofuzz.run(target)?;
             }
         }
         Ok(())

@@ -23,6 +23,8 @@ arg_enum! {
         // Nim fuzzers
         //NimAfl,
         NimLibfuzzer,
+        // Go fuzzers
+        GoLibfuzzer,
     }
 }
 
@@ -86,6 +88,7 @@ pub fn write_fuzzer_target(
         "rust" => fuzzer_workdir.join("src").join("bin"),
         "js" => fuzzer_workdir.to_path_buf(),
         "nim" => fuzzer_workdir.to_path_buf(),
+        "go" => fuzzer_workdir.to_path_buf(),
         _ => bail!("target_dir for this language not defined"),
     };
 
@@ -100,6 +103,7 @@ pub fn write_fuzzer_target(
         "rust" => "rs",
         "js" => "js",
         "nim" => "nim",
+        "go" => "go",
         _ => bail!("ext for this language not defined"),
     };
 

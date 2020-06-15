@@ -29,16 +29,21 @@ pub struct FuzzerGoLibfuzzer {
 impl FuzzerGoLibfuzzer {
     /// Check if libfuzzer is installed
     fn is_available() -> Result<(), Error> {
-        let fuzzer_output = Command::new("go-fuzz-build").output()?;
+        let fuzzer_output =
+            Command::new(workspace_dir()?.join("gofuzz").join("bin/go114-fuzz-build"))
+                .env("GOPATH", workspace_dir()?.join("gofuzz"))
+                .arg("-h")
+                .output()?;
         if fuzzer_output.status.code() != Some(2) {
-            bail!("go-fuzz-build not available, install with `go get github.com/dvyukov/go-fuzz/go-fuzz-build`");
+            bail!("go114-fuzz-build not available, install with `go get -u github.com/mdempsky/go114-fuzz-build`");
+            //bail!("go-fuzz-build not available, install with `go get github.com/dvyukov/go-fuzz/go-fuzz-build`");
         }
-        let fuzzer_output = Command::new("go-fuzz").output()?;
-        if fuzzer_output.status.code() != Some(2) {
-            bail!(
-                "go-fuzz not available, install with `go get github.com/dvyukov/go-fuzz/go-fuzz`"
-            );
-        }
+        //let fuzzer_output = Command::new("go-fuzz").output()?;
+        //if fuzzer_output.status.code() != Some(2) {
+        //    bail!(
+        //        "go-fuzz not available, install with `go get github.com/dvyukov/go-fuzz/go-fuzz`"
+        //    );
+        //}
         Ok(())
     }
 
@@ -76,14 +81,14 @@ impl FuzzerGoLibfuzzer {
             bail!(format!("{} incompatible for this target", self.name));
         }
 
-        panic!("FuzzerGoLibfuzzer not implemented yet");
-
         // get corpora dir of the target
         let corpora_dir = corpora_dir()?.join(target.corpora());
         // copy targets source files
         prepare_targets_workspace()?;
         // create fuzzer folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        //self.prepare_fuzzer_workspace()?;
+
+        panic!("FuzzerGoLibfuzzer not implemented yet");
 
         // write all fuzz targets inside workspace folder
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;

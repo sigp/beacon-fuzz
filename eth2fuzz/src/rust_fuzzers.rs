@@ -188,7 +188,7 @@ impl FuzzerAfl {
     pub fn is_available() -> Result<(), Error> {
         let fuzzer_output = Command::new("cargo").arg("afl").arg("--version").output()?;
         if !fuzzer_output.status.success() {
-            bail!("afl-rs not available, install with `cargo install honggfuzz`");
+            bail!("afl-rs not available, install with `cargo install afl`");
         }
         Ok(())
     }
@@ -375,7 +375,7 @@ impl FuzzerLibfuzzer {
             .arg("--version")
             .output()?;
         if !fuzzer_output.status.success() {
-            bail!("cargo-fuzz not available, install with `cargo install honggfuzz`");
+            bail!("cargo-fuzz not available, install with `cargo install cargo-fuzz`");
         }
         Ok(())
     }

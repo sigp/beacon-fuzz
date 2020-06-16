@@ -33,7 +33,8 @@ build:
 # Build the docker
 # NOTE: `make docker CACHE=--no-cache` to force docker update/build everything again
 docker:
-	echo "TODO docker"
+	DOCKER_BUILDKIT=1 docker build . -t eth2fuzz $(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz list'
 
 # Create an initial corpora of wasm modules
 corpora:

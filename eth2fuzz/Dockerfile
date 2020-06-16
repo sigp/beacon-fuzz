@@ -1,32 +1,30 @@
 FROM ubuntu:18.04
 
-# lighthouse
+# docker hardcoded sh...
+SHELL ["/bin/bash", "-c"]
 
+# lighthouse args
 ARG RUST_TOOLCHAIN="nightly"
 ENV CARGO_HOME=/usr/local/rust
 ENV RUSTUP_HOME=/usr/local/rust
 ENV PATH="$PATH:$CARGO_HOME/bin"
-
 ARG LIGHTHOUSE_GIT_BRANCH="master"
 ARG LIGHTHOUSE_PRESET="mainnet"
 
 # nimbus
-
-ARG NIMBUS_GIT_BRANCH="devel"
+ARG NIMBUS_GIT_BRANCH="master"
+## devel"
 ARG NIMBUS_PRESET="mainnet"
 
 # prysm
-
 ARG PRYSM_GIT_BRANCH="master"
 ARG PRYSM_PRESET="preset_mainnet"
 
 # teku
-
 ARG TEKU_GIT_BRANCH="master"
 ARG TEKU_PRESET="preset_mainnet"
 
 # zcli
-
 ARG ZCLI_GIT_BRANCH="master"
 ARG ZCLI_PRESET="preset_mainnet"
 
@@ -85,39 +83,68 @@ RUN curl --proto '=https' \
 	-sSf https://sh.rustup.rs | sh -s -- -y \
 	--default-toolchain "$RUST_TOOLCHAIN"
 
-# FUZZERS - install Javascript fuzzer
+
+#####################################
+############ FUZZERS ################
+
+# install Javascript fuzzer
 
 RUN npm i -g jsfuzz 
 
-# FUZZERS - install Rust fuzzer
+# install Rust fuzzer
 
 RUN cargo install honggfuzz
 RUN cargo install cargo-fuzz
 RUN cargo install afl
 
-# ETHFUZZ - Clone beaconfuzz/eth2fuzz repo
+#####################################
+############ build nim ################
+
+# Clone the project
 RUN git clone \
-	--recursive \
+	--branch "$NIMBUS_GIT_BRANCH" \
  	--depth 1 \
-	https://github.com/sigp/beacon-fuzz
+	https://github.com/status-im/nim-beacon-chain
 
-WORKDIR beacon-fuzz
-WORKDIR eth2fuzz
+WORKDIR nim-beacon-chain
 
-# nimbus - Build nim 
-RUN cd workspace/nim-beacon-chain && make
-
-# lodestar - Install using npm
-RUN cd workspace/lodestar && npm i @chainsafe/lodestar-types @chainsafe/discv5
-
+# First `make` invocation
+# will update all Git submodules
 RUN make
 
+
+#####################################
+############ eth2fuzz ################
+
+
+# create a new empty shell project
+RUN USER=root cargo new --bin eth2fuzz
+WORKDIR /eth2fuzz
+
+# copy over your manifests
+# COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+
+# this build step will cache your dependencies
+RUN cargo build
+RUN rm src/*.rs
+
+# Copy all
+COPY . .
+
+# Build the CLI tool
+RUN make build
+
+# lodestar - Install using npm
+RUN npm i @chainsafe/lodestar-types @chainsafe/discv5
+
+
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
 ENTRYPOINT ["./eth2fuzz"]
 
 
+# Compilation:
+#	DOCKER_BUILDKIT=1 docker build . -t eth2fuzz
 
-# compilation:
-#   DOCKER_BUILDKIT=1 docker build --file eth2fuzz.Dockerfile .
-
-# enter inside:
-#  docker run -it --rm --name eth2fuzz2 eth2fuzz:latest bash
+# Run the container
+#	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz

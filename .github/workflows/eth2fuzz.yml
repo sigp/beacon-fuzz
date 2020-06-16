@@ -58,6 +58,21 @@ jobs:
       - name: Build
         run: cd eth2fuzz && make build
 
+  # Try to compile the dockerfile
+  build-docker:
+    name: Building docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2fuzz && make docker
+
   # Try to compile one debug target and run it 
   test-debug:
     name: Test one debug target

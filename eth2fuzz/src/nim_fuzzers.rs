@@ -156,13 +156,13 @@ impl FuzzerNimLibfuzzer {
             .current_dir(&self.work_dir)
             .spawn()
             .context(format!(
-                "error starting {} to run {}",
+                "error starting fuzzer {} to run {}",
                 self.name,
                 target.name()
             ))?
             .wait()
             .context(format!(
-                "error while waiting for {} running {}",
+                "error while waiting for fuzzer {} running {}",
                 self.name,
                 target.name()
             ))?;

@@ -98,7 +98,7 @@ RUN cargo install cargo-fuzz
 RUN cargo install afl
 
 #####################################
-############ build nim ################
+############ NIMBUS ################
 
 # Clone the project
 RUN git clone \
@@ -113,21 +113,17 @@ WORKDIR nim-beacon-chain
 RUN make
 
 
-#####################################
-############ eth2fuzz ################
-
-
-# create a new empty shell project
-RUN USER=root cargo new --bin eth2fuzz
 WORKDIR /eth2fuzz
 
-# copy over your manifests
-# COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+#####################################
+############ LODESTAR ################
 
-# this build step will cache your dependencies
-RUN cargo build
-RUN rm src/*.rs
+# lodestar - Installation using npm
+RUN npm i @chainsafe/lodestar-types @chainsafe/discv5
+
+
+#####################################
+############ eth2fuzz ################
 
 # Copy all
 COPY . .
@@ -135,8 +131,7 @@ COPY . .
 # Build the CLI tool
 RUN make build
 
-# lodestar - Install using npm
-RUN npm i @chainsafe/lodestar-types @chainsafe/discv5
+
 
 
 # ENTRYPOINT ["tail", "-f", "/dev/null"]
@@ -147,4 +142,4 @@ ENTRYPOINT ["./eth2fuzz"]
 #	DOCKER_BUILDKIT=1 docker build . -t eth2fuzz
 
 # Run the container
-#	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz
+#	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz list

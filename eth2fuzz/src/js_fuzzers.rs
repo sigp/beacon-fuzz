@@ -72,7 +72,10 @@ impl FuzzerJsFuzz {
         }
 
         // get corpora dir of the target
-        let corpora_dir = corpora_dir()?.join(target.corpora());
+        let corpora_dir = corpora_dir()?.join(target.corpora()).join("*");
+
+        println!("{:?}", corpora_dir);
+
         // copy targets source files
         prepare_targets_workspace()?;
         // create fuzzer folder inside workspace/

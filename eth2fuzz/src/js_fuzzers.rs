@@ -3,7 +3,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::env::{corpora_dir, state_dir};
+use crate::env::{corpora_dir, state_dir, workspace_dir};
 use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
@@ -29,6 +29,7 @@ pub struct FuzzerJsFuzz {
 impl FuzzerJsFuzz {
     /// Check if jsfuzz is installed
     fn is_available() -> Result<(), Error> {
+        //println!("debug");
         let fuzzer_output = Command::new("jsfuzz").arg("--version").output()?;
 
         if !fuzzer_output.status.success() {
@@ -72,18 +73,18 @@ impl FuzzerJsFuzz {
         }
 
         // get corpora dir of the target
-        let corpora_dir = corpora_dir()?.join(target.corpora()).join("*");
+        let corp_dir = corpora_dir()?.join(target.corpora()); //.join("*");
 
-        println!("{:?}", corpora_dir);
+        //println!("{:?}", corp_dir);
 
         // copy targets source files
-        prepare_targets_workspace()?;
+        //prepare_targets_workspace()?;
         // create fuzzer folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        //self.prepare_fuzzer_workspace()?;
 
         // write all fuzz targets inside workspace folder
-        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
-        println!("[eth2fuzz] {}: {} created", self.name, target.name());
+        //write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        //println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
         if self.config.timeout != None {
             println!("[eth2fuzz] {}: timeout not supported", self.name);
@@ -95,14 +96,17 @@ impl FuzzerJsFuzz {
             println!("[eth2fuzz] {}: sanitizer not supported", self.name);
         }
 
+        //println!("debug2");
+
         // Run the fuzzer
         let fuzzer_bin = Command::new("jsfuzz")
             .env(
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
-            .arg(&target.name())
-            .arg(corpora_dir)
+            .arg(format!("{}.js", target.name()))
+            //.arg(format!("workspace/jsfuzz/{}.js", target.name()))
+            .arg(corp_dir)
             .current_dir(&self.work_dir)
             .spawn()
             .context(format!(

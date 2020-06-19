@@ -3,7 +3,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::env::{corpora_dir, state_dir, workspace_dir};
+use crate::env::{corpora_dir, root_dir, state_dir, workspace_dir};
 use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
@@ -29,6 +29,7 @@ pub struct FuzzerNimLibfuzzer {
 impl FuzzerNimLibfuzzer {
     /// Check if libfuzzer is installed
     fn is_available() -> Result<(), Error> {
+        println!("[eth2fuzz] Testing FuzzerNimLibfuzzer is available");
         let fuzzer_output = Command::new("clang").arg("--version").output()?;
 
         if !fuzzer_output.status.success() {
@@ -73,13 +74,17 @@ impl FuzzerNimLibfuzzer {
         // get corpora dir of the target
         let corpora_dir = corpora_dir()?.join(target.corpora());
         // copy targets source files
-        prepare_targets_workspace()?;
+        //prepare_targets_workspace()?;
         // create fuzzer folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        //self.prepare_fuzzer_workspace()?;
 
         // write all fuzz targets inside workspace folder
-        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
-        println!("[eth2fuzz] {}: {} created", self.name, target.name());
+        //write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        println!(
+            "[eth2fuzz] Starting fuzzing of {} with {}",
+            target.name(),
+            self.name
+        );
 
         let mut args: Vec<String> = Vec::new();
         args.push("nim".to_string()); // nim compiler
@@ -104,7 +109,12 @@ impl FuzzerNimLibfuzzer {
         }
 
         // build the target
-        let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
+        //let par = env::current_dir()?.parent().clone();
+        let envsh = root_dir()?
+            .parent()
+            .unwrap()
+            .join("nim-beacon-chain")
+            .join("env.sh");
         let compile_bin = Command::new(envsh)
             .args(args)
             .arg(&format!("{}.{}", target.name(), target.language()))

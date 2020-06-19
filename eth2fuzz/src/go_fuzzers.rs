@@ -1,5 +1,6 @@
 use failure::{Error, ResultExt};
 use std::env;
+use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -29,11 +30,10 @@ pub struct FuzzerGoLibfuzzer {
 impl FuzzerGoLibfuzzer {
     /// Check if libfuzzer is installed
     fn is_available() -> Result<(), Error> {
-        let fuzzer_output =
-            Command::new(workspace_dir()?.join("gofuzz").join("bin/go114-fuzz-build"))
-                .env("GOPATH", workspace_dir()?.join("gofuzz"))
-                .arg("-h")
-                .output()?;
+        let fuzzer_output = Command::new("bin/go114-fuzz-build")
+            //.env("GOPATH", workspace_dir()?.join("gofuzz"))
+            .arg("-h")
+            .output()?;
         if fuzzer_output.status.code() != Some(2) {
             bail!("go114-fuzz-build not available, install with `go get -u github.com/mdempsky/go114-fuzz-build`");
             //bail!("go-fuzz-build not available, install with `go get github.com/dvyukov/go-fuzz/go-fuzz-build`");
@@ -72,6 +72,14 @@ impl FuzzerGoLibfuzzer {
         Ok(())
     }
 
+    fn some_kind_of_uppercase_first_letter(&self, s: &str) -> String {
+        let mut c = s.chars();
+        match c.next() {
+            None => String::new(),
+            Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+        }
+    }
+
     #[allow(unreachable_code)]
     /// Run the fuzzer for the given target
     pub fn run(&self, target: Targets) -> Result<(), Error> {
@@ -84,48 +92,37 @@ impl FuzzerGoLibfuzzer {
         // get corpora dir of the target
         let corpora_dir = corpora_dir()?.join(target.corpora());
         // copy targets source files
-        prepare_targets_workspace()?;
+        //prepare_targets_workspace()?;
         // create fuzzer folder inside workspace/
         //self.prepare_fuzzer_workspace()?;
 
-        panic!("FuzzerGoLibfuzzer not implemented yet");
+        //panic!("FuzzerGoLibfuzzer not implemented yet");
 
         // write all fuzz targets inside workspace folder
-        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        //write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
-        let mut args: Vec<String> = Vec::new();
-        args.push("TODO".to_string());
-        // args.push("nim".to_string()); // nim compiler
-        // args.push("c".to_string()); // compile arg
-        // args.push("-d:libFuzzer".to_string()); // libfuzzer flag
-        // args.push("-d:release".to_string()); // release flag
-        // args.push("--hints:off".to_string());
-        // args.push("--warnings:off".to_string());
-        // args.push("--verbosity:0".to_string());
-        // args.push("-d:chronicles_log_level=fatal".to_string());
-        // args.push("--noMain".to_string());
-        // args.push("--cc=clang".to_string());
-        // args.push("-d:const_preset=mainnet".to_string()); // mainnet config
+        //cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/
+        // cp /eth2fuzz/workspace/gofuzz/lib.go .
 
-        // handle fuzzer config - sanitizer
-        if let Some(san) = self.config.sanitizer {
-            args.push(format!("--passC=\"-fsanitize=fuzzer,{}\"", san.name()));
-            args.push(format!("--passL=\"-fsanitize=fuzzer,{}\"", san.name()));
-        } else {
-            args.push("--passC=\"-fsanitize=fuzzer\"".to_string());
-            args.push("--passL=\"-fsanitize=fuzzer\"".to_string());
-        }
+        fs::copy(
+            "/eth2fuzz/workspace/gofuzz/lib.go",
+            "/eth2fuzz/src/github.com/prysmaticlabs/prysm/lib.go",
+        )?;
 
-        // build the target
-        let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
-        let compile_bin = Command::new(envsh)
-            .args(args)
-            .arg(&format!("{}.{}", target.name(), target.language()))
-            .current_dir(&self.work_dir)
+        //eth2fuzz/bin/go114-fuzz-build -func FuzzBlockHeader github.com/prysmaticlabs/prysm
+
+        let compile_bin = Command::new("/eth2fuzz/bin/go114-fuzz-build")
+            .args(&[
+                "-func",
+                &self.some_kind_of_uppercase_first_letter(&target.name()),
+                "github.com/prysmaticlabs/prysm",
+            ])
+            //.arg(&format!("{}.{}", target.name(), target.language()))
+            .current_dir("/eth2fuzz/src/github.com/prysmaticlabs/prysm/")
             .spawn()
             .context(format!(
-                "error starting {} to run {}",
+                "error compilation {} to run {}",
                 self.name,
                 target.name()
             ))?
@@ -140,6 +137,47 @@ impl FuzzerGoLibfuzzer {
         if !compile_bin.success() {
             return Err(FuzzerQuit.into());
         }
+
+        //cp prysm-fuzz.a /eth2fuzz/workspace/gofuzz/
+
+        fs::copy(
+            "/eth2fuzz/src/github.com/prysmaticlabs/prysm/prysm-fuzz.a",
+            "/eth2fuzz/workspace/gofuzz/prysm-fuzz.a",
+        )?;
+
+        //cd /eth2fuzz/workspace/gofuzz/
+
+        //clang -fsanitize=fuzzer prysm-fuzz.a /eth2fuzz/pkg/mod/github.com/herumi/bls-eth-go-binary\@v0.0.0-20200522010937-01d282b5380b/bls/lib/linux/amd64/libbls384_256.a  -o prysm_FuzzBlockHeader.libfuzzer
+
+        let compile_bin2 = Command::new("clang")
+            .args(&[
+                "-fsanitize=fuzzer",
+                "prysm-fuzz.a",
+                "/eth2fuzz/src/github.com/herumi/bls-eth-go-binary/bls/lib/linux/amd64/libbls384_256.a",
+                "-o",
+                &format!("{}.libfuzzer", target.name()),
+            ])
+            //.arg(&format!("{}.{}", target.name(), target.language()))
+            .current_dir(&self.work_dir)
+            .spawn()
+            .context(format!(
+                "error compilation {} to run {}",
+                self.name,
+                target.name()
+            ))?
+            .wait()
+            .context(format!(
+                "error while waiting for {} running {}",
+                self.name,
+                target.name()
+            ))?;
+
+        // TODO - needed?
+        if !compile_bin2.success() {
+            return Err(FuzzerQuit.into());
+        }
+
+        //ETH2FUZZ_BEACONSTATE=/eth2fuzz/workspace/corpora/beaconstate ./prysm_FuzzBlockHeader.libfuzzer /eth2fuzz/workspace/corpora/block_header/
 
         let _corpus_dir = &self.workspace_dir;
 
@@ -161,7 +199,7 @@ impl FuzzerGoLibfuzzer {
         args.push(format!("{}", &corpora_dir.display()));
 
         // Run the fuzzer
-        let fuzzer_bin = Command::new(&format!("./{}", target.name()))
+        let fuzzer_bin = Command::new(&format!("{}.libfuzzer", target.name()))
             .env(
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),

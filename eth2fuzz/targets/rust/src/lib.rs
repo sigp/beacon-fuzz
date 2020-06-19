@@ -7,11 +7,9 @@ use types::{
     ProposerSlashing, SignedBeaconBlock, SignedVoluntaryExit,
 };
 
-
 mod attestation;
 #[inline(always)]
 pub fn fuzz_lighthouse_attestation(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     // Verify that data is a correct Attestation ssz
     let attestation = match Attestation::from_ssz_bytes(&data) {
         Ok(attestation) => attestation,
@@ -24,7 +22,6 @@ pub fn fuzz_lighthouse_attestation(beaconstate: BeaconState<MainnetEthSpec>, dat
 mod attester_slashing;
 #[inline(always)]
 pub fn fuzz_lighthouse_attester_slashing(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     let attester_slashing = match AttesterSlashing::from_ssz_bytes(&data) {
         Ok(attester_slashing) => attester_slashing,
         Err(_e) => return,
@@ -36,7 +33,6 @@ pub fn fuzz_lighthouse_attester_slashing(beaconstate: BeaconState<MainnetEthSpec
 mod block;
 #[inline(always)]
 pub fn fuzz_lighthouse_block(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     let block = match SignedBeaconBlock::from_ssz_bytes(&data) {
         Ok(block) => block,
         Err(_e) => return,
@@ -45,11 +41,9 @@ pub fn fuzz_lighthouse_block(beaconstate: BeaconState<MainnetEthSpec>, data: &[u
     let _ = block::state_transition(beaconstate, block, true);
 }
 
-
 mod block_header;
 #[inline(always)]
 pub fn fuzz_lighthouse_block_header(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     let block = match BeaconBlock::from_ssz_bytes(&data) {
         Ok(block) => block,
         Err(_e) => return,
@@ -61,7 +55,6 @@ pub fn fuzz_lighthouse_block_header(beaconstate: BeaconState<MainnetEthSpec>, da
 mod deposit;
 #[inline(always)]
 pub fn fuzz_lighthouse_deposit(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     let deposit = match Deposit::from_ssz_bytes(&data) {
         Ok(deposit) => deposit,
         Err(_e) => return,
@@ -73,7 +66,6 @@ pub fn fuzz_lighthouse_deposit(beaconstate: BeaconState<MainnetEthSpec>, data: &
 mod proposer_slashing;
 #[inline(always)]
 pub fn fuzz_lighthouse_proposer_slashing(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     let proposer_slashing = match ProposerSlashing::from_ssz_bytes(&data) {
         Ok(proposer_slashing) => proposer_slashing,
         Err(_e) => return,
@@ -85,7 +77,6 @@ pub fn fuzz_lighthouse_proposer_slashing(beaconstate: BeaconState<MainnetEthSpec
 mod voluntary_exit;
 #[inline(always)]
 pub fn fuzz_lighthouse_voluntary_exit(beaconstate: BeaconState<MainnetEthSpec>, data: &[u8]) {
-
     let voluntary_exit = match SignedVoluntaryExit::from_ssz_bytes(&data) {
         Ok(voluntary_exit) => voluntary_exit,
         Err(_e) => return,
@@ -97,7 +88,6 @@ pub fn fuzz_lighthouse_voluntary_exit(beaconstate: BeaconState<MainnetEthSpec>, 
 mod beaconstate;
 #[inline(always)]
 pub fn fuzz_lighthouse_beaconstate(data: &[u8]) {
-
     let mut beaconstate = match BeaconState::from_ssz_bytes(&data) {
         Ok(beaconstate) => beaconstate,
         _ => return,
@@ -105,17 +95,15 @@ pub fn fuzz_lighthouse_beaconstate(data: &[u8]) {
     beaconstate::fuzz_beaconstate_accessors(&mut beaconstate);
 }
 
-
 /* libp2p */
 
 #[inline(always)]
 pub fn fuzz_lighthouse_enr(data: &[u8]) {
-
     // TODO - could be improved
     // will be better to craft "enr:" + base64encode(data)
-    use std::str::FromStr;
-    use std::str;
     use eth2_libp2p::Enr;
+    use std::str;
+    use std::str::FromStr;
     // data will be convert into str first
     let d = match str::from_utf8(&data) {
         Ok(d) => d,
@@ -127,10 +115,8 @@ pub fn fuzz_lighthouse_enr(data: &[u8]) {
 
 /* BLS */
 
-
 #[inline(always)]
 pub fn fuzz_lighthouse_bls(data: &[u8]) {
-
     use bls::Signature;
     let _ = Signature::from_bytes(data);
 }

@@ -61,11 +61,57 @@ clean-all: clean
 	rm -rf workspace/targets
 	rm -rf workspace/debug
 	rm -rf workspace/afl
-	rm -rf workspace/hfuzz
+	rm -rf workspace/hfuzz/hfuzz_target
 	rm -rf workspace/libfuzzer
 	rm -rf workspace/jsfuzz
 	rm -rf workspace/nimafl
 	rm -rf workspace/nimlibfuzzer
+
+#
+# Dockers
+#
+
+## Fuzzing of lighthouse using docker.
+## https://github.com/sigp/lighthouse
+lighthouse:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/lighthouse.Dockerfile \
+	-t eth2fuzz_lighthouse \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list'
+
+
+## Fuzzing of lodestar using docker.
+## https://github.com/ChainSafe/lodestar
+lodestar:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/lodestar.Dockerfile \
+	-t eth2fuzz_lodestar \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list'
+
+## Fuzzing of nim-beacon-chain using docker.
+## https://github.com/status-im/nim-beacon-chain
+nimbus:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/nimbus.Dockerfile \
+	-t eth2fuzz_nimbus \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list'
+
+## Fuzzing of prysm using docker.
+## https://github.com/prysmaticlabs/prysm
+prysm:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/prysm.Dockerfile \
+	-t eth2fuzz_prysm \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
+
 
 #
 # Testing utils

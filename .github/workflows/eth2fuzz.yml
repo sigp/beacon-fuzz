@@ -58,8 +58,8 @@ jobs:
       - name: Build
         run: cd eth2fuzz && make build
 
-  # Try to compile the dockerfile
-  build-docker:
+  # Try to compile the lighthouse dockerfile
+  build-docker-lighthouse:
     name: Building docker
     runs-on: ubuntu-latest
     steps:
@@ -71,7 +71,52 @@ jobs:
             override: true
 
       - name: Build Docker
-        run: cd eth2fuzz && make docker
+        run: cd eth2fuzz && make lighthouse
+
+  # Try to compile the lodestar dockerfile
+  build-docker-lodestar:
+    name: Building docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2fuzz && make lodestar
+
+  # Try to compile the nimbus dockerfile
+  build-docker-nimbus:
+    name: Building docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2fuzz && make nimbus
+
+  # Try to compile the prysm dockerfile
+  build-docker-prysm:
+    name: Building docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2fuzz && make prysm
 
   # Try to compile one debug target and run it 
   test-debug:

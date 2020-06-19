@@ -46,13 +46,12 @@ enum Cli {
         #[structopt(
             short = "f",
             long = "fuzzer",
-            default_value = "Honggfuzz",
             raw(
                 possible_values = "&fuzzers::Fuzzer::variants()",
                 case_insensitive = "true"
             )
         )]
-        fuzzer: fuzzers::Fuzzer,
+        fuzzer: Option<fuzzers::Fuzzer>,
         /// Set timeout per target
         #[structopt(short = "t", long = "timeout", default_value = "10")]
         timeout: i32,
@@ -84,13 +83,12 @@ enum Cli {
         #[structopt(
             short = "f",
             long = "fuzzer",
-            default_value = "Honggfuzz",
             raw(
                 possible_values = "&fuzzers::Fuzzer::variants()",
                 case_insensitive = "true"
             )
         )]
-        fuzzer: fuzzers::Fuzzer,
+        fuzzer: Option<fuzzers::Fuzzer>,
         /// Set timeout
         #[structopt(short = "t", long = "timeout")]
         timeout: Option<i32>,
@@ -196,7 +194,7 @@ fn list_targets() -> Result<(), Error> {
 /// Run fuzzing on only one target
 fn run_target(
     target: String,
-    fuzzer: fuzzers::Fuzzer,
+    fuzzer: Option<fuzzers::Fuzzer>,
     config: fuzzers::FuzzerConfig,
 ) -> Result<(), Error> {
     let target = match targets::Targets::iter().find(|x| x.name() == target) {
@@ -213,7 +211,20 @@ fn run_target(
     };
 
     use fuzzers::Fuzzer::*;
-    match fuzzer {
+
+    // find default fuzzer
+    let default_fuzz = match fuzzer {
+        Some(o) => o,
+        None => match target.language().as_str() {
+            "rust" => Honggfuzz,
+            "js" => Jsfuzz,
+            "nim" => NimLibfuzzer,
+            "go" => GoLibfuzzer,
+            _ => panic!("default fuzzer not yet supported"),
+        },
+    };
+
+    match default_fuzz {
         Afl => {
             let afl = rust_fuzzers::FuzzerAfl::new(config)?;
             afl.run(target)?;
@@ -249,7 +260,7 @@ fn run_target(
 /// Run fuzzing on multiple target matching the filter option
 fn run_continuously(
     filter: Option<String>,
-    fuzzer: fuzzers::Fuzzer,
+    fuzzer: Option<fuzzers::Fuzzer>,
     config: fuzzers::FuzzerConfig,
     infinite: bool,
 ) -> Result<(), Error> {
@@ -268,7 +279,20 @@ fn run_continuously(
         };
 
         use fuzzers::Fuzzer::*;
-        match fuzzer {
+
+        // find default fuzzer
+        let default_fuzz = match fuzzer {
+            Some(o) => o,
+            None => match target.language().as_str() {
+                "rust" => Honggfuzz,
+                "js" => Jsfuzz,
+                "nim" => NimLibfuzzer,
+                "go" => GoLibfuzzer,
+                _ => panic!("default fuzzer not yet supported"),
+            },
+        };
+
+        match default_fuzz {
             Afl => {
                 let hfuzz = rust_fuzzers::FuzzerAfl::new(config)?;
                 hfuzz.run(target)?;

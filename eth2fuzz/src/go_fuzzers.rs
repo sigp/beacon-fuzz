@@ -199,7 +199,7 @@ impl FuzzerGoLibfuzzer {
         args.push(format!("{}", &corpora_dir.display()));
 
         // Run the fuzzer
-        let fuzzer_bin = Command::new(&format!("{}.libfuzzer", target.name()))
+        let fuzzer_bin = Command::new(&format!("./{}.libfuzzer", target.name()))
             .env(
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),

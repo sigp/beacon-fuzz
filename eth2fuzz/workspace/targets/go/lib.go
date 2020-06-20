@@ -85,7 +85,7 @@ func getbeaconstate() (*pb.BeaconState){
     return st
 }
 
-func FuzzAttestation(b []byte) int {
+func Prysm_attestation(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.Attestation{}
 	if err := data.UnmarshalSSZ(b); err != nil {
@@ -109,7 +109,7 @@ func FuzzAttestation(b []byte) int {
 	return 1
 }
 
-func FuzzAttesterSlashing(b []byte) int {
+func Prysm_attester_slashing(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.AttesterSlashing{}
 	if err := data.UnmarshalSSZ(b); err != nil {
@@ -133,7 +133,7 @@ func FuzzAttesterSlashing(b []byte) int {
 	return 1
 }
 
-func FuzzBeaconBlock(b []byte) int {
+func Prysm_block(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.SignedBeaconBlock{}
 	if err := data.UnmarshalSSZ(b); err != nil {
@@ -157,7 +157,7 @@ func FuzzBeaconBlock(b []byte) int {
 	return 1
 }
 
-func FuzzBlockHeader(b []byte) int {
+func Prysm_block_header(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.BeaconBlock{}
 	if err := data.UnmarshalSSZ(b); err != nil {
@@ -181,7 +181,7 @@ func FuzzBlockHeader(b []byte) int {
 	return 1
 }
 
-func FuzzDeposit(b []byte) int {
+func Prysm_deposit(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.Deposit{}
 	if err := data.UnmarshalSSZ(b); err != nil {
@@ -205,7 +205,7 @@ func FuzzDeposit(b []byte) int {
 	return 1
 }
 
-func FuzzProposerSlashing(b []byte) int {
+func Prysm_proposer_slashing(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.ProposerSlashing{}
 	if err := data.UnmarshalSSZ(b); err != nil {
@@ -229,7 +229,7 @@ func FuzzProposerSlashing(b []byte) int {
 	return 1
 }
 
-func FuzzVoluntaryExit(b []byte) int {
+func Prysm_voluntary_exit(b []byte) int {
 	params.UseMainnetConfig()
 	data := &ethpb.VoluntaryExit{}
 	if err := data.UnmarshalSSZ(b); err != nil {

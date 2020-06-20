@@ -60,7 +60,7 @@ jobs:
 
   # Try to compile the lighthouse dockerfile
   build-docker-lighthouse:
-    name: Building docker
+    name: Building docker lighthouse
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -75,7 +75,7 @@ jobs:
 
   # Try to compile the lodestar dockerfile
   build-docker-lodestar:
-    name: Building docker
+    name: Building docker lodestar
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -90,7 +90,7 @@ jobs:
 
   # Try to compile the nimbus dockerfile
   build-docker-nimbus:
-    name: Building docker
+    name: Building docker nimbus
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -105,7 +105,7 @@ jobs:
 
   # Try to compile the prysm dockerfile
   build-docker-prysm:
-    name: Building docker
+    name: Building docker prysm
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -130,8 +130,8 @@ jobs:
             toolchain: nightly
             override: true
 
-      - name: Submodule update
-        run: git submodule update --init
+      - name: Clone lighthouse
+        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
       - name: Test debug 'lighthouse_attestation'
         run: cd eth2fuzz && make test-debug
 
@@ -147,8 +147,8 @@ jobs:
             toolchain: nightly
             override: true
   
-      - name: Submodule update
-        run: git submodule update --init
+      - name: Clone lighthouse
+        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
       - name: Install cargo-fuzz
         run: cargo +nightly install --force cargo-fuzz
       - name: Test libfuzzer
@@ -166,8 +166,8 @@ jobs:
             toolchain: nightly
             override: true
 
-      - name: Submodule update
-        run: git submodule update --init
+      - name: Clone lighthouse
+        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
       - name: Install honggfuzz dependencies
         run: |
           sudo apt-get update
@@ -190,8 +190,8 @@ jobs:
             toolchain: nightly
             override: true
 
-      - name: Submodule update
-        run: git submodule update --init
+      - name: Clone lighthouse
+        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
       - name: Install afl dependencies
         run: |
           sudo apt-get update

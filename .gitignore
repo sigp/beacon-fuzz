@@ -2,9 +2,12 @@
 eth2diff/eth2diff
 eth2diff/shared/
 
-# files of eth2fuzz
+# eth2fuzz
 eth2fuzz/eth2fuzz
-eth2fuzz/workspace
+# corpora
+eth2fuzz/workspace/corpora/*
+# compiled fuzzing targets
+workspace/hfuzz/hfuzz_target/*
 
 target/
 **/*.rs.bk

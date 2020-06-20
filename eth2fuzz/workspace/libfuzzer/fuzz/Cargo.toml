@@ -1,0 +1,74 @@
+[package]
+name = "fuzz-targets-libfuzzer"
+version = "0.1.0"
+authors = ["The rust-fuzz Project Developers"]
+
+[package.metadata]
+cargo-fuzz = true
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[dependencies]
+libfuzzer-sys = "0.3"
+walkdir = "2"
+lazy_static = "1.3.0"
+rand = "0.6"
+fuzz-targets = {path = "../../targets/rust"}
+eth2_ssz = { path = "../../../../lighthouse/consensus/ssz/" }
+eth2_ssz_derive = { path = "../../../../lighthouse/consensus/ssz_derive/" }
+state_processing = { path = "../../../../lighthouse/consensus/state_processing/" }
+types = { path = "../../../../lighthouse/consensus/types" }
+
+[patch.crates-io]
+# Needed to provide paths to some relevant dependencies
+# Alternative would be to depend on the lighthouse root, which
+# contains this?
+tree_hash = { path = "../../../../lighthouse/consensus/tree_hash" }
+tree_hash_derive = { path = "../../../../lighthouse/consensus/tree_hash_derive" }
+eth2_ssz = { path = "../../../../lighthouse/consensus/ssz" }
+eth2_ssz_derive = { path = "../../../../lighthouse/consensus/ssz_derive" }
+eth2_ssz_types = { path = "../../../../lighthouse/consensus/ssz_types" }
+eth2_hashing = { path = "../../../../lighthouse/crypto/eth2_hashing" }
+# web3 = { git = "https://github.com/tomusdrw/rust-web3" }
+
+[[bin]]
+name = "lighthouse_attestation"
+path = "fuzz_targets/lighthouse_attestation.rs"
+
+[[bin]]
+name = "lighthouse_attester_slashing"
+path = "fuzz_targets/lighthouse_attester_slashing.rs"
+
+[[bin]]
+name = "lighthouse_block"
+path = "fuzz_targets/lighthouse_block.rs"
+
+[[bin]]
+name = "lighthouse_block_header"
+path = "fuzz_targets/lighthouse_block_header.rs"
+
+[[bin]]
+name = "lighthouse_deposit"
+path = "fuzz_targets/lighthouse_deposit.rs"
+
+[[bin]]
+name = "lighthouse_proposer_slashing"
+path = "fuzz_targets/lighthouse_proposer_slashing.rs"
+
+[[bin]]
+name = "lighthouse_voluntary_exit"
+path = "fuzz_targets/lighthouse_voluntary_exit.rs"
+
+[[bin]]
+name = "lighthouse_beaconstate"
+path = "fuzz_targets/lighthouse_beaconstate.rs"
+
+[[bin]]
+name = "lighthouse_enr"
+path = "fuzz_targets/lighthouse_enr.rs"
+
+[[bin]]
+name = "lighthouse_bls"
+path = "fuzz_targets/lighthouse_bls.rs"

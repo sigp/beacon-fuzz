@@ -29,6 +29,7 @@ WORKDIR /app
 
 RUN git clone \
 	--branch "$GIT_BRANCH" \
+	--recursive \
 	--depth 1 \
 	https://github.com/sigp/lighthouse
 

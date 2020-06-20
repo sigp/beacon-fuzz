@@ -20,19 +20,18 @@ RUN git clone \
 
 WORKDIR nim-beacon-chain
 
-# First `make` invocation
-# will update all Git submodules
-RUN make
-# TODO - only make tools we need
-
-# Second `make` invocation
-# will compiled everything
-# RUN make NIMFLAGS="-d:chronicles_log_level=ERROR -d:release -d:const_preset=$PRESET" all
+# Build nimbus
+RUN make ncli_hash_tree_root \
+	ncli_pretty ncli_query ncli_transition \
+	libnfuzz.so libnfuzz.a
 
 #
 # Exporting compiled binaries 
 #
 FROM scratch AS export
 
-COPY --from=build /nim-beacon-chain/build/* .
-# TODO - only copy needed tools
+COPY --from=build /nim-beacon-chain/build/libnfuzz* .
+COPY --from=build /nim-beacon-chain/build/ncli_hash_tree_root .
+COPY --from=build /nim-beacon-chain/build/ncli_pretty .
+COPY --from=build /nim-beacon-chain/build/ncli_query .
+COPY --from=build /nim-beacon-chain/build/ncli_transition .

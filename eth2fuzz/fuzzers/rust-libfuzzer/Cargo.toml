@@ -10,10 +10,10 @@ fuzz-targets = {path = "../targets/rust"}
 # Needed to provide paths to some relevant dependencies
 # Alternative would be to depend on the lighthouse root, which
 # contains this?
-tree_hash = { path = "../lighthouse/consensus/tree_hash" }
-tree_hash_derive = { path = "../lighthouse/consensus/tree_hash_derive" }
-eth2_ssz = { path = "../lighthouse/consensus/ssz" }
-eth2_ssz_derive = { path = "../lighthouse/consensus/ssz_derive" }
-eth2_ssz_types = { path = "../lighthouse/consensus/ssz_types" }
-eth2_hashing = { path = "../lighthouse/crypto/eth2_hashing" }
+tree_hash = { path = "../../../lighthouse/consensus/tree_hash" }
+tree_hash_derive = { path = "../../../lighthouse/consensus/tree_hash_derive" }
+eth2_ssz = { path = "../../../lighthouse/consensus/ssz" }
+eth2_ssz_derive = { path = "../../../lighthouse/consensus/ssz_derive" }
+eth2_ssz_types = { path = "../../../lighthouse/consensus/ssz_types" }
+eth2_hashing = { path = "../../../lighthouse/crypto/eth2_hashing" }
 # web3 = { git = "https://github.com/tomusdrw/rust-web3" }

@@ -11,6 +11,8 @@ use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
 use crate::targets::{prepare_targets_workspace, Targets};
 use crate::utils::copy_dir;
 
+static LANGUAGE: &str = "rust";
+
 /***********************************************
 name: honggfuzz-rs
 github: https://github.com/rust-fuzz/honggfuzz-rs
@@ -23,8 +25,6 @@ pub struct FuzzerHfuzz {
     pub dir: PathBuf,
     /// Workspace dir
     pub work_dir: PathBuf,
-    /// Internal workspace dir
-    pub workspace_dir: PathBuf,
     /// fuzzing config
     pub config: FuzzerConfig,
 }
@@ -32,9 +32,10 @@ pub struct FuzzerHfuzz {
 impl FuzzerHfuzz {
     /// Check if `cargo hfuzz` is installed
     pub fn is_available() -> Result<(), Error> {
+        println!("[eth2fuzz] Testing FuzzerHfuzz is available");
         let fuzzer_output = Command::new("cargo").arg("hfuzz").arg("version").output()?;
         if !fuzzer_output.status.success() {
-            bail!("hfuzz not available, install with `cargo install honggfuzz`");
+            bail!("hfuzz not available, install with `cargo install --force honggfuzz`");
         }
         Ok(())
     }
@@ -49,7 +50,6 @@ impl FuzzerHfuzz {
             name: "Honggfuzz".to_string(),
             dir: cwd.join("fuzzers").join("rust-honggfuzz"),
             work_dir: cwd.join("workspace").join("hfuzz"),
-            workspace_dir: cwd.join("workspace").join("hfuzz").join("hfuzz_workspace"),
             config,
         };
         Ok(fuzzer)
@@ -77,9 +77,8 @@ impl FuzzerHfuzz {
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
-        // TODO - change to make it automatic
-        if target.language() != "rust" {
-            bail!("FuzzerHfuzz incompatible for this target");
+        if target.language() != LANGUAGE {
+            bail!(format!("{} incompatible for this target", self.name));
         }
 
         // get path to corpora
@@ -177,8 +176,6 @@ pub struct FuzzerAfl {
     pub dir: PathBuf,
     /// Workspace dir
     pub work_dir: PathBuf,
-    /// Internal workspace dir
-    pub workspace_dir: PathBuf,
     /// fuzzing config
     pub config: FuzzerConfig,
 }
@@ -186,9 +183,10 @@ pub struct FuzzerAfl {
 impl FuzzerAfl {
     /// Check if `cargo afl` is installed
     pub fn is_available() -> Result<(), Error> {
+        println!("[eth2fuzz] Testing FuzzerAfl is available");
         let fuzzer_output = Command::new("cargo").arg("afl").arg("--version").output()?;
         if !fuzzer_output.status.success() {
-            bail!("afl-rs not available, install with `cargo install honggfuzz`");
+            bail!("afl-rs not available, install with `cargo install --force afl`");
         }
         Ok(())
     }
@@ -203,7 +201,6 @@ impl FuzzerAfl {
             name: "Afl++".to_string(),
             dir: cwd.join("fuzzers").join("rust-afl"),
             work_dir: cwd.join("workspace").join("afl"),
-            workspace_dir: cwd.join("workspace").join("afl").join("afl_workspace"),
             config,
         };
         Ok(fuzzer)
@@ -275,9 +272,8 @@ impl FuzzerAfl {
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
-        // TODO - change to make it automatic
-        if target.language() != "rust" {
-            bail!("FuzzerAfl incompatible for this target");
+        if target.language() != LANGUAGE {
+            bail!(format!("{} incompatible for this target", self.name));
         }
 
         let dir = &self.work_dir;
@@ -286,7 +282,11 @@ impl FuzzerAfl {
         self.build_afl(target)?;
 
         // TODO - modify to use same corpus than other fuzzer
-        let corpus_dir = &self.workspace_dir;
+        // let corpus_dir = &self.workspace_dir;
+        let corpus_dir = env::current_dir()?
+            .join("workspace")
+            .join("afl")
+            .join("afl_workspace");
         fs::create_dir_all(&corpus_dir)
             .context(format!("unable to create {} dir", corpus_dir.display()))?;
 
@@ -361,8 +361,6 @@ pub struct FuzzerLibfuzzer {
     pub dir: PathBuf,
     /// Workspace dir
     pub work_dir: PathBuf,
-    /// Internal workspace dir
-    pub workspace_dir: PathBuf,
     /// fuzzing config
     pub config: FuzzerConfig,
 }
@@ -370,12 +368,13 @@ pub struct FuzzerLibfuzzer {
 impl FuzzerLibfuzzer {
     /// Check if `cargo fuzz` is installed
     pub fn is_available() -> Result<(), Error> {
+        println!("[eth2fuzz] Testing FuzzerLibfuzzer is available");
         let fuzzer_output = Command::new("cargo")
             .arg("fuzz")
             .arg("--version")
             .output()?;
         if !fuzzer_output.status.success() {
-            bail!("cargo-fuzz not available, install with `cargo install honggfuzz`");
+            bail!("cargo-fuzz not available, install with `cargo install --force cargo-fuzz`");
         }
         Ok(())
     }
@@ -390,10 +389,6 @@ impl FuzzerLibfuzzer {
             name: "Libfuzzer".to_string(),
             dir: cwd.join("fuzzers").join("rust-libfuzzer"),
             work_dir: cwd.join("workspace").join("libfuzzer"),
-            workspace_dir: cwd
-                .join("workspace")
-                .join("libfuzzer")
-                .join("libfuzzer_workspace"),
             config,
         };
         Ok(fuzzer)
@@ -408,9 +403,8 @@ impl FuzzerLibfuzzer {
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
-        // TODO - change to make it automatic
-        if target.language() != "rust" {
-            bail!("FuzzerLibfuzzer incompatible for this target");
+        if target.language() != LANGUAGE {
+            bail!(format!("{} incompatible for this target", self.name));
         }
 
         prepare_targets_workspace()?;

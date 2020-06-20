@@ -10,13 +10,13 @@ import
   ../beacon_chain/extras,
   ../beacon_chain/state_transition,
   ../beacon_chain/eth2_discovery
-# TODO turn into arguments
+
 cli do(beacon: string, container: string):
   try :
     var b = SSZ.loadFile(beacon, BeaconState)
-    var c = SSZ.loadFile(container, ProposerSlashing)
+    var c = SSZ.loadFile(container, AttesterSlashing)
     var cache = get_empty_per_epoch_cache()
-    discard process_proposer_slashing(b, c, {}, cache)
+    discard process_attester_slashing(b, c, {}, cache)
   except SSZError:
     quit 1
   quit 0

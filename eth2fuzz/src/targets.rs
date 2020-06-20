@@ -37,6 +37,14 @@ pub enum Targets {
     NimbusVoluntaryExit,
     NimbusBeaconstate,
     NimbusEnr,
+    // Prysm
+    PrysmAttestation,
+    PrysmAttesterSlashing,
+    PrysmBlock,
+    PrysmBlockHeader,
+    PrysmDeposit,
+    PrysmProposerSlashing,
+    PrysmVoluntaryExit,
 }
 
 impl Targets {
@@ -73,6 +81,14 @@ impl Targets {
             Targets::NimbusVoluntaryExit => "nimbus_voluntary_exit",
             Targets::NimbusBeaconstate => "nimbus_beaconstate",
             Targets::NimbusEnr => "nimbus_enr",
+            // Prysm
+            Targets::PrysmAttestation => "prysm_attestation",
+            Targets::PrysmAttesterSlashing => "prysm_attester_slashing",
+            Targets::PrysmBlock => "prysm_block",
+            Targets::PrysmBlockHeader => "prysm_block_header",
+            Targets::PrysmDeposit => "prysm_deposit",
+            Targets::PrysmProposerSlashing => "prysm_proposer_slashing",
+            Targets::PrysmVoluntaryExit => "prysm_voluntary_exit",
         }
         .to_string()
     }
@@ -110,6 +126,14 @@ impl Targets {
             Targets::NimbusVoluntaryExit => "voluntary_exit",
             Targets::NimbusBeaconstate => "beaconstate",
             Targets::NimbusEnr => "enr",
+            // Prysm
+            Targets::PrysmAttestation => "attestation",
+            Targets::PrysmAttesterSlashing => "attester_slashing",
+            Targets::PrysmBlock => "block",
+            Targets::PrysmBlockHeader => "block_header",
+            Targets::PrysmDeposit => "deposit",
+            Targets::PrysmProposerSlashing => "proposer_slashing",
+            Targets::PrysmVoluntaryExit => "voluntary_exit",
         }
         .to_string()
     }
@@ -146,6 +170,14 @@ impl Targets {
             | Targets::NimbusProposerSlashing
             | Targets::NimbusVoluntaryExit => "template.nim",
             Targets::NimbusBeaconstate | Targets::NimbusEnr => "simple_template.nim",
+            // Prysm
+            Targets::PrysmAttestation
+            | Targets::PrysmAttesterSlashing
+            | Targets::PrysmBlock
+            | Targets::PrysmBlockHeader
+            | Targets::PrysmDeposit
+            | Targets::PrysmProposerSlashing
+            | Targets::PrysmVoluntaryExit => "template.go",
         }
         .to_string()
     }
@@ -183,6 +215,14 @@ impl Targets {
             | Targets::NimbusVoluntaryExit
             | Targets::NimbusBeaconstate
             | Targets::NimbusEnr => "nim",
+            // Prysm
+            Targets::PrysmAttestation
+            | Targets::PrysmAttesterSlashing
+            | Targets::PrysmBlock
+            | Targets::PrysmBlockHeader
+            | Targets::PrysmDeposit
+            | Targets::PrysmProposerSlashing
+            | Targets::PrysmVoluntaryExit => "go",
         }
         .to_string()
     }

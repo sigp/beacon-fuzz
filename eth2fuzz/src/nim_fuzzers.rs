@@ -3,10 +3,11 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::env::{corpora_dir, state_dir, workspace_dir};
-use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
-use crate::targets::{prepare_targets_workspace, Targets};
-use crate::utils::copy_dir;
+use crate::env::{corpora_dir, root_dir, state_dir};
+use crate::fuzzers::{FuzzerConfig, FuzzerQuit};
+use crate::targets::Targets;
+
+static LANGUAGE: &str = "nim";
 
 /***********************************************
 name: libfuzzer for Nim
@@ -20,8 +21,6 @@ pub struct FuzzerNimLibfuzzer {
     pub dir: PathBuf,
     /// Workspace dir
     pub work_dir: PathBuf,
-    /// Internal workspace dir
-    pub workspace_dir: PathBuf,
     /// fuzzing config
     pub config: FuzzerConfig,
 }
@@ -29,6 +28,7 @@ pub struct FuzzerNimLibfuzzer {
 impl FuzzerNimLibfuzzer {
     /// Check if libfuzzer is installed
     fn is_available() -> Result<(), Error> {
+        println!("[eth2fuzz] Testing FuzzerNimLibfuzzer is available");
         let fuzzer_output = Command::new("clang").arg("--version").output()?;
 
         if !fuzzer_output.status.success() {
@@ -46,41 +46,28 @@ impl FuzzerNimLibfuzzer {
             name: "libfuzzer".to_string(),
             dir: cwd.join("fuzzers").join("nimlibfuzzer"),
             work_dir: cwd.join("workspace").join("nimlibfuzzer"),
-            workspace_dir: cwd
-                .join("workspace")
-                .join("nimlibfuzzer")
-                .join("nimlibfuzzer_workspace"),
             config,
         };
         Ok(fuzzer)
     }
 
-    fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let from = &self.dir;
-        let workspace = &self.work_dir;
-        copy_dir(from.to_path_buf(), workspace.to_path_buf())?;
-        Ok(())
-    }
-
     /// Run the fuzzer for the given target
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
-        // TODO - change to make it automatic
-        if target.language() != "nim" {
+        if target.language() != LANGUAGE {
             bail!(format!("{} incompatible for this target", self.name));
         }
 
         // get corpora dir of the target
         let corpora_dir = corpora_dir()?.join(target.corpora());
-        // copy targets source files
-        prepare_targets_workspace()?;
-        // create fuzzer folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
 
-        // write all fuzz targets inside workspace folder
-        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
-        println!("[eth2fuzz] {}: {} created", self.name, target.name());
+        println!(
+            "[eth2fuzz] Starting fuzzing of {} with {}",
+            target.name(),
+            self.name
+        );
 
+        // Prepare compilation arguments
         let mut args: Vec<String> = Vec::new();
         args.push("nim".to_string()); // nim compiler
         args.push("c".to_string()); // compile arg
@@ -104,7 +91,11 @@ impl FuzzerNimLibfuzzer {
         }
 
         // build the target
-        let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
+        let envsh = root_dir()?
+            .parent()
+            .unwrap()
+            .join("nim-beacon-chain")
+            .join("env.sh");
         let compile_bin = Command::new(envsh)
             .args(args)
             .arg(&format!("{}.{}", target.name(), target.language()))
@@ -122,25 +113,23 @@ impl FuzzerNimLibfuzzer {
                 target.name()
             ))?;
 
-        // TODO - needed?
+        // Check compilation success
         if !compile_bin.success() {
             return Err(FuzzerQuit.into());
         }
 
-        let _corpus_dir = &self.workspace_dir;
-
         // create fuzzing config arguments
-        // handle timeout option
+        // - timeout option
         let mut args: Vec<String> = Vec::new();
         if let Some(timeout) = self.config.timeout {
             args.push(format!("-max_total_time={}", timeout));
         };
-        // handle threading option
+        // - threading option
         if let Some(thread) = self.config.thread {
             args.push(format!("-workers={}", thread));
             args.push(format!("-jobs={}", thread));
         };
-        // handle seed option
+        // - seed option
         if let Some(seed) = self.config.seed {
             args.push(format!("-seed={}", seed));
         };
@@ -156,18 +145,18 @@ impl FuzzerNimLibfuzzer {
             .current_dir(&self.work_dir)
             .spawn()
             .context(format!(
-                "error starting {} to run {}",
+                "error starting fuzzer {} to run {}",
                 self.name,
                 target.name()
             ))?
             .wait()
             .context(format!(
-                "error while waiting for {} running {}",
+                "error while waiting for fuzzer {} running {}",
                 self.name,
                 target.name()
             ))?;
 
-        // TODO - needed?
+        // Check fuzzer success
         if !fuzzer_bin.success() {
             return Err(FuzzerQuit.into());
         }
@@ -188,8 +177,6 @@ pub struct FuzzerNimAfl {
     pub dir: PathBuf,
     /// Workspace dir
     pub work_dir: PathBuf,
-    /// Internal workspace dir
-    pub workspace_dir: PathBuf,
     /// fuzzing config
     pub config: FuzzerConfig,
 }
@@ -214,10 +201,6 @@ impl FuzzerNimAfl {
             name: "afl".to_string(),
             dir: cwd.join("fuzzers").join("nimafl"),
             work_dir: cwd.join("workspace").join("nimafl"),
-            workspace_dir: cwd
-                .join("workspace")
-                .join("nimafl")
-                .join("nimafl_workspace"),
             config,
         };
         Ok(fuzzer)
@@ -233,8 +216,7 @@ impl FuzzerNimAfl {
     /// Run the fuzzer for the given target
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
-        // TODO - change to make it automatic
-        if target.language() != "nim" {
+        if target.language() != LANGUAGE {
             bail!(format!("{} incompatible for this target", self.name));
         }
 
@@ -295,7 +277,10 @@ impl FuzzerNimAfl {
             return Err(FuzzerQuit.into());
         }
 
-        let corpus_dir = &self.workspace_dir;
+        //let corpus_dir = &self.workspace_dir;
+        let corpus_dir = env::current_dir()?.join("workspace")
+                .join("nimafl")
+                .join("nimafl_workspace"),
 
         if self.config.timeout != None {
             println!("[eth2fuzz] {}: timeout not supported", self.name);

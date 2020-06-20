@@ -17,7 +17,7 @@ pub fn targets_dir() -> Result<PathBuf, Error> {
 
 pub fn workspace_dir() -> Result<PathBuf, Error> {
     let p = root_dir()?.join("workspace");
-    fs::create_dir_all(&p).context("unable to create workspace dir".to_string())?;
+    //fs::create_dir_all(&p).context("unable to create workspace dir".to_string())?;
     Ok(p)
 }
 

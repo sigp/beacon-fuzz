@@ -74,7 +74,7 @@ pub fn run_debug(target: String) -> Result<(), Error> {
         return Err(FuzzerQuit.into());
     }
     println!(
-        "[WARF] Debug: {} compiled",
+        "[eth2fuzz] Debug: {} compiled",
         &format!("debug_{}", target.name())
     );
     Ok(())
@@ -96,6 +96,7 @@ pub fn write_debug_target(debug_dir: PathBuf, target: Targets) -> Result<(), Err
         "rust" => debug_dir.join("src").join("bin"),
         "js" => debug_dir,
         "nim" => debug_dir,
+        "go" => debug_dir,
         _ => bail!("target_dir for this language not defined"),
     };
 
@@ -108,6 +109,7 @@ pub fn write_debug_target(debug_dir: PathBuf, target: Targets) -> Result<(), Err
         "rust" => "rs",
         "js" => "js",
         "nim" => "nim",
+        "go" => "go",
         _ => bail!("ext for this language not defined"),
     };
     let path = target_dir.join(&format!("debug_{}.{}", target.name(), ext));

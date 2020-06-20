@@ -213,6 +213,7 @@ fn run_target(
     use fuzzers::Fuzzer::*;
 
     // find default fuzzer
+    // TODO - move into fuzzer.rs
     let default_fuzz = match fuzzer {
         Some(o) => o,
         None => match target.language().as_str() {
@@ -281,6 +282,7 @@ fn run_continuously(
         use fuzzers::Fuzzer::*;
 
         // find default fuzzer
+        // TODO - move into fuzzer.rs
         let default_fuzz = match fuzzer {
             Some(o) => o,
             None => match target.language().as_str() {

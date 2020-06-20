@@ -223,9 +223,9 @@ impl FuzzerNimAfl {
         // get corpora dir of the target
         let corpora_dir = corpora_dir()?.join(target.corpora());
         // copy targets source files
-        prepare_targets_workspace()?;
+        // prepare_targets_workspace()?;
         // create fuzzer folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        // self.prepare_fuzzer_workspace()?;
 
         // write all fuzz targets inside workspace folder
         write_fuzzer_target(&self.dir, &self.work_dir, target)?;

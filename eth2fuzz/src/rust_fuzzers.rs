@@ -4,12 +4,10 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
-use strum::IntoEnumIterator;
 
 use crate::env::{corpora_dir, state_dir};
-use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
+use crate::fuzzers::{FuzzerConfig, FuzzerQuit};
 use crate::targets::Targets;
-use crate::utils::copy_dir;
 
 static LANGUAGE: &str = "rust";
 
@@ -53,26 +51,6 @@ impl FuzzerHfuzz {
             config,
         };
         Ok(fuzzer)
-    }
-
-    // TODO - simplify this function
-    fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let hfuzz_dir = &self.work_dir;
-        fs::create_dir_all(&hfuzz_dir)
-            .context(format!("unable to create {} dir", hfuzz_dir.display()))?;
-
-        let src_dir = hfuzz_dir.join("src");
-        fs::create_dir_all(&src_dir)
-            .context(format!("unable to create {} dir", src_dir.display()))?;
-
-        fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
-        fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
-        fs::copy(
-            self.dir.join("simple_template.rs"),
-            hfuzz_dir.join("simple_template.rs"),
-        )?;
-        fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
-        Ok(())
     }
 
     pub fn run(&self, target: Targets) -> Result<(), Error> {
@@ -204,26 +182,6 @@ impl FuzzerAfl {
             config,
         };
         Ok(fuzzer)
-    }
-
-    // TODO - simplify that
-    fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let hfuzz_dir = &self.work_dir;
-        fs::create_dir_all(&hfuzz_dir)
-            .context(format!("unable to create {} dir", hfuzz_dir.display()))?;
-
-        let src_dir = hfuzz_dir.join("src");
-        fs::create_dir_all(&src_dir)
-            .context(format!("unable to create {} dir", src_dir.display()))?;
-
-        fs::copy(self.dir.join("Cargo.toml"), hfuzz_dir.join("Cargo.toml"))?;
-        fs::copy(self.dir.join("template.rs"), hfuzz_dir.join("template.rs"))?;
-        fs::copy(
-            self.dir.join("simple_template.rs"),
-            hfuzz_dir.join("simple_template.rs"),
-        )?;
-        fs::copy(self.dir.join("src").join("lib.rs"), src_dir.join("lib.rs"))?;
-        Ok(())
     }
 
     /// Build single target with afl
@@ -394,13 +352,6 @@ impl FuzzerLibfuzzer {
         Ok(fuzzer)
     }
 
-    fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let from = &self.dir;
-        let workspace = &self.work_dir;
-        copy_dir(from.to_path_buf(), workspace.to_path_buf())?;
-        Ok(())
-    }
-
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
         if target.language() != LANGUAGE {
@@ -498,46 +449,4 @@ impl FuzzerLibfuzzer {
         }
         Ok(())
     }
-}
-
-/// Add new target for libfuzzer using `cargo fuzz add`
-fn write_libfuzzer_target(fuzzer_dir: &PathBuf, target: Targets) -> Result<(), Error> {
-    use std::io::Write;
-
-    let fuzz_dir = fuzzer_dir.join("fuzz");
-    let template_path = fuzzer_dir.join(target.template());
-
-    let template = fs::read_to_string(&template_path).context(format!(
-        "error reading template file {}",
-        template_path.display()
-    ))?;
-
-    // use `cargo fuzz add` to add new bin inside Cargo.toml
-    // and create fuzz_targets dir
-    // and create target.rs
-    let _ = Command::new("cargo")
-        .args(&["+nightly", "fuzz", "add", &target.name()])
-        .current_dir(&fuzzer_dir)
-        .spawn()
-        .context(format!("error adding {}", target.name()))?
-        .wait()
-        .context(format!("error while adding {}", target.name()));
-
-    let target_dir = fuzz_dir.join("fuzz_targets");
-
-    let path = target_dir.join(&format!("{}.rs", target.name()));
-
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(&path)
-        .context(format!(
-            "write_libfuzzer_target error writing fuzz target binary {}",
-            path.display()
-        ))?;
-
-    let source = template.replace("###TARGET###", &target.name());
-    file.write_all(source.as_bytes())?;
-    Ok(())
 }

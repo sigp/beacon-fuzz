@@ -1,0 +1,26 @@
+[package]
+name = "fuzz-targets-afl"
+version = "0.1.0"
+authors = ["The rust-fuzz Project Developers"]
+
+[dependencies]
+afl = "0.8"
+walkdir = "2"
+rand = "0.6"
+fuzz-targets = {path = "../targets/rust"}
+eth2_ssz = { path = "../../../lighthouse/consensus/ssz/" }
+eth2_ssz_derive = { path = "../../../lighthouse/consensus/ssz_derive/" }
+state_processing = { path = "../../../lighthouse/consensus/state_processing/" }
+types = { path = "../../../lighthouse/consensus/types" }
+
+[patch.crates-io]
+# Needed to provide paths to some relevant dependencies
+# Alternative would be to depend on the lighthouse root, which
+# contains this?
+tree_hash = { path = "../../../lighthouse/consensus/tree_hash" }
+tree_hash_derive = { path = "../../../lighthouse/consensus/tree_hash_derive" }
+eth2_ssz = { path = "../../../lighthouse/consensus/ssz" }
+eth2_ssz_derive = { path = "../../../lighthouse/consensus/ssz_derive" }
+eth2_ssz_types = { path = "../../../lighthouse/consensus/ssz_types" }
+eth2_hashing = { path = "../../../lighthouse/crypto/eth2_hashing" }
+# web3 = { git = "https://github.com/tomusdrw/rust-web3" }

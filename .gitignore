@@ -7,7 +7,11 @@ eth2fuzz/eth2fuzz
 # corpora
 eth2fuzz/workspace/corpora/*
 # compiled fuzzing targets
-workspace/hfuzz/hfuzz_target/*
+eth2fuzz/workspace/hfuzz/hfuzz_target/*
+eth2fuzz/workspace/afl/target/*
+eth2fuzz/workspace/libfuzzer/fuzz/target/*
+# dev testing
+lighthouse/*
 
 target/
 **/*.rs.bk

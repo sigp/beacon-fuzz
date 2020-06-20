@@ -57,15 +57,15 @@ clean:
 	rm -rf target/
 
 # Clean all (eth2fuzz && compiled fuzz target harnesses).
-clean-all: clean
-	rm -rf workspace/targets
-	rm -rf workspace/debug
-	rm -rf workspace/afl
+clean-all: cleaner
+	rm -rf workspace/debug/target
+	rm -rf workspace/afl/target
 	rm -rf workspace/hfuzz/hfuzz_target
-	rm -rf workspace/libfuzzer
-	rm -rf workspace/jsfuzz
-	rm -rf workspace/nimafl
-	rm -rf workspace/nimlibfuzzer
+	rm -rf workspace/libfuzzer/fuzz/target
+	# TODO add nimlifuzzer
+	# TODO add js
+	# TODO add gofuzz
+
 
 #
 # Dockers

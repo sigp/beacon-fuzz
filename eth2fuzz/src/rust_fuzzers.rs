@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 
 use crate::env::{corpora_dir, state_dir};
 use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
-use crate::targets::{prepare_targets_workspace, Targets};
+use crate::targets::Targets;
 use crate::utils::copy_dir;
 
 static LANGUAGE: &str = "rust";
@@ -85,13 +85,13 @@ impl FuzzerHfuzz {
         let corpora_dir = corpora_dir()?.join(target.corpora());
 
         // copy targets folder into workspace
-        prepare_targets_workspace()?;
+        // prepare_targets_workspace()?;
 
         // create hfuzz folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        // self.prepare_fuzzer_workspace()?;
 
         // write all fuzz targets inside hfuzz folder
-        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        // write_fuzzer_target(&self.dir, &self.work_dir, target)?;
         println!("[eth2fuzz] {}: {} created", self.name, target.name());
 
         // sanitizers
@@ -228,11 +228,11 @@ impl FuzzerAfl {
 
     /// Build single target with afl
     pub fn build_afl(&self, target: Targets) -> Result<(), Error> {
-        prepare_targets_workspace()?;
+        // prepare_targets_workspace()?;
         // create afl folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        // self.prepare_fuzzer_workspace()?;
 
-        write_fuzzer_target(&self.dir, &self.work_dir, target)?;
+        // write_fuzzer_target(&self.dir, &self.work_dir, target)?;
 
         // sanitizers
         let rust_args = format!(
@@ -407,35 +407,36 @@ impl FuzzerLibfuzzer {
             bail!(format!("{} incompatible for this target", self.name));
         }
 
-        prepare_targets_workspace()?;
+        // prepare_targets_workspace()?;
         // create afl folder inside workspace/
-        self.prepare_fuzzer_workspace()?;
+        // self.prepare_fuzzer_workspace()?;
 
-        let fuzz_dir = self.work_dir.join("fuzz");
-        fs::create_dir_all(&fuzz_dir)
-            .context(format!("unable to create {} dir", fuzz_dir.display()))?;
+        /*
+                let fuzz_dir = self.work_dir.join("fuzz");
+                fs::create_dir_all(&fuzz_dir)
+                    .context(format!("unable to create {} dir", fuzz_dir.display()))?;
 
-        let target_dir = fuzz_dir.join("fuzz_targets");
+                let target_dir = fuzz_dir.join("fuzz_targets");
 
-        let _ = fs::remove_dir_all(&target_dir)
-            .context(format!("error removing {}", target_dir.display()));
-        fs::create_dir_all(&target_dir)
-            .context(format!("unable to create {} dir", target_dir.display()))?;
+                let _ = fs::remove_dir_all(&target_dir)
+                    .context(format!("error removing {}", target_dir.display()));
+                fs::create_dir_all(&target_dir)
+                    .context(format!("unable to create {} dir", target_dir.display()))?;
 
-        fs::create_dir_all(&fuzz_dir)
-            .context(format!("unable to create {} dir", fuzz_dir.display()))?;
-        //println!("{:?}", fuzz_dir);
+                fs::create_dir_all(&fuzz_dir)
+                    .context(format!("unable to create {} dir", fuzz_dir.display()))?;
+                //println!("{:?}", fuzz_dir);
 
-        fs::copy(
-            self.dir.join("fuzz").join("Cargo.toml"),
-            fuzz_dir.join("Cargo.toml"),
-        )?;
+                fs::copy(
+                    self.dir.join("fuzz").join("Cargo.toml"),
+                    fuzz_dir.join("Cargo.toml"),
+                )?;
 
-        // Add all targets to libfuzzer
-        for target in Targets::iter().filter(|x| x.language() == "rust") {
-            write_libfuzzer_target(&self.work_dir, target)?;
-        }
-
+                // Add all targets to libfuzzer
+                for target in Targets::iter().filter(|x| x.language() == "rust") {
+                    write_libfuzzer_target(&self.work_dir, target)?;
+                }
+        */
         let fuzz_dir = self.work_dir.join("fuzz");
         let corpus_dir = corpora_dir()?.join(target.corpora());
 

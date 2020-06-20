@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# git clone https://github.com/ethereum/eth2.0-spec-tests/tree/v0.11.1/
-eth2_spectests_dir=../../eth2.0-spec-tests/tests/
+git clone --depth 1 --recursive --branch v0.11.1 https://github.com/ethereum/eth2.0-spec-tests
+eth2_spectests_dir=./eth2.0-spec-tests/tests/
 destination_dir=.
 
 # extract files
@@ -63,6 +63,7 @@ extract_file "${eth2_spectests_dir}/mainnet/phase0/" "voluntary_exit.ssz" "${des
 
 # TODO if needed
 
+rm -rf ./eth2.0-spec-tests
 
-### verfify there is no duplicate files
+### verify there is no duplicate files
 # fdupes -rd .

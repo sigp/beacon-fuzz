@@ -36,39 +36,59 @@ eth2_hashing = { path = "../../../../lighthouse/crypto/eth2_hashing" }
 [[bin]]
 name = "lighthouse_attestation"
 path = "fuzz_targets/lighthouse_attestation.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_attester_slashing"
 path = "fuzz_targets/lighthouse_attester_slashing.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_block"
 path = "fuzz_targets/lighthouse_block.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_block_header"
 path = "fuzz_targets/lighthouse_block_header.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_deposit"
 path = "fuzz_targets/lighthouse_deposit.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_proposer_slashing"
 path = "fuzz_targets/lighthouse_proposer_slashing.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_voluntary_exit"
 path = "fuzz_targets/lighthouse_voluntary_exit.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_beaconstate"
 path = "fuzz_targets/lighthouse_beaconstate.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_enr"
 path = "fuzz_targets/lighthouse_enr.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "lighthouse_bls"
 path = "fuzz_targets/lighthouse_bls.rs"
+test = false
+doc = false

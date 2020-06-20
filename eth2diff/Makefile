@@ -92,6 +92,7 @@ eth2-all: zcli lighthouse nimbus prysm teku
 zcli:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/zcli.Dockerfile \
+	-t eth2diff_zcli \
 	--output ./shared/zcli . \
 	$(CACHE)
 
@@ -100,6 +101,7 @@ zcli:
 lighthouse:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/lighthouse.Dockerfile \
+	-t eth2diff_lighthouse \
 	--output ./shared/lighthouse . \
 	$(CACHE)
 
@@ -108,6 +110,7 @@ lighthouse:
 nimbus:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/nimbus.Dockerfile \
+	-t eth2diff_nimbus \
 	--output ./shared/nimbus . \
 	$(CACHE)
 
@@ -116,6 +119,7 @@ nimbus:
 prysm:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/prysm.Dockerfile \
+	-t eth2diff_prysm \
 	--output ./shared/prysm . \
 	$(CACHE)
 
@@ -124,6 +128,7 @@ prysm:
 teku:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/teku.Dockerfile \
+	-t eth2diff_teku \
 	--output ./shared/teku . \
 	$(CACHE)
 

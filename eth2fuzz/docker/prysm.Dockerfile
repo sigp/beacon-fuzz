@@ -59,21 +59,6 @@ RUN apt-get update && \
 		bazel \
  		bazel-3.2.0
 
-# Clone  prysm
-#RUN git clone \
-#	--branch "$GIT_BRANCH" \
-#	--recursive \
-#	--depth 1 \
-#	https://github.com/prysmaticlabs/prysm
-
-# Build prysm
-# RUN cd prysm && \
-# 	# Build pcli
-# 	bazel build //tools/pcli:pcli
-
-
-#####################################
-############ eth2fuzz ###############
 
 WORKDIR /eth2fuzz
 
@@ -86,7 +71,11 @@ RUN go get github.com/herumi/bls-eth-go-binary/bls
 # Install go-fuzz 114
 RUN go get -u github.com/mdempsky/go114-fuzz-build
 
+# Build prysm with bazel
 RUN cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/ && bazel build
+
+#####################################
+############ eth2fuzz ###############
 
 # COPY --from=build shared .
 COPY --from=build /eth2fuzz/eth2fuzz .

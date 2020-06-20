@@ -78,7 +78,7 @@ func getbeaconstate() (*pb.BeaconState){
 		if err := st.UnmarshalSSZ(data); err == nil {
 			// we found a good beaconstate
 			// TODO - add beaconstate filename to a logging file
-			fmt.Println("beaconstate choosen: ", file_name)
+			fmt.Println("beaconstate chosen: ", file_name)
 			break
 		}
     }

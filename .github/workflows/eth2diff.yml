@@ -25,6 +25,22 @@ jobs:
       - name: Run cargo fmt
         run: cd eth2diff && make check-fmt
 
+  # Check clippy
+  clippy:
+    name: Check clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt, clippy
+
+      - name: Run cargo clippy
+        run: cd eth2diff && cargo clippy
+
   # Build only eth2diff tool
   build:
     name: Building eth2diff cli tool

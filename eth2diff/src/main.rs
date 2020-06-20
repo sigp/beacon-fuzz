@@ -10,6 +10,9 @@ extern crate chrono;
 use chrono::offset::Utc;
 use chrono::DateTime;
 
+extern crate walkdir;
+use walkdir::WalkDir;
+
 use std::env;
 use std::fs;
 use std::io::Write;
@@ -36,7 +39,21 @@ enum Cli {
         block: String,
         // TODO - add choice eth2-clients?
     },
-
+    /// Test all file in corpora
+    #[structopt(name = "transition_corpora")]
+    TransitionCorpora {
+        /// Pre-state (Input) path
+        beaconstate_path: String,
+        /// block (Input) path
+        block_path: String,
+        /// Numbre of thread
+        #[structopt(short = "n", long = "thread", default_value = "4")]
+        thread: i32,
+        /// verbose
+        #[structopt(short = "v", long = "verbose")]
+        verbose: bool,
+        // TODO - add choice eth2-clients?
+    },
     /// Pretty-print SSZ data
     #[structopt(name = "pretty")]
     Pretty {
@@ -64,6 +81,14 @@ fn run() -> Result<(), Error> {
     match cli {
         Transition { beaconstate, block } => {
             state_transition(beaconstate, block)?;
+        }
+        TransitionCorpora {
+            beaconstate_path,
+            block_path,
+            thread,
+            verbose,
+        } => {
+            process_corpora(beaconstate_path, block_path, thread, verbose)?;
         }
         Pretty { ssztype, input } => {
             pretty(ssztype, input)?;
@@ -153,12 +178,12 @@ impl Eth2Client {
     pub fn new(name: String, cmd_path: PathBuf, cmd_arg: Vec<String>) -> Eth2Client {
         let available = cmd_path.exists();
         Eth2Client {
-            name: name,
-            cmd_path: cmd_path,
-            cmd_arg: cmd_arg,
+            name,
+            cmd_path,
+            cmd_arg,
             output: None,
             status_code: None,
-            available: available,
+            available,
         }
     }
 
@@ -172,7 +197,7 @@ impl Eth2Client {
             self.cmd_arg.join(" ")
         );
         let output = Command::new(&self.cmd_path).args(&self.cmd_arg).output()?;
-        self.status_code = output.status.code().clone();
+        self.status_code = output.status.code();
         self.output = Some(output);
         Ok(())
     }
@@ -222,7 +247,7 @@ impl Eth2Client {
     }
 }
 
-fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
+fn create_report(eth2clients: &[Eth2Client]) -> Result<(), Error> {
     let cwd = env::current_dir().context("Error getting current directory")?;
 
     // Create crash dir
@@ -267,13 +292,13 @@ fn create_report(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
 
         // details
         results.push_str(&format!("$ {}\n\n", cmd));
-        if let Some(out) = client.output.clone() {
-            //let stdout = String::from_utf8(out.stdout).unwrap();
-            //results.push_str(&format!("{:?}\n", out.stdout));
-            //let stderr = String::from_utf8(out.stderr).unwrap();
-            results.push_str(&format!("{:?}\n", out.stderr));
-        }
-        results.push_str(&format!("\n\n"));
+        //if let Some(out) = client.output.clone() {
+        //let stdout = String::from_utf8(out.stdout).unwrap();
+        //results.push_str(&format!("{:?}\n", out.stdout));
+        //let stderr = String::from_utf8(out.stderr).unwrap();
+        //    results.push_str(&format!("{:?}\n", out.stderr));
+        //}
+        //results.push_str(&format!("\n\n"));
     }
     let source = template.replace("???DETAILS_RESULTS???", &results);
     file.write_all(source.as_bytes())?;
@@ -295,7 +320,7 @@ fn process_eth2clients(eth2clients: &mut std::vec::Vec<Eth2Client>) -> Result<()
 }
 
 /// Compare eth2clients status_code and create report if differents
-fn compare_results(eth2clients: &Vec<Eth2Client>) -> Result<(), Error> {
+fn compare_results(eth2clients: &[Eth2Client]) -> Result<(), Error> {
     let mut codes = eth2clients.iter().map(|client| client.status_code);
 
     // all return 0 or 1
@@ -329,6 +354,20 @@ fn pretty(ssztype: SSZContainer, input: String) -> Result<(), Error> {
         [
             format!("--kind={}", ssztype.name()),
             format!("--file={}", input),
+        ]
+        .to_vec(),
+    ));
+
+    // PRYSM
+    eth2_clients.push(Eth2Client::new(
+        "PRYSM".into(),
+        cwd.join("shared").join("prysm").join("pcli"),
+        [
+            "pretty".into(),
+            "--ssz-path".into(),
+            input,
+            "--data-type".into(),
+            ssztype.name(),
         ]
         .to_vec(),
     ));
@@ -397,12 +436,13 @@ fn state_transition(beaconstate: String, block: String) -> Result<(), Error> {
     ));
 
     // NIMBUS
+
     eth2_clients.push(Eth2Client::new(
         "NIMBUS".into(),
         cwd.join("shared").join("nimbus").join("ncli_transition"),
         [
-            format!("--pre={}", beaconstate.to_owned()),
-            format!("--blck={}", block.to_owned()),
+            format!("--pre={}", beaconstate),
+            format!("--blck={}", block),
             "--post=/dev/null".into(),
         ]
         .to_vec(),
@@ -429,7 +469,7 @@ fn state_transition(beaconstate: String, block: String) -> Result<(), Error> {
         [
             "transition".into(),
             "blocks".into(),
-            format!("--pre={}", beaconstate.to_owned()),
+            format!("--pre={}", beaconstate),
             block.to_owned(),
             "--network=mainnet".into(),
         ]
@@ -445,7 +485,7 @@ fn state_transition(beaconstate: String, block: String) -> Result<(), Error> {
             "--pre-state-path".into(),
             beaconstate,
             "--block-path".into(),
-            block.to_owned(),
+            block,
         ]
         .to_vec(),
     ));
@@ -455,6 +495,51 @@ fn state_transition(beaconstate: String, block: String) -> Result<(), Error> {
 
     // compare the result
     compare_results(&eth2_clients)?;
+
+    Ok(())
+}
+
+fn list_files_in_folder(path_str: &str) -> Result<Vec<String>, ()> {
+    let mut list: Vec<String> = Vec::<String>::new();
+
+    for entry in WalkDir::new(path_str).into_iter().filter_map(|e| e.ok()) {
+        if entry.metadata().unwrap().is_file() {
+            //println!("{}", entry.path().display());
+            list.push(entry.path().display().to_string());
+        }
+    }
+    Ok(list)
+}
+
+fn process_corpora(
+    state_path: String,
+    block_path: String,
+    _thread: i32,
+    _verbose: bool,
+) -> Result<(), Error> {
+    // Import the Pipeline trait to give all Iterators and IntoIterators the
+
+    // .with_threads() method:
+
+    // list of beaconstate files
+    let state_list = match list_files_in_folder(&state_path) {
+        Ok(list_path) => list_path,
+        Err(e) => panic!("list_files_in_folder failed: {:?}", e),
+    };
+
+    // list of block files
+    let block_list = match list_files_in_folder(&block_path) {
+        Ok(list_path) => list_path,
+        Err(e) => panic!("list_files_in_folder failed: {:?}", e),
+    };
+
+    for state in &state_list {
+        for block in &block_list {
+            let _ = state_transition(state.to_string(), block.to_string());
+        }
+    }
+
+    println!("{:?}", state_list);
 
     Ok(())
 }

@@ -47,20 +47,19 @@ RUN apt-get update && \
 	apt-get install -y \
 	nodejs
 
-#####################################
-############ eth2fuzz ###############
 
 WORKDIR /eth2fuzz
-
-# COPY --from=build shared .
-COPY --from=build /eth2fuzz/eth2fuzz .
-
-############ Lodestar ###############
 
 # Install lodestar
 RUN npm i @chainsafe/lodestar-types @chainsafe/discv5
 
 # Install Javascript fuzzer
 RUN npm i -g jsfuzz
+
+#####################################
+############ eth2fuzz ###############
+
+# COPY --from=build shared .
+COPY --from=build /eth2fuzz/eth2fuzz .
 
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

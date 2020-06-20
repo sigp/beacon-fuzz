@@ -3,15 +3,16 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::env::{corpora_dir, state_dir, workspace_dir};
-use crate::fuzzers::{write_fuzzer_target, FuzzerConfig, FuzzerQuit};
-use crate::targets::{prepare_targets_workspace, Targets};
-use crate::utils::copy_dir;
+use crate::env::{corpora_dir, state_dir};
+use crate::fuzzers::{FuzzerConfig, FuzzerQuit};
+use crate::targets::Targets;
 
 /***********************************************
 name: jsfuzz
 github: https://github.com/fuzzitdev/jsfuzz
 ***********************************************/
+
+static LANGUAGE: &str = "js";
 
 pub struct FuzzerJsFuzz {
     /// Fuzzer name.
@@ -20,8 +21,6 @@ pub struct FuzzerJsFuzz {
     pub dir: PathBuf,
     /// Workspace dir
     pub work_dir: PathBuf,
-    /// Internal workspace dir
-    pub workspace_dir: PathBuf,
     /// fuzzing config
     pub config: FuzzerConfig,
 }
@@ -29,7 +28,7 @@ pub struct FuzzerJsFuzz {
 impl FuzzerJsFuzz {
     /// Check if jsfuzz is installed
     fn is_available() -> Result<(), Error> {
-        //println!("debug");
+        println!("[eth2fuzz] Testing FuzzerJsFuzz is available");
         let fuzzer_output = Command::new("jsfuzz").arg("--version").output()?;
 
         if !fuzzer_output.status.success() {
@@ -43,49 +42,28 @@ impl FuzzerJsFuzz {
         // Test if fuzzer engine installed
         FuzzerJsFuzz::is_available()?;
         let cwd = env::current_dir().context("error getting current directory")?;
+
+        // Create the fuzzer
         let fuzzer = FuzzerJsFuzz {
             name: "JsFuzz".to_string(),
             dir: cwd.join("fuzzers").join("js-jsfuzz"),
             work_dir: cwd.join("workspace").join("jsfuzz"),
-            workspace_dir: cwd
-                .join("workspace")
-                .join("jsfuzz")
-                .join("jsfuzz_workspace"),
             config,
         };
         Ok(fuzzer)
     }
 
-    /// Check if jsfuzz is installed
-    fn prepare_fuzzer_workspace(&self) -> Result<(), Error> {
-        let from = &self.dir;
-        let workspace = &self.work_dir;
-        copy_dir(from.to_path_buf(), workspace.to_path_buf())?;
-        Ok(())
-    }
-
     /// Run the fuzzer for the given target
     pub fn run(&self, target: Targets) -> Result<(), Error> {
         // check if target is supported by this fuzzer
-        // TODO - change to make it automatic
-        if target.language() != "js" {
-            bail!("FuzzerJsFuzz incompatible for this target");
+        if target.language() != LANGUAGE {
+            bail!(format!("{} incompatible for this target", self.name));
         }
 
         // get corpora dir of the target
         let corp_dir = corpora_dir()?.join(target.corpora()); //.join("*");
 
-        //println!("{:?}", corp_dir);
-
-        // copy targets source files
-        //prepare_targets_workspace()?;
-        // create fuzzer folder inside workspace/
-        //self.prepare_fuzzer_workspace()?;
-
-        // write all fuzz targets inside workspace folder
-        //write_fuzzer_target(&self.dir, &self.work_dir, target)?;
-        //println!("[eth2fuzz] {}: {} created", self.name, target.name());
-
+        // handle fuzzing options
         if self.config.timeout != None {
             println!("[eth2fuzz] {}: timeout not supported", self.name);
         }
@@ -96,16 +74,18 @@ impl FuzzerJsFuzz {
             println!("[eth2fuzz] {}: sanitizer not supported", self.name);
         }
 
-        //println!("debug2");
+        println!("[eth2fuzz] Starting {} for {}", self.name, target.name());
 
         // Run the fuzzer
         let fuzzer_bin = Command::new("jsfuzz")
+            // beaconstate folder
             .env(
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
+            // target
             .arg(format!("{}.js", target.name()))
-            //.arg(format!("workspace/jsfuzz/{}.js", target.name()))
+            // corpora
             .arg(corp_dir)
             .current_dir(&self.work_dir)
             .spawn()
@@ -121,7 +101,7 @@ impl FuzzerJsFuzz {
                 target.name()
             ))?;
 
-        // TODO - needed?
+        // Check fuzzer success
         if !fuzzer_bin.success() {
             return Err(FuzzerQuit.into());
         }

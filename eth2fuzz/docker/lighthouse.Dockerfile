@@ -56,11 +56,6 @@ RUN cargo install honggfuzz
 RUN cargo install cargo-fuzz
 RUN cargo install afl
 
-# Build lighthouse
-#RUN cd lighthouse && \
-#	# Build lcli in release mode
-#	cargo install --path lcli --locked
-
 #####################################
 ############ eth2fuzz ################
 

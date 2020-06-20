@@ -14,5 +14,5 @@ strum_macros = "0.18.0" # iteration over enum
 clap =  "2.33.0" # arg_num
 colored = "1.9" # color terminal
 chrono = "0.4.0" # time
-
+walkdir = "2"
 # wait-timeout = "0.1.5" # Child process timeout

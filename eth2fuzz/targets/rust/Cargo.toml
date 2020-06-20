@@ -6,9 +6,9 @@ edition = "2018"
 
 [dependencies]
 walkdir = "2"
-eth2_ssz = { path = "../../../../../lighthouse/consensus/ssz/"}
-bls = { path = "../../../../../lighthouse/crypto/bls/"}
-eth2_ssz_derive = { path = "../../../../../lighthouse/consensus/ssz_derive/" }
-state_processing = { path = "../../../../../lighthouse/consensus/state_processing/" }
-types = { path = "../../../../../lighthouse/consensus/types"}
-eth2_libp2p =  { path = "../../../../../lighthouse/beacon_node/eth2_libp2p" }
+eth2_ssz = { path = "../../../../lighthouse/consensus/ssz/"}
+bls = { path = "../../../../lighthouse/crypto/bls/"}
+eth2_ssz_derive = { path = "../../../../lighthouse/consensus/ssz_derive/" }
+state_processing = { path = "../../../../lighthouse/consensus/state_processing/" }
+types = { path = "../../../../lighthouse/consensus/types"}
+eth2_libp2p =  { path = "../../../../lighthouse/beacon_node/eth2_libp2p" }

@@ -35,7 +35,7 @@ impl FuzzerHfuzz {
         println!("[eth2fuzz] Testing FuzzerHfuzz is available");
         let fuzzer_output = Command::new("cargo").arg("hfuzz").arg("version").output()?;
         if !fuzzer_output.status.success() {
-            bail!("hfuzz not available, install with `cargo install honggfuzz`");
+            bail!("hfuzz not available, install with `cargo install --force honggfuzz`");
         }
         Ok(())
     }
@@ -186,7 +186,7 @@ impl FuzzerAfl {
         println!("[eth2fuzz] Testing FuzzerAfl is available");
         let fuzzer_output = Command::new("cargo").arg("afl").arg("--version").output()?;
         if !fuzzer_output.status.success() {
-            bail!("afl-rs not available, install with `cargo install afl`");
+            bail!("afl-rs not available, install with `cargo install --force afl`");
         }
         Ok(())
     }
@@ -374,7 +374,7 @@ impl FuzzerLibfuzzer {
             .arg("--version")
             .output()?;
         if !fuzzer_output.status.success() {
-            bail!("cargo-fuzz not available, install with `cargo install cargo-fuzz`");
+            bail!("cargo-fuzz not available, install with `cargo install --force cargo-fuzz`");
         }
         Ok(())
     }

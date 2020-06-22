@@ -188,6 +188,7 @@ Beacon-fuzz helps to find the following bugs inside eth2 clients.
 - [Nimbus: `ncli_transition` out of memory segfault during `process_final_updates`](https://github.com/status-im/nim-beacon-chain/issues/921) **fixed**
 - [Nimbus: `ncli_transition` `AssertionError` due to inconsistent aggregation bits and committee length when passed *invalid* `BeaconState` and `BeaconBlock`](https://github.com/status-im/nim-beacon-chain/issues/922) (See [1](#invalidState)) **fixed**
 - [Nimbus: `ncli` `IndexError` decoding 0-byte SSZ BitList](https://github.com/status-im/nim-beacon-chain/issues/931) **fixed**
+- [Nimbus: `IndexError` during `AttesterSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1207) **fixed**
 
 ### Trinity
 - [Trinity: some block validation raising `IndexError`, not caught by `BeaconChainSyncer`](https://github.com/ethereum/trinity/issues/1497)
@@ -212,7 +213,8 @@ Beacon-fuzz helps to find the following bugs inside eth2 clients.
 - [Lodestar: `TypeError: public key must be a Buffer` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/59)
 
 ### Prysm
-- [Prysm: `panic: runtime error: slice bounds out of range` when parsing SSZ container](https://github.com/prysmaticlabs/prysm/issues/6083)
+- [Prysm: `panic: runtime error: slice bounds out of range` when parsing SSZ container](https://github.com/prysmaticlabs/prysm/issues/6083) **fixed**
+- [Prysm: `panic: runtime error: nil pointer dereference` when processing ProposerSlashing](https://github.com/prysmaticlabs/prysm/issues/6127) **fixed**
 
 <a name="invalidState">1</a>: **NOTE** `BeaconState` objects are considered trusted inputs (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values, for now.
 

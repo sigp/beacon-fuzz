@@ -1,48 +1,36 @@
 # ETH2FUZZ
 
-
-## Goal of this tool
-
-
-The main goal of this tool is to provide an easy way to fuzz lighthouse (and other clients) to create new inputs for differential fuzzers.
-Generated samples/inputs can than be reused as unittest and testcases for differential fuzzers (`eth2diff` && `beacon-fuzz-2`).
+This tool provide an easy way to fuzz ethereum 2.0 clients using docker files.
+Generated samples/inputs during fuzzing can than be reused as unittest or testcases for differential fuzzers (`eth2diff` && `beacon-fuzz-2`).
 
 
-Main features are:
-- Automatic fuzzing of lighthouse harnesses (without user interaction)
-- Multiple fuzzing engines available (honggfuzz, afl++, libfuzzer)
-- Multi-threading (depending of the fuzzer, honggfuzz OK)
-- Crash report/detection
-- *Automatic and pseudo-random selection of new beaconstate per fuzzing thread.*
+## Quick start
 
-## Installation
-
-- Install Rust nightly
+Build the fuzzing docker of one eth2 client:
 ``` sh
-# Install Rust and Cargo
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+make lighthouse
+# make nimbus
+# make prysm
+# make lodestar
 ```
 
-- Install system dependencies (Ubuntu/Debian):
+Run the docker (don't foget to provide the workspace folder as shared volume):
 ``` sh
-# Install LLVM
-sudo apt install -y llvm curl
-# Install honggfuzz-rs and subcommand in cargo
-sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
-cargo +nightly install --force honggfuzz
-# Install cargo-fuzz (libfuzzer for Rust) and subcommand in cargo
-cargo +nightly install --force cargo-fuzz
-# Install afl-rs and subcommand in cargo
-sudo apt install -y build-essential libtool-bin python3 cmake automake bison libglib2.0-dev libpixman-1-dev clang python-setuptools
-cargo +nightly install --force afl
+docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse
+# docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus
+# docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm
+# docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar
+``` 
+
+At this point you will now interact with `eth2fuzz` over docker:
+``` sh
+docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse help
 ```
 
-- Build eth2fuzz:
-``` sh
-make build
-```
 
-## Available targets
+# Eth2fuzz commands
+
+## list available targets
 
 Current target available can be listed with:
 ```sh
@@ -57,35 +45,9 @@ lighthouse_voluntary_exit
 lighthouse_beaconstate
 ```
 
-# Commands
-
-Help:
-``` sh
-$ ./eth2fuzz help
-Run eth2fuzz fuzzing targets
-
-USAGE:
-    eth2fuzz <SUBCOMMAND>
-
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-SUBCOMMANDS:
-    continuously    Run all fuzz targets
-    debug           Debug one target
-    help            Prints this message or the help of the given subcommand(s)
-    list-targets    List all available targets
-    target          Run one target with specific fuzzer
-
-
-```
-
 ## Run targets
 
-Help: `./eth2fuzz target --help`.
 Run one target: `./eth2fuzz target lighthouse_attestation`.
-
 Run one target with specific fuzzing engines:
 ``` sh
 # --fuzzer <fuzzer>    Which fuzzer to run [default: Honggfuzz]  [possible values: Afl, Honggfuzz, Libfuzzer]
@@ -122,47 +84,14 @@ Useful command for lighthouse:
 # -i => infinite mode
 # -q => will run lighthouse_attestation target
 # -t => timeout of 10 min, will restart the fuzzer every 10 min
-# TODO ====> restarting the fuzzer will be more useful in the future when beaconstate will be choosen randomly at start
 ```
 
-## Specific fuzzer engine options
-
-It's possible to provide extra flags to fuzzing engines (honggfuzz, afl, libfuzzer)
-
-### honggfuzz-rs
-
-FLAG: `HFUZZ_RUN_ARGS`
-
-Limit corpus file size: `HFUZZ_RUN_ARGS="-F 500000"`.
-TODO
-
-### afl-rs
-
-TODO
-
-### cargo-fuzz (libfuzzer)
-
-
-libfuzzer output details: http://llvm.org/docs/LibFuzzer.html#output 
-
-# Improvements
+# TODO - Improvements
 
 ## General improvement for this tool
 
-- add first time running script for afl
 - add more documentation
-- support new fuzzers (lain, fuzzcheck, customs, etc.)
+- add support teku
+- add state processing lodestar
+- improve cli commands
 - compile all target before running fuzzing (no need to compile targets each time fuzzer restart)
-- Verify sharing coverage + seeds work as expected
-
-## Specific improvement for this tool
-
-- this tool could be used to fuzz other eth2 implementation using bindings/FFI.
-
-# Going deeper
-
-
-## How to add new harnesses?
-
-Modify the `targets/src/lib.rs` to add the function you want to fuzz.
-TODO

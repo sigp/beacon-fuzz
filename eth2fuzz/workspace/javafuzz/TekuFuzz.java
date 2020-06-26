@@ -48,6 +48,14 @@ import tech.pegasys.teku.core.StateTransition;
 import tech.pegasys.teku.core.StateTransitionException;
 import tech.pegasys.teku.core.exceptions.BlockProcessingException;
 
+
+/* useful links:
+- https://github.com/PegaSysEng/teku/blob/master/ethereum/datastructures/src/main/java/tech/pegasys/teku/datastructures/util/SimpleOffsetSerializer.java
+*/
+
+
+
+
 @RunWith(JQF.class)
 public class TekuFuzz {
 

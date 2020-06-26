@@ -11,8 +11,7 @@ help:
 	@echo
 	@echo 'Usage:'
 	@echo '    make build 										Compile the project.'
-	@echo '    make docker										TODO.'
-	@echo '    make corpora		 								TODO.'
+	@echo '    make corpora		 								Create an initial corpora.'
 	@echo
 	@echo '    make fmt 										Run Rust fmt.'
 	@echo '    make clean 										Clean only eth2fuzz binary.'
@@ -24,17 +23,12 @@ help:
 	@echo '    make test-all		 							Test one fuzzing hardness over all fuzzers.'
 	@echo '    make test-continuously-{libfuzzer, hfuzz, afl}	Test all fuzzing hardness over choosen fuzzer.'
 	@echo
+	@echo 'TODO - add other commands' 
 
 
 # Build the project locally
 build:
 	cargo +nightly build --release --out-dir=. -Z unstable-options
-
-# Build the docker
-# NOTE: `make docker CACHE=--no-cache` to force docker update/build everything again
-docker:
-	DOCKER_BUILDKIT=1 docker build . -t eth2fuzz $(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz list'
 
 # Create an initial corpora
 corpora:

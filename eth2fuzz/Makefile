@@ -36,9 +36,9 @@ docker:
 	DOCKER_BUILDKIT=1 docker build . -t eth2fuzz $(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz list'
 
-# Create an initial corpora of wasm modules
+# Create an initial corpora
 corpora:
-	echo "TODO ../script/corpora"
+	cd workspace/corpora/ && ./extract_corpora_from_spectests.sh
 
 #
 # Developer utils
@@ -57,15 +57,20 @@ clean:
 	rm -rf target/
 
 # Clean all (eth2fuzz && compiled fuzz target harnesses).
-clean-all: cleaner
+clean-all: clean
+	# clean gofuzz
 	rm -rf workspace/debug/target
+	# clean lighthouse afl
 	rm -rf workspace/afl/target
+	# clean lighthouse hfuzz
 	rm -rf workspace/hfuzz/hfuzz_target
+	# clean lighthouse libfuzzer
 	rm -rf workspace/libfuzzer/fuzz/target
-	# TODO add nimlifuzzer
-	# TODO add js
-	# TODO add gofuzz
-
+	# clean nimlibfuzzer - TODO
+	# clean js - not needed
+	# clean gofuzz libfuzzer
+	rm -rf workspace/gofuzz/*.libfuzzer
+	# clean java libfuzzer - TODO
 
 #
 # Dockers
@@ -111,6 +116,16 @@ prysm:
 	. \
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
+
+## Fuzzing of teku using docker.
+## https://github.com/PegaSysEng/teku
+teku:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/teku.Dockerfile \
+	-t eth2fuzz_teku \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
 
 
 #

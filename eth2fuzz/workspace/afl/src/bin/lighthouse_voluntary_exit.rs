@@ -1,9 +1,10 @@
-#[macro_use] extern crate afl;
+#[macro_use]
+extern crate afl;
 extern crate fuzz_targets;
 use fuzz_targets::fuzz_lighthouse_voluntary_exit as fuzz_target;
 
-extern crate walkdir;
 extern crate types;
+extern crate walkdir;
 
 extern crate ssz;
 extern crate ssz_derive;
@@ -12,7 +13,7 @@ use ssz::Decode; // Encode
 
 use types::{BeaconState, MainnetEthSpec};
 
-use std::fs::{File};
+use std::fs::File;
 use std::io;
 use std::io::Read;
 
@@ -23,8 +24,8 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 
 extern crate rand;
-use rand::thread_rng;
 use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 /// List file in folder and return list of files paths
 #[inline(always)]
@@ -39,7 +40,6 @@ fn list_files_in_folder(path_str: &String) -> Result<Vec<String>, ()> {
     }
     Ok(list)
 }
-
 
 /// Read the contents from file path
 #[inline(always)]
@@ -57,12 +57,10 @@ fn read_contents_from_path(path_str: &String) -> Result<Vec<u8>, io::Error> {
 /// Load a beaconstate ssz file from the path provided and return a BeaconState
 #[inline(always)]
 fn get_beaconstate(path_str: &String) -> Result<BeaconState<MainnetEthSpec>, ssz::DecodeError> {
-
     let beacon_blob = read_contents_from_path(&path_str).unwrap();
     let beacon_blob = BeaconState::from_ssz_bytes(&beacon_blob)?;
     Ok(beacon_blob)
 }
-
 
 #[inline(always)]
 fn fuzz_logging(path: &String) {
@@ -70,16 +68,18 @@ fn fuzz_logging(path: &String) {
     let pid = process::id();
     // open the logging file - usefull to find beaconstate file when one thread crash
     // PID of the crash thread is inside fuzzer-honggfuzz/hfuzz_workspace/TARGET/HONGGFUZZ.REPORT.TXT
-    let mut file = OpenOptions::new().append(true).create(true).open("all_fuzz_log_afl.txt").unwrap();
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open("rust_afl.log")
+        .unwrap();
     // write info in the logging file
     if let Err(e) = writeln!(file, "pid: {} | beaconstate: {}", pid, path) {
         eprintln!("Couldn't write to file: {}", e);
     }
 }
 
-
 fn main() {
-
     // provide only valid beaconstate in this folder
     use std::env;
     let key = "ETH2FUZZ_BEACONSTATE";
@@ -88,12 +88,9 @@ fn main() {
         Ok(val) => beacon_path = val,
         Err(e) => println!("couldn't interpret {}: {}", key, e),
     };
-    let mut list_path = match list_files_in_folder(&beacon_path){
+    let mut list_path = match list_files_in_folder(&beacon_path) {
         Ok(list_path) => list_path,
-        Err(e) => panic!(
-            "list_files_in_folder failed: {:?}",
-            e
-        ),
+        Err(e) => panic!("list_files_in_folder failed: {:?}", e),
     };
 
     // shuffle the list of beaconstate files
@@ -103,10 +100,8 @@ fn main() {
     // create empty path string
     let mut path: String = String::new();
     // create fake result with and Error
-    let mut beaconstate: 
-        Result<BeaconState<MainnetEthSpec>, ssz::DecodeError> = 
-            Err(ssz::DecodeError::BytesInvalid(
-                "fake_error".to_string()));
+    let mut beaconstate: Result<BeaconState<MainnetEthSpec>, ssz::DecodeError> =
+        Err(ssz::DecodeError::BytesInvalid("fake_error".to_string()));
 
     // iterate over all the list until we found one beaconstate
     // that is valid
@@ -127,12 +122,12 @@ fn main() {
     // log pid and beaconstate file path to the fuzzer's logs
     fuzz_logging(&path);
 
-    // Can't panic here since we have already check if 
+    // Can't panic here since we have already check if
     // beaconstate.is_err()
     let state = beaconstate.unwrap();
 
     // Run fuzzing loop
-    fuzz!(|data|{
+    fuzz!(|data| {
         fuzz_target(state.clone(), data);
     });
 }

@@ -1,5 +1,7 @@
 use structopt::StructOpt;
 
+use crate::targets::Targets;
+
 #[derive(Fail, Debug)]
 #[fail(display = "[eth2fuzz] Fuzzer quit")]
 pub struct FuzzerQuit;
@@ -19,6 +21,19 @@ arg_enum! {
         NimLibfuzzer,
         // Go fuzzers
         GoLibfuzzer,
+        // java fuzzer
+        JavaJQFAfl
+    }
+}
+
+pub fn get_default_fuzzer(target: Targets) -> Fuzzer {
+    match target.language().as_str() {
+        "rust" => Fuzzer::Honggfuzz,
+        "js" => Fuzzer::Jsfuzz,
+        "nim" => Fuzzer::NimLibfuzzer,
+        "go" => Fuzzer::GoLibfuzzer,
+        "java" => Fuzzer::JavaJQFAfl,
+        _ => panic!("default fuzzer not yet supported"),
     }
 }
 

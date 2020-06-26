@@ -30,6 +30,8 @@ mod nim_fuzzers;
 mod rust_fuzzers;
 // load go fuzzers
 mod go_fuzzers;
+// load go fuzzers
+mod java_fuzzers;
 // load debugging stuff
 mod debug;
 
@@ -46,10 +48,8 @@ enum Cli {
         #[structopt(
             short = "f",
             long = "fuzzer",
-            raw(
-                possible_values = "&fuzzers::Fuzzer::variants()",
-                case_insensitive = "true"
-            )
+            possible_values = &fuzzers::Fuzzer::variants(),
+            case_insensitive = true
         )]
         fuzzer: Option<fuzzers::Fuzzer>,
         /// Set timeout per target
@@ -64,10 +64,8 @@ enum Cli {
         /// Set a compilation Sanitizer (advanced)
         #[structopt(
             long = "sanitizer",
-            raw(
-                possible_values = "&fuzzers::Sanitizer::variants()",
-                case_insensitive = "true"
-            )
+            possible_values = &fuzzers::Sanitizer::variants(),
+            case_insensitive = true
         )]
         sanitizer: Option<fuzzers::Sanitizer>,
         // Run until the end of time (or Ctrl+C)
@@ -83,10 +81,8 @@ enum Cli {
         #[structopt(
             short = "f",
             long = "fuzzer",
-            raw(
-                possible_values = "&fuzzers::Fuzzer::variants()",
-                case_insensitive = "true"
-            )
+            possible_values = &fuzzers::Fuzzer::variants(),
+            case_insensitive = true
         )]
         fuzzer: Option<fuzzers::Fuzzer>,
         /// Set timeout
@@ -101,10 +97,8 @@ enum Cli {
         /// Set a compilation Sanitizer (advanced)
         #[structopt(
             long = "sanitizer",
-            raw(
-                possible_values = "&fuzzers::Sanitizer::variants()",
-                case_insensitive = "true"
-            )
+            possible_values = &fuzzers::Sanitizer::variants(),
+            case_insensitive = true
         )]
         sanitizer: Option<fuzzers::Sanitizer>,
     },
@@ -212,17 +206,10 @@ fn run_target(
 
     use fuzzers::Fuzzer::*;
 
-    // find default fuzzer
-    // TODO - move into fuzzer.rs
+    // Find default fuzzer is nothing is defined by the user
     let default_fuzz = match fuzzer {
         Some(o) => o,
-        None => match target.language().as_str() {
-            "rust" => Honggfuzz,
-            "js" => Jsfuzz,
-            "nim" => NimLibfuzzer,
-            "go" => GoLibfuzzer,
-            _ => panic!("default fuzzer not yet supported"),
-        },
+        None => fuzzers::get_default_fuzzer(target),
     };
 
     match default_fuzz {
@@ -254,6 +241,10 @@ fn run_target(
             let gofuzz = go_fuzzers::FuzzerGoLibfuzzer::new(config)?;
             gofuzz.run(target)?;
         }
+        JavaJQFAfl => {
+            let javafuzz = java_fuzzers::FuzzerJavaJQFAfl::new(config)?;
+            javafuzz.run(target)?;
+        }
     }
     Ok(())
 }
@@ -281,17 +272,10 @@ fn run_continuously(
 
         use fuzzers::Fuzzer::*;
 
-        // find default fuzzer
-        // TODO - move into fuzzer.rs
+        // Find default fuzzer is nothing is defined by the user
         let default_fuzz = match fuzzer {
             Some(o) => o,
-            None => match target.language().as_str() {
-                "rust" => Honggfuzz,
-                "js" => Jsfuzz,
-                "nim" => NimLibfuzzer,
-                "go" => GoLibfuzzer,
-                _ => panic!("default fuzzer not yet supported"),
-            },
+            None => fuzzers::get_default_fuzzer(target),
         };
 
         match default_fuzz {
@@ -322,6 +306,10 @@ fn run_continuously(
             GoLibfuzzer => {
                 let gofuzz = go_fuzzers::FuzzerGoLibfuzzer::new(config)?;
                 gofuzz.run(target)?;
+            }
+            JavaJQFAfl => {
+                let javafuzz = java_fuzzers::FuzzerJavaJQFAfl::new(config)?;
+                javafuzz.run(target)?;
             }
         }
         Ok(())

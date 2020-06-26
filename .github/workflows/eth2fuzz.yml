@@ -118,6 +118,21 @@ jobs:
       - name: Build Docker
         run: cd eth2fuzz && make prysm
 
+  # Try to compile the teku dockerfile
+  build-docker-teku:
+    name: Building docker teku
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2fuzz && make teku
+
   # Try to compile one debug target and run it 
   test-debug:
     name: Test one debug target

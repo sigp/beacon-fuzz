@@ -2,7 +2,6 @@ use types::{BeaconState, ChainSpec, MainnetEthSpec, RelativeEpoch};
 
 // https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#beacon-state-accessors
 pub fn fuzz_beaconstate_accessors(beaconstate: &mut BeaconState<MainnetEthSpec>) {
-
     let chainspec = ChainSpec::mainnet();
 
     // pub fn canonical_root(&self) -> Hash256 {
@@ -36,7 +35,7 @@ pub fn fuzz_beaconstate_accessors(beaconstate: &mut BeaconState<MainnetEthSpec>)
     let _ = beaconstate.get_cached_active_validator_indices(RelativeEpoch::Next);
 
     // pub fn get_active_validator_indices(&self, epoch: Epoch) -> Vec<usize> {
-    let _ = beaconstate.get_active_validator_indices(epoch);
+    //let _ = beaconstate.get_active_validator_indices(epoch);
 
     // pub fn get_shuffling(&self, relative_epoch: RelativeEpoch) -> Result<&[usize], Error> {
     let _ = beaconstate.get_shuffling(RelativeEpoch::Previous);
@@ -180,5 +179,4 @@ pub fn fuzz_beaconstate_accessors(beaconstate: &mut BeaconState<MainnetEthSpec>)
 
     // pub fn clone_with_only_committee_caches(&self) -> Self {
     let _ = beaconstate.clone_with_only_committee_caches();
-
 }

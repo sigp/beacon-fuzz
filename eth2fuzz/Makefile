@@ -178,4 +178,4 @@ check-fmt:
 
 # Check code quality by running `clippy` over all code
 check-clippy:
-	cargo clippy --all -- --check
+	cargo clippy --all

@@ -139,7 +139,7 @@ impl FuzzerJavaJQFAfl {
         args.push("TekuFuzz".to_string());
 
         // function targeted name
-        args.push(format!("{}", &target.name()));
+        args.push(target.name());
 
         // ../jqf/bin/jqf-afl-fuzz -i ../corpora/block -m none -o out_block -c $(./tekuclass.sh) TekuFuzz teku_block
 

@@ -47,7 +47,7 @@ import tech.pegasys.teku.core.BlockProcessorUtil;
 import tech.pegasys.teku.core.StateTransition;
 import tech.pegasys.teku.core.StateTransitionException;
 import tech.pegasys.teku.core.exceptions.BlockProcessingException;
-
+import com.google.common.primitives.UnsignedLong;
 
 /* useful links:
 - https://github.com/PegaSysEng/teku/blob/master/ethereum/datastructures/src/main/java/tech/pegasys/teku/datastructures/util/SimpleOffsetSerializer.java
@@ -179,20 +179,41 @@ public class TekuFuzz {
   }
 
   // BeaconBlock
-  // TODO
   @Fuzz
   public void teku_block(InputStream input) {
     // mainnet config
     Constants.setConstants("mainnet");
     SimpleOffsetSerializer.setConstants();
   try {
+
+    if (TekuFuzz.GlobalBeaconState == null) {
+        get_beaconstate();
+      }
+
+
     byte[] bytes = input.readAllBytes();
-    BeaconBlock structuredInput = 
-      SimpleOffsetSerializer.deserialize(Bytes.wrap(bytes), BeaconBlock.class);
+    SignedBeaconBlock structuredInput = 
+      SimpleOffsetSerializer.deserialize(Bytes.wrap(bytes), SignedBeaconBlock.class);
+
+    // prevent timeout when dealing with huge slot value
+    if(structuredInput.getSlot().compareTo(
+        TekuFuzz.GlobalBeaconState.getSlot().plus(UnsignedLong.valueOf("100"))) > 0
+      ){
+      StateTransition transition = new StateTransition();
+      BeaconState postState =
+            transition.initiate(
+                TekuFuzz.GlobalBeaconState,
+                structuredInput,
+                false);
+    }
+
+
+
   } catch (IOException e) {    
   } catch (InvalidSSZTypeException e){
   } catch (EndOfSSZException e){
   } catch (IllegalStateException e){
+  } catch (StateTransitionException e){
   } catch (IllegalArgumentException e){}
   }
 

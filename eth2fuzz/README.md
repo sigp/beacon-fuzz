@@ -1,26 +1,46 @@
-# ETH2FUZZ
+# eth2fuzz
 
-This tool provide an easy way to fuzz ethereum 2.0 clients using docker files.
-Generated samples/inputs during fuzzing can than be reused as unittest or testcases for differential fuzzers (`eth2diff` && `beacon-fuzz-2`).
+This tool provide an easy way to fuzz eth2 clients using Docker files.
+Generated samples/inputs during fuzzing can than be reused as unit tests or testcases for differential fuzzers (`eth2diff` && `beacon-fuzz-2`).
 
 
 ## Quick start
 
-Build the fuzzing docker of one eth2 client:
+Clone this repository:
+
+```sh
+git clone https://github.com/sigp/beacon-fuzz
+```
+
+Change your current directory to `ethfuzz`:
+
+```sh
+cd beacon-fuzz/eth2fuzz
+```
+
+Make sure the Docker service is running on your machine (we assume that Docker has been setup on your machine. Please refer to the great official instructions, see for example [this guide](https://docs.docker.com/engine/install/ubuntu/) for Ubuntu). For Arch Linux users:
+
+```sh
+systemctl start docker.service
+```
+
+Build the fuzzing docker for any given eth2 client:
 ``` sh
 make lighthouse
 # make nimbus
 # make prysm
+# make teku
 # make lodestar
 ```
 
-Run the docker (don't foget to provide the workspace folder as shared volume):
+Run the docker. You will neeed to provide the `workspace` folder as shared volume):
 ``` sh
 docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse
 # docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus
 # docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm
 # docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar
-``` 
+# docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku
+```
 
 At this point you will now interact with `eth2fuzz` over docker:
 ``` sh
@@ -28,9 +48,9 @@ docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse help
 ```
 
 
-# Eth2fuzz commands
+# `eth2fuzz` commands
 
-## list available targets
+## List available targets
 
 Current target available can be listed with:
 ```sh
@@ -54,11 +74,10 @@ Run one target with specific fuzzing engines:
 ./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer`.
 ```
 
-## Continuous fuzzing 
+## Continuous fuzzing
 
-CAUTIONS: eth2fuzz continuous mode will stop after all target being executed once if you are not providing infinite flag.
+`eth2fuzz` can be configured to continuously fuzz all available targets for a given client, using the `continuously` CLI parameter. Execution will stop after 30 minutes per target if the `--infinite` flag is not provided (the timeout can also be changed, using the `--timeout` flag). Make sure to use the `-q` flag to select the client you've built your fuzzer for.
 
-Help:
 ``` sh
 $ ./eth2fuzz continuously --help
 Run all fuzz targets
@@ -78,7 +97,7 @@ OPTIONS:
     -t, --timeout <timeout>    Set timeout per target [default: 10]
 ```
 
-Useful command for lighthouse:
+Example command for lighthouse:
 ``` sh
 ./eth2fuzz continuously -i -q attestation -t 600
 # -i => infinite mode
@@ -86,12 +105,6 @@ Useful command for lighthouse:
 # -t => timeout of 10 min, will restart the fuzzer every 10 min
 ```
 
-# TODO - Improvements
+# Support
 
-## General improvement for this tool
-
-- add more documentation
-- add support teku
-- add state processing lodestar
-- improve cli commands
-- compile all target before running fuzzing (no need to compile targets each time fuzzer restart)
+Join our beacon-fuzz channel on [Discord](https://discord.gg/AkPb4vx) to report any bugs you've found, or if you're running into any issues using these fuzzers.

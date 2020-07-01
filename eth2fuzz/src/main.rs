@@ -41,9 +41,9 @@ enum Cli {
     /// Run all fuzz targets
     #[structopt(name = "continuously")]
     Continuous {
-        /// Only run target containing this string
+        /// Only run target containing this eth2 clients name (e.g. lighthouse)
         #[structopt(short = "q", long = "filter")]
-        filter: Option<String>,
+        filter: String,
         /// Which fuzzer to run
         #[structopt(
             short = "f",
@@ -52,16 +52,16 @@ enum Cli {
             case_insensitive = true
         )]
         fuzzer: Option<fuzzers::Fuzzer>,
-        /// Set timeout per target
-        #[structopt(short = "t", long = "timeout", default_value = "10")]
+        /// Set timeout per target (in seconds)
+        #[structopt(short = "t", long = "timeout", default_value = "1800")]
         timeout: i32,
         /// Set number of thread
         #[structopt(short = "n", long = "thread")]
         thread: Option<i32>,
-        /// Set seed
+        /// Set seed value
         #[structopt(short = "s", long = "seed")]
         seed: Option<i32>,
-        /// Set a compilation Sanitizer (advanced)
+        /// Set a compilation sanitizer (advanced)
         #[structopt(
             long = "sanitizer",
             possible_values = &fuzzers::Sanitizer::variants(),
@@ -85,16 +85,16 @@ enum Cli {
             case_insensitive = true
         )]
         fuzzer: Option<fuzzers::Fuzzer>,
-        /// Set timeout
+        /// Set timeout (in seconds)
         #[structopt(short = "t", long = "timeout")]
         timeout: Option<i32>,
         /// Set number of thread (only for hfuzz)
         #[structopt(short = "n", long = "thread")]
         thread: Option<i32>,
-        /// Set seed
+        /// Set seed value
         #[structopt(short = "s", long = "seed")]
         seed: Option<i32>,
-        /// Set a compilation Sanitizer (advanced)
+        /// Set a compilation sanitizer (advanced)
         #[structopt(
             long = "sanitizer",
             possible_values = &fuzzers::Sanitizer::variants(),
@@ -171,7 +171,7 @@ fn run() -> Result<(), Error> {
                 sanitizer,
                 seed,
             };
-            run_continuously(filter, fuzzer, config, infinite)?;
+            run_continuously(Some(filter), fuzzer, config, infinite)?;
         }
     }
     Ok(())

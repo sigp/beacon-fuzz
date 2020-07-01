@@ -33,7 +33,7 @@ make lighthouse
 # make lodestar
 ```
 
-Run the docker. You will neeed to provide the `workspace` folder as shared volume):
+Run the docker. You will need to provide the `workspace` folder as shared volume):
 ``` sh
 docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse
 # docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus

@@ -45,6 +45,15 @@ pub enum Targets {
     PrysmDeposit,
     PrysmProposerSlashing,
     PrysmVoluntaryExit,
+    // Teku
+    TekuAttestation,
+    TekuAttesterSlashing,
+    TekuBlock,
+    TekuBlockHeader,
+    TekuDeposit,
+    TekuProposerSlashing,
+    TekuVoluntaryExit,
+    TekuBLS,
 }
 
 impl Targets {
@@ -89,6 +98,15 @@ impl Targets {
             Targets::PrysmDeposit => "prysm_deposit",
             Targets::PrysmProposerSlashing => "prysm_proposer_slashing",
             Targets::PrysmVoluntaryExit => "prysm_voluntary_exit",
+            // Teku
+            Targets::TekuAttestation => "teku_attestation",
+            Targets::TekuAttesterSlashing => "teku_attester_slashing",
+            Targets::TekuBlock => "teku_block",
+            Targets::TekuBlockHeader => "teku_block_header",
+            Targets::TekuDeposit => "teku_deposit",
+            Targets::TekuProposerSlashing => "teku_proposer_slashing",
+            Targets::TekuVoluntaryExit => "teku_voluntary_exit",
+            Targets::TekuBLS => "teku_bls",
         }
         .to_string()
     }
@@ -134,6 +152,15 @@ impl Targets {
             Targets::PrysmDeposit => "deposit",
             Targets::PrysmProposerSlashing => "proposer_slashing",
             Targets::PrysmVoluntaryExit => "voluntary_exit",
+            // Teku
+            Targets::TekuAttestation => "attestation",
+            Targets::TekuAttesterSlashing => "attester_slashing",
+            Targets::TekuBlock => "block",
+            Targets::TekuBlockHeader => "block_header",
+            Targets::TekuDeposit => "deposit",
+            Targets::TekuProposerSlashing => "proposer_slashing",
+            Targets::TekuVoluntaryExit => "voluntary_exit",
+            Targets::TekuBLS => "bls",
         }
         .to_string()
     }
@@ -178,6 +205,15 @@ impl Targets {
             | Targets::PrysmDeposit
             | Targets::PrysmProposerSlashing
             | Targets::PrysmVoluntaryExit => "template.go",
+            // Teku
+            Targets::TekuAttestation
+            | Targets::TekuAttesterSlashing
+            | Targets::TekuBlock
+            | Targets::TekuBlockHeader
+            | Targets::TekuDeposit
+            | Targets::TekuProposerSlashing
+            | Targets::TekuVoluntaryExit
+            | Targets::TekuBLS => "template.java",
         }
         .to_string()
     }
@@ -223,9 +259,63 @@ impl Targets {
             | Targets::PrysmDeposit
             | Targets::PrysmProposerSlashing
             | Targets::PrysmVoluntaryExit => "go",
+            // Teku
+            Targets::TekuAttestation
+            | Targets::TekuAttesterSlashing
+            | Targets::TekuBlock
+            | Targets::TekuBlockHeader
+            | Targets::TekuDeposit
+            | Targets::TekuProposerSlashing
+            | Targets::TekuVoluntaryExit
+            | Targets::TekuBLS => "java",
         }
         .to_string()
     }
+}
+
+#[allow(dead_code)]
+// Lighthouse_
+pub fn get_lighthouse_targets() -> Vec<Targets> {
+    let res: Vec<Targets> = Targets::iter()
+        .filter(|target| target.language() == "rust")
+        .collect();
+    res
+}
+
+#[allow(dead_code)]
+// Lodestar
+pub fn get_lodestar_targets() -> Vec<Targets> {
+    let res: Vec<Targets> = Targets::iter()
+        .filter(|target| target.language() == "js")
+        .collect();
+    res
+}
+
+#[allow(dead_code)]
+// Nimbus
+pub fn get_nimbus_targets() -> Vec<Targets> {
+    let res: Vec<Targets> = Targets::iter()
+        .filter(|target| target.language() == "nim")
+        .collect();
+    res
+}
+
+#[allow(dead_code)]
+// Prysm
+pub fn get_prysm_targets() -> Vec<Targets> {
+    let res: Vec<Targets> = Targets::iter()
+        .filter(|target| target.language() == "go")
+        .collect();
+    res
+}
+
+#[allow(dead_code)]
+// Teku
+pub fn get_teku_targets() -> Vec<Targets> {
+    let res: Vec<Targets> = Targets::iter()
+        .filter(|target| target.language() == "java")
+        .collect();
+    res
 }
 
 pub fn get_targets() -> Vec<String> {

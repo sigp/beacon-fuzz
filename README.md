@@ -209,8 +209,9 @@ Beacon-fuzz helps to find the following bugs inside eth2 clients.
 ### Lodestar
 - [Lodestar: `TypeError` when SSZ decoding a `Block` with invalid `BigInt` parent scope](https://github.com/ChainSafe/ssz/issues/22)
 - [Lodestar: `RangeError` when SSZ decoding an empty `Block` container](https://github.com/ChainSafe/ssz/issues/23)
-- [Lodestar: `TypeError` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/56)
-- [Lodestar: `TypeError: public key must be a Buffer` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/59)
+- [Lodestar: `TypeError` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/56) **fixed**
+- [Lodestar: `TypeError: public key must be a Buffer` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/59) **fixed**
+- [Lodestar: memory exhaustion / OOM when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/64)
 
 ### Prysm
 - [Prysm: `panic: runtime error: slice bounds out of range` when parsing SSZ container](https://github.com/prysmaticlabs/prysm/issues/6083) **fixed**

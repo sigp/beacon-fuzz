@@ -118,6 +118,21 @@ jobs:
       - name: Build Docker
         run: cd eth2fuzz && make prysm
 
+  # Try to compile the teku dockerfile
+  build-docker-teku:
+    name: Building docker teku
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2fuzz && make teku
+
   # Try to compile one debug target and run it 
   test-debug:
     name: Test one debug target
@@ -155,27 +170,27 @@ jobs:
         run: cd eth2fuzz && make test-libfuzzer
 
   # Run one fuzzing hardness over honggfuzz during 2s
-  test-honggfuzz:
-    name: Test honggfuzz
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
-      - name: Clone lighthouse
-        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
-      - name: Install honggfuzz dependencies
-        run: |
-          sudo apt-get update
-          sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
-      - name: Install honggfuzz
-        run: cargo +nightly install --force honggfuzz
-      - name: Test honggfuzz
-        run: cd eth2fuzz && make test-hfuzz
+  #test-honggfuzz:
+  #  name: Test honggfuzz
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - name: Install latest nightly
+  #      uses: actions-rs/toolchain@v1
+  #      with:
+  #          toolchain: nightly
+  #          override: true
+  #
+  #    - name: Clone lighthouse
+  #      run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
+  #    - name: Install honggfuzz dependencies
+  #      run: |
+  #        sudo apt-get update
+  #        sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
+  #    - name: Install honggfuzz
+  #      run: cargo +nightly install --force honggfuzz
+  #    - name: Test honggfuzz
+  #      run: cd eth2fuzz && make test-hfuzz
 
 
   # Try to run all target over afl

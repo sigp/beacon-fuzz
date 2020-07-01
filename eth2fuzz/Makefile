@@ -11,8 +11,7 @@ help:
 	@echo
 	@echo 'Usage:'
 	@echo '    make build 										Compile the project.'
-	@echo '    make docker										TODO.'
-	@echo '    make corpora		 								TODO.'
+	@echo '    make corpora		 								Create an initial corpora.'
 	@echo
 	@echo '    make fmt 										Run Rust fmt.'
 	@echo '    make clean 										Clean only eth2fuzz binary.'
@@ -24,21 +23,16 @@ help:
 	@echo '    make test-all		 							Test one fuzzing hardness over all fuzzers.'
 	@echo '    make test-continuously-{libfuzzer, hfuzz, afl}	Test all fuzzing hardness over choosen fuzzer.'
 	@echo
+	@echo 'TODO - add other commands' 
 
 
 # Build the project locally
 build:
 	cargo +nightly build --release --out-dir=. -Z unstable-options
 
-# Build the docker
-# NOTE: `make docker CACHE=--no-cache` to force docker update/build everything again
-docker:
-	DOCKER_BUILDKIT=1 docker build . -t eth2fuzz $(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz list'
-
-# Create an initial corpora of wasm modules
+# Create an initial corpora
 corpora:
-	echo "TODO ../script/corpora"
+	cd workspace/corpora/ && ./extract_corpora_from_spectests.sh
 
 #
 # Developer utils
@@ -57,15 +51,20 @@ clean:
 	rm -rf target/
 
 # Clean all (eth2fuzz && compiled fuzz target harnesses).
-clean-all: cleaner
+clean-all: clean
+	# clean gofuzz
 	rm -rf workspace/debug/target
+	# clean lighthouse afl
 	rm -rf workspace/afl/target
+	# clean lighthouse hfuzz
 	rm -rf workspace/hfuzz/hfuzz_target
+	# clean lighthouse libfuzzer
 	rm -rf workspace/libfuzzer/fuzz/target
-	# TODO add nimlifuzzer
-	# TODO add js
-	# TODO add gofuzz
-
+	# clean nimlibfuzzer - TODO
+	# clean js - not needed
+	# clean gofuzz libfuzzer
+	rm -rf workspace/gofuzz/*.libfuzzer
+	# clean java libfuzzer - TODO
 
 #
 # Dockers
@@ -111,6 +110,16 @@ prysm:
 	. \
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
+
+## Fuzzing of teku using docker.
+## https://github.com/PegaSysEng/teku
+teku:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/teku.Dockerfile \
+	-t eth2fuzz_teku \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
 
 
 #
@@ -169,4 +178,4 @@ check-fmt:
 
 # Check code quality by running `clippy` over all code
 check-clippy:
-	cargo clippy --all -- --check
+	cargo clippy --all

@@ -16,7 +16,22 @@ RUN apt-get update && \
 		libssl-dev \
 		ca-certificates \
 		curl \
-		git
+		git \
+		build-essential \
+		libtool-bin \
+		python3-dev \
+		automake \
+		flex \
+		bison \
+		libglib2.0-dev \
+		libpixman-1-dev \
+		clang \
+		python3-setuptools \
+		llvm \
+		binutils-dev \
+		libunwind-dev \
+		libblocksruntime-dev \
+		cmake
 
 # Install Rust and Cargo
 RUN curl --proto '=https' \
@@ -31,25 +46,11 @@ RUN git clone \
 	--depth 1 \
 	https://github.com/sigp/lighthouse
 
+# build lighthouse 
+RUN cd lighthouse && make
+
 #####################################
 ############ FUZZERS ################
-
-RUN apt-get update && \
-	apt-get install -y --no-install-recommends \
-	build-essential \
-	libtool-bin \
-	python3-dev \
-	automake \
-	flex \
-	bison \
-	libglib2.0-dev \
-	libpixman-1-dev \
-	clang \
-	python3-setuptools \
-	llvm \
-	binutils-dev \
-	libunwind-dev \
-	libblocksruntime-dev
 
 # Install Rust fuzzer
 RUN cargo install honggfuzz

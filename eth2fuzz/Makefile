@@ -121,6 +121,27 @@ teku:
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
 
+## Fuzz all lighthouse targets during 1 hour each
+fuzz-lighthouse: lighthouse
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600
+
+## Fuzz all lodestar targets during 1 hour each
+fuzz-lodestar: lodestar
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar continuously -q lodestar -t 3600
+
+## Fuzz all nimbus targets during 1 hour each
+fuzz-nimbus: nimbus
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus continuously -q nimbus -t 3600
+
+## Fuzz all prysm targets during 1 hour each
+fuzz-prysm: prysm
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm continuously -q prysm -t 3600
+
+## Fuzz all teku targets during 1 hour each
+fuzz-teku: teku
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku continuously -q teku -t 3600
+
+fuzz-all: fuzz-lighthouse fuzz-lodestar fuzz-nimbus fuzz-prysm fuzz-teku
 
 #
 # Testing utils

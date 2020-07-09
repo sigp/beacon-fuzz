@@ -12,7 +12,7 @@ Clone this repository:
 git clone https://github.com/sigp/beacon-fuzz
 ```
 
-Change your current directory to `ethfuzz`:
+Change your current directory to `eth2fuzz`:
 
 ```sh
 cd beacon-fuzz/eth2fuzz

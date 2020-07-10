@@ -66,9 +66,9 @@ impl FuzzerJsFuzz {
         // handle fuzzing options
         if self.config.timeout != None {
             println!("[eth2fuzz] {}: timeout not supported", self.name);
-            let cmd = format!("timeout {} jsfuzz", self.config.timeout) 
+            let cmd = format!("timeout {} jsfuzz", self.config.timeout);
         } else {
-            let cmd = "jsfuzz" 
+            let cmd = "jsfuzz";
         }
 
         if self.config.thread != None {

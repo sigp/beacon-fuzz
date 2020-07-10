@@ -94,6 +94,7 @@ impl FuzzerHfuzz {
             "{} \
              {} \
              {} \
+             {} \
              {}",
             if let Some(t) = self.config.timeout {
                 format!("--run_time {}", t)
@@ -101,6 +102,8 @@ impl FuzzerHfuzz {
                 "".into()
             },
             "-t 60",
+            // Use SIGVTALRM to kill timeouting processes
+            "--tmout_sigvtalrm",
             // Set number of thread
             if let Some(n) = self.config.thread {
                 format!("--threads {}", n)

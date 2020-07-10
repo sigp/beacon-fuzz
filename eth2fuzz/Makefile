@@ -72,10 +72,10 @@ clean-all: clean clean-lighthouse clean-nimbus clean-prysm
 
 #
 # Lighthouse
+# https://github.com/sigp/lighthouse
 #
 
 ## Fuzzing of lighthouse using docker.
-## https://github.com/sigp/lighthouse
 lighthouse:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/lighthouse.Dockerfile \
@@ -105,10 +105,10 @@ clean-lighthouse:
 
 #
 # Lodestar
+# https://github.com/ChainSafe/lodestar
 #
 
 ## Fuzzing of lodestar using docker.
-## https://github.com/ChainSafe/lodestar
 lodestar:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/lodestar.Dockerfile \
@@ -129,9 +129,12 @@ test-lodestar:
 ## is not compiled fuzzing targets
 clean-lodestar:
 
+#
+# Nimbus
+# https://github.com/status-im/nim-beacon-chain
+#
 
 ## Fuzzing of nim-beacon-chain using docker.
-## https://github.com/status-im/nim-beacon-chain
 nimbus:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/nimbus.Dockerfile \
@@ -156,14 +159,12 @@ clean-nimbus:
 		rm -rf workspace/nimlibfuzzer/$$i; \
 	done
 
-
 #
-# Nimbus
+# Prysm
+# https://github.com/prysmaticlabs/prysm
 #
-
 
 ## Fuzzing of prysm using docker.
-## https://github.com/prysmaticlabs/prysm
 prysm:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/prysm.Dockerfile \
@@ -189,10 +190,10 @@ clean-prysm:
 
 #
 # Teku
+# https://github.com/PegaSysEng/teku
 #
 
 ## Fuzzing of teku using docker.
-## https://github.com/PegaSysEng/teku
 teku:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/teku.Dockerfile \
@@ -261,7 +262,6 @@ test-continuously-libfuzzer: build
 # Run all fuzzing hardness over afl
 test-continuously-afl: build
 	./eth2fuzz continuously -t 2 --fuzzer afl
-
 
 
 #

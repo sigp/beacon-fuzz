@@ -58,6 +58,7 @@ clean:
 # ALL CLIENTS
 #
 
+## Build all docker
 docker-all: lighthouse lodestar nimbus prysm teku
 
 ## Fuzz all eth2 clients
@@ -89,8 +90,8 @@ fuzz-lighthouse: lighthouse
 
 ## Try to run each targets for 1 sec
 test-lighthouse:
-	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list | grep lighthouse); do \
-		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse target $$i -t 1; \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list | grep lighthouse); do \
+		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse target $$i -t 1; \
 	done
 
 ## clean compiled fuzzing targets
@@ -145,13 +146,13 @@ fuzz-nimbus: nimbus
 
 ## Try to run each targets for 1 sec
 test-nimbus:
-	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
-		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus target $$i -t 1; \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
+		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus target $$i -t 1; \
 	done
 
 ## clean compiled fuzzing targets
 clean-nimbus:
-	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
 		rm -rf workspace/nimlibfuzzer/$$i; \
 	done
 
@@ -177,8 +178,8 @@ fuzz-prysm: prysm
 
 ## Try to run each targets for 1 sec
 test-prysm:
-	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list | grep prysm); do \
-		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm target $$i -t 1; \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list | grep prysm); do \
+		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm target $$i -t 1; \
 	done
 
 ## clean compiled fuzzing targets
@@ -206,8 +207,8 @@ fuzz-teku: teku
 
 ## Try to run each targets for 1 sec
 test-teku:
-	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list | grep teku); do \
-		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list | grep teku); do \
+		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; \
 	done
 
 ## clean compiled fuzzing targets

@@ -66,7 +66,11 @@ impl FuzzerJsFuzz {
         // handle fuzzing options
         if self.config.timeout != None {
             println!("[eth2fuzz] {}: timeout not supported", self.name);
+            let cmd = format!("timeout {} jsfuzz", self.config.timeout) 
+        } else {
+            let cmd = "jsfuzz" 
         }
+
         if self.config.thread != None {
             println!("[eth2fuzz] {}: thread not supported", self.name);
         }
@@ -77,7 +81,7 @@ impl FuzzerJsFuzz {
         println!("[eth2fuzz] Starting {} for {}", self.name, target.name());
 
         // Run the fuzzer
-        let fuzzer_bin = Command::new("jsfuzz")
+        let fuzzer_bin = Command::new(cmd)
             // beaconstate folder
             .env(
                 "ETH2FUZZ_BEACONSTATE",

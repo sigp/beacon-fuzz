@@ -64,12 +64,10 @@ impl FuzzerJsFuzz {
         let corp_dir = corpora_dir()?.join(target.corpora()); //.join("*");
 
         // handle fuzzing options
-        if self.config.timeout != None {
-            println!("[eth2fuzz] {}: timeout not supported", self.name);
-            let cmd = format!("timeout {} jsfuzz", self.config.timeout);
-        } else {
-            let cmd = "jsfuzz";
-        }
+        let cmd = match self.config.timeout {
+            None => "jsfuzz".to_string(),
+            Some(time) => format!("timeout {} jsfuzz", time),
+        };
 
         if self.config.thread != None {
             println!("[eth2fuzz] {}: thread not supported", self.name);

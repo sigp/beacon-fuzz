@@ -9,6 +9,7 @@ import
     ../../../nim-beacon-chain/beacon_chain/spec/validator,
     ../../../nim-beacon-chain/beacon_chain/spec/beaconstate,
     ../../../nim-beacon-chain/beacon_chain/spec/state_transition_block,
+    ../../../nim-beacon-chain/beacon_chain/spec/presets,
     ../../../nim-beacon-chain/beacon_chain/ssz,
     ../../../nim-beacon-chain/beacon_chain/extras,
     ../../../nim-beacon-chain/beacon_chain/state_transition,
@@ -44,7 +45,7 @@ proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool 
         let blck = SSZ.decode(payload, SignedBeaconBlock)
         var hashedState =
             HashedBeaconState(data: state, root: hash_tree_root(state))
-        discard state_transition(hashedState, blck, {}, noRollback)
+        discard state_transition(mainnetRuntimePreset, hashedState, blck, {}, noRollback)
     except SSZError: #CatchableError:
         discard
     true

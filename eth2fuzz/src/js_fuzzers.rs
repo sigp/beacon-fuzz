@@ -64,9 +64,14 @@ impl FuzzerJsFuzz {
         let corp_dir = corpora_dir()?.join(target.corpora()); //.join("*");
 
         // handle fuzzing options
+        let mut args: Vec<String> = Vec::new();
         let cmd = match self.config.timeout {
             None => "jsfuzz".to_string(),
-            Some(time) => format!("timeout {} jsfuzz", time),
+            Some(time) => {
+                args.push(format!("{}", time));
+                args.push("jsfuzz".to_string());
+                "timeout".to_string()
+            }
         };
 
         if self.config.thread != None {
@@ -75,6 +80,9 @@ impl FuzzerJsFuzz {
         if self.config.sanitizer != None {
             println!("[eth2fuzz] {}: sanitizer not supported", self.name);
         }
+
+        // target
+        args.push(format!("{}.js", target.name()));
 
         println!("[eth2fuzz] Starting {} for {}", self.name, target.name());
 
@@ -85,8 +93,7 @@ impl FuzzerJsFuzz {
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
-            // target
-            .arg(format!("{}.js", target.name()))
+            .args(args)
             // corpora
             .arg(corp_dir)
             .current_dir(&self.work_dir)

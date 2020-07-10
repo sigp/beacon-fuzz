@@ -11,7 +11,7 @@ import
     ../../../nim-beacon-chain/beacon_chain/spec/state_transition_block,
     ../../../nim-beacon-chain/beacon_chain/ssz,
     ../../../nim-beacon-chain/beacon_chain/extras,
-    ../../../nim-beacon-chain/beacon_chain/state_transition,
+    ../../../nim-beacon-chain/beacon_chain/spec/state_transition,
     ../../../nim-beacon-chain/beacon_chain/eth2_discovery
 
 # info fuzzing nim:

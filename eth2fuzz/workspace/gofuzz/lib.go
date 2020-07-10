@@ -195,7 +195,8 @@ func Prysm_deposit(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessDeposit(s, data)
+	// if last parameter is true, block deposits will be verify with BLS
+	post, err := blocks.ProcessDeposit(s, data, false)
 	if err != nil {
 		return 0
 	}

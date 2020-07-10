@@ -46,28 +46,31 @@ fmt:
 clippy:
 	cargo clippy --all
 
+#
+# Eth2fuzz
+#
+
 # Clean only eth2fuzz target
 clean:
 	rm -rf target/
 
+#
+# ALL CLIENTS
+#
+
+docker-all: lighthouse lodestar nimbus prysm teku
+
+## Fuzz all eth2 clients
+fuzz-all: fuzz-lighthouse fuzz-lodestar fuzz-nimbus fuzz-prysm fuzz-teku
+
 # Clean all (eth2fuzz && compiled fuzz target harnesses).
-clean-all: clean
-	# clean gofuzz
+clean-all: clean clean-lighthouse clean-nimbus clean-prysm
 	rm -rf workspace/debug/target
-	# clean lighthouse afl
-	rm -rf workspace/afl/target
-	# clean lighthouse hfuzz
-	rm -rf workspace/hfuzz/hfuzz_target
-	# clean lighthouse libfuzzer
-	rm -rf workspace/libfuzzer/fuzz/target
-	# clean nimlibfuzzer - TODO
 	# clean js - not needed
-	# clean gofuzz libfuzzer
-	rm -rf workspace/gofuzz/*.libfuzzer
 	# clean java libfuzzer - TODO
 
 #
-# Dockers
+# Lighthouse
 #
 
 ## Fuzzing of lighthouse using docker.
@@ -80,6 +83,28 @@ lighthouse:
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list'
 
+## Fuzz all lighthouse targets during 1 hour each
+fuzz-lighthouse: lighthouse
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600
+
+## Try to run each targets for 1 sec
+test-lighthouse:
+	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list | grep lighthouse); do \
+		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse target $$i -t 1; \
+	done
+
+## clean compiled fuzzing targets
+clean-lighthouse:
+	# clean lighthouse afl
+	rm -rf workspace/afl/target
+	# clean lighthouse hfuzz
+	rm -rf workspace/hfuzz/hfuzz_target
+	# clean lighthouse libfuzzer
+	rm -rf workspace/libfuzzer/fuzz/target
+
+#
+# Lodestar
+#
 
 ## Fuzzing of lodestar using docker.
 ## https://github.com/ChainSafe/lodestar
@@ -91,6 +116,19 @@ lodestar:
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list'
 
+## Fuzz all lodestar targets during 1 hour each
+fuzz-lodestar: lodestar
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar continuously -q lodestar -t 3600
+
+## Try to run each targets for 1 sec
+test-lodestar:
+	echo "TODO"
+
+## Nothing to clean with lodestar since there
+## is not compiled fuzzing targets
+clean-lodestar:
+
+
 ## Fuzzing of nim-beacon-chain using docker.
 ## https://github.com/status-im/nim-beacon-chain
 nimbus:
@@ -100,6 +138,28 @@ nimbus:
 	. \
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list'
+
+## Fuzz all nimbus targets during 1 hour each
+fuzz-nimbus: nimbus
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus continuously -q nimbus -t 3600
+
+## Try to run each targets for 1 sec
+test-nimbus:
+	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
+		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus target $$i -t 1; \
+	done
+
+## clean compiled fuzzing targets
+clean-nimbus:
+	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
+		rm -rf workspace/nimlibfuzzer/$$i; \
+	done
+
+
+#
+# Nimbus
+#
+
 
 ## Fuzzing of prysm using docker.
 ## https://github.com/prysmaticlabs/prysm
@@ -111,6 +171,25 @@ prysm:
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
 
+## Fuzz all prysm targets during 1 hour each
+fuzz-prysm: prysm
+	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm continuously -q prysm -t 3600
+
+## Try to run each targets for 1 sec
+test-prysm:
+	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list | grep prysm); do \
+		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm target $$i -t 1; \
+	done
+
+## clean compiled fuzzing targets
+clean-prysm:
+	# clean gofuzz libfuzzer
+	rm -rf workspace/gofuzz/*.libfuzzer
+
+#
+# Teku
+#
+
 ## Fuzzing of teku using docker.
 ## https://github.com/PegaSysEng/teku
 teku:
@@ -121,27 +200,20 @@ teku:
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
 
-## Fuzz all lighthouse targets during 1 hour each
-fuzz-lighthouse: lighthouse
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600
-
-## Fuzz all lodestar targets during 1 hour each
-fuzz-lodestar: lodestar
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar continuously -q lodestar -t 3600
-
-## Fuzz all nimbus targets during 1 hour each
-fuzz-nimbus: nimbus
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus continuously -q nimbus -t 3600
-
-## Fuzz all prysm targets during 1 hour each
-fuzz-prysm: prysm
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm continuously -q prysm -t 3600
-
 ## Fuzz all teku targets during 1 hour each
 fuzz-teku: teku
 	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku continuously -q teku -t 3600
 
-fuzz-all: fuzz-lighthouse fuzz-lodestar fuzz-nimbus fuzz-prysm fuzz-teku
+## Try to run each targets for 1 sec
+test-teku:
+	for i in $(shell docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list | grep teku); do \
+		docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; \
+	done
+
+## clean compiled fuzzing targets
+clean-teku:
+	# clean javafuzz
+	rm -rf workspace/javafuzz/T*.class
 
 #
 # Testing utils
@@ -188,6 +260,8 @@ test-continuously-libfuzzer: build
 # Run all fuzzing hardness over afl
 test-continuously-afl: build
 	./eth2fuzz continuously -t 2 --fuzzer afl
+
+
 
 #
 # CI utils

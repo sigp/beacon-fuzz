@@ -72,6 +72,8 @@ jobs:
 
       - name: Build Docker
         run: cd eth2fuzz && make lighthouse
+      - name: Build target
+        run: cd eth2fuzz && make test-lighthouse
 
   # Try to compile the lodestar dockerfile
   build-docker-lodestar:
@@ -87,6 +89,8 @@ jobs:
 
       - name: Build Docker
         run: cd eth2fuzz && make lodestar
+      - name: Build target
+        run: cd eth2fuzz && make test-lodestar
 
   # Try to compile the nimbus dockerfile
   build-docker-nimbus:
@@ -102,6 +106,8 @@ jobs:
 
       - name: Build Docker
         run: cd eth2fuzz && make nimbus
+      - name: Build target
+        run: cd eth2fuzz && make test-nimbus
 
   # Try to compile the prysm dockerfile
   build-docker-prysm:
@@ -117,6 +123,8 @@ jobs:
 
       - name: Build Docker
         run: cd eth2fuzz && make prysm
+      - name: Build target
+        run: cd eth2fuzz && make test-prysm
 
   # Try to compile the teku dockerfile
   build-docker-teku:
@@ -132,86 +140,5 @@ jobs:
 
       - name: Build Docker
         run: cd eth2fuzz && make teku
-
-  # Try to compile one debug target and run it 
-  test-debug:
-    name: Test one debug target
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
-      - name: Clone lighthouse
-        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
-      - name: Test debug 'lighthouse_attestation'
-        run: cd eth2fuzz && make test-debug
-
-  # Run one fuzzing hardness over libfuzzer during 2s
-  test-libfuzzer:
-    name: Test libfuzzer
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-  
-      - name: Clone lighthouse
-        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
-      - name: Install cargo-fuzz
-        run: cargo +nightly install --force cargo-fuzz
-      - name: Test libfuzzer
-        run: cd eth2fuzz && make test-libfuzzer
-
-  # Run one fuzzing hardness over honggfuzz during 2s
-  #test-honggfuzz:
-  #  name: Test honggfuzz
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v2
-  #    - name: Install latest nightly
-  #      uses: actions-rs/toolchain@v1
-  #      with:
-  #          toolchain: nightly
-  #          override: true
-  #
-  #    - name: Clone lighthouse
-  #      run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
-  #    - name: Install honggfuzz dependencies
-  #      run: |
-  #        sudo apt-get update
-  #        sudo apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev
-  #    - name: Install honggfuzz
-  #      run: cargo +nightly install --force honggfuzz
-  #    - name: Test honggfuzz
-  #      run: cd eth2fuzz && make test-hfuzz
-
-
-  # Try to run all target over afl
-  test-afl:
-    name: Test afl
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
-      - name: Clone lighthouse
-        run: git clone --branch master --recursive --depth 1 https://github.com/sigp/lighthouse
-      - name: Install afl dependencies
-        run: |
-          sudo apt-get update
-          sudo apt install -y llvm build-essential libtool-bin python3 cmake automake bison libglib2.0-dev libpixman-1-dev clang python-setuptools
-      - name: Install afl
-        run: cargo +nightly install --force afl
-      - name: Test afl
-        run: cd eth2fuzz && make test-afl
+      - name: Build target
+        run: cd eth2fuzz && make test-teku

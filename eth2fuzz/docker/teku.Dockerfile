@@ -42,8 +42,25 @@ RUN apt-get update && \
 		curl \
 		make \
 		build-essential \
-		maven \
-		afl
+		maven
+
+# Install afl++
+RUN apt-get install -y \
+	build-essential \
+	libtool-bin python3-dev \
+	automake flex bison \
+	libglib2.0-dev libpixman-1-dev \
+	clang python3-setuptools \
+	llvm
+
+RUN git clone \
+	--branch "$GIT_BRANCH" \
+	--depth 1 \
+	https://github.com/AFLplusplus/AFLplusplus
+
+RUN cd AFLplusplus && make distrib
+RUN cd AFLplusplus && make install
+
 
 # Install JAVA
 RUN apt-get update && \

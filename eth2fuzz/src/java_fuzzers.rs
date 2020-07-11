@@ -150,6 +150,11 @@ impl FuzzerJavaJQFAfl {
                 "ETH2FUZZ_BEACONSTATE",
                 format!("{}", state_dir()?.display()),
             )
+            // env variable to skip afl checking
+            .env("AFL_SKIP_CPUFREQ", "1")
+            .env("AFL_AUTORESUME", "1")
+            .env("AFL_SKIP_CRASHES", "1")
+            .env("AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES", "1")
             // fuzzing options
             .args(&args)
             .current_dir(&self.work_dir)

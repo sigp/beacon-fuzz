@@ -72,3 +72,77 @@ jobs:
         run: cd eth2diff && make docker
 
   # TODO - add dockers compilation + tests
+  # Try to compile the lighthouse dockerfile
+  build-docker-lighthouse:
+    name: Building docker lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2diff && make lighthouse
+
+  # Try to compile the zcli dockerfile
+  build-docker-zcli:
+    name: Building docker zcli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2diff && make zcli
+
+  # Try to compile the nimbus dockerfile
+  build-docker-nimbus:
+    name: Building docker nimbus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2diff && make nimbus
+
+  # Try to compile the prysm dockerfile
+  build-docker-prysm:
+    name: Building docker prysm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2diff && make prysm
+
+  # Try to compile the teku dockerfile
+  build-docker-teku:
+    name: Building docker teku
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd eth2diff && make teku

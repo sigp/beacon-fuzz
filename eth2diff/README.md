@@ -42,8 +42,6 @@ docker run -it -v "$(pwd)"/shared:/shared eth2diff pretty Attestation shared/cor
 
 # TODO
 
-- handle version ??? 
-
 - Detect if stuff inside stderr of process
 -- if so, keep first line for the report? and for exception regex?
 

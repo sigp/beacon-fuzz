@@ -1,8 +1,4 @@
-use failure::Error;
 use strum::IntoEnumIterator;
-
-use crate::env::{targets_dir, workspace_dir};
-use crate::utils::copy_dir;
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Targets {
@@ -165,59 +161,6 @@ impl Targets {
         .to_string()
     }
 
-    pub fn template(&self) -> String {
-        match &self {
-            // Lighthouse
-            Targets::LighthouseAttestation
-            | Targets::LighthouseAttesterSlashing
-            | Targets::LighthouseBlock
-            | Targets::LighthouseBlockHeader
-            | Targets::LighthouseDeposit
-            | Targets::LighthouseProposerSlashing
-            | Targets::LighthouseVoluntaryExit => "template.rs",
-            Targets::LighthouseBeaconstate | Targets::LighthouseEnr | Targets::LighthouseBLS => {
-                "simple_template.rs"
-            }
-            //Lodestar
-            Targets::LodestarAttestation
-            | Targets::LodestarAttesterSlashing
-            | Targets::LodestarBlock
-            | Targets::LodestarBlockHeader
-            | Targets::LodestarDeposit
-            | Targets::LodestarProposerSlashing
-            | Targets::LodestarVoluntaryExit
-            | Targets::LodestarBeaconstate
-            | Targets::LodestarEnr => "simple_template.js",
-            // Nimbus
-            Targets::NimbusAttestation
-            | Targets::NimbusAttesterSlashing
-            | Targets::NimbusBlock
-            | Targets::NimbusBlockHeader
-            | Targets::NimbusDeposit
-            | Targets::NimbusProposerSlashing
-            | Targets::NimbusVoluntaryExit => "template.nim",
-            Targets::NimbusBeaconstate | Targets::NimbusEnr => "simple_template.nim",
-            // Prysm
-            Targets::PrysmAttestation
-            | Targets::PrysmAttesterSlashing
-            | Targets::PrysmBlock
-            | Targets::PrysmBlockHeader
-            | Targets::PrysmDeposit
-            | Targets::PrysmProposerSlashing
-            | Targets::PrysmVoluntaryExit => "template.go",
-            // Teku
-            Targets::TekuAttestation
-            | Targets::TekuAttesterSlashing
-            | Targets::TekuBlock
-            | Targets::TekuBlockHeader
-            | Targets::TekuDeposit
-            | Targets::TekuProposerSlashing
-            | Targets::TekuVoluntaryExit
-            | Targets::TekuBLS => "template.java",
-        }
-        .to_string()
-    }
-
     pub fn language(&self) -> String {
         match &self {
             // Lighthouse
@@ -320,11 +263,4 @@ pub fn get_teku_targets() -> Vec<String> {
 
 pub fn get_targets() -> Vec<String> {
     Targets::iter().map(|x| x.name()).collect()
-}
-
-pub fn prepare_targets_workspace() -> Result<(), Error> {
-    let from = targets_dir()?;
-    let workspace = workspace_dir()?;
-    copy_dir(from, workspace)?;
-    Ok(())
 }

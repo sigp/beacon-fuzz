@@ -1,17 +1,3 @@
-use failure::Error;
-use std::path::PathBuf;
-
-pub fn copy_dir(from: PathBuf, to: PathBuf) -> Result<(), Error> {
-    use fs_extra::dir::{copy, CopyOptions};
-    let mut options = CopyOptions::new();
-
-    options.overwrite = true;
-    options.skip_exist = true;
-    options.copy_inside = true;
-    copy(from, to, &options)?;
-    Ok(())
-}
-
 /// Produces a string from a given list of possible values which is similar to
 /// the passed in value `v` with a certain confidence.
 /// Thus in a list of possible values like ["foo", "bar"], the value "fop" will yield

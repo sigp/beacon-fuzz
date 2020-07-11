@@ -33,8 +33,6 @@ mod rust_fuzzers;
 mod go_fuzzers;
 // load go fuzzers
 mod java_fuzzers;
-// load debugging stuff
-mod debug;
 
 /// Run eth2fuzz fuzzing targets
 #[derive(StructOpt, Debug)]
@@ -103,12 +101,6 @@ enum Cli {
         )]
         sanitizer: Option<fuzzers::Sanitizer>,
     },
-    /// Debug one target
-    #[structopt(name = "debug")]
-    Debug {
-        /// Which target to debug
-        target: String,
-    },
     /// List all available targets
     #[structopt(name = "list")]
     ListTargets,
@@ -175,10 +167,6 @@ fn run() -> Result<(), Error> {
                 seed,
             };
             run_target(target, fuzzer, config)?;
-        }
-        // Debug one target
-        Debug { target } => {
-            debug::run_debug(target)?;
         }
         // Fuzz multiple targets
         Continuous {

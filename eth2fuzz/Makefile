@@ -211,7 +211,7 @@ fuzz-teku: teku
 ## Try to run each targets for 1 sec
 test-teku:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list | grep teku); do \
-		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; \
+		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; test $$? -eq 1; \
 	done
 
 ## clean compiled fuzzing targets

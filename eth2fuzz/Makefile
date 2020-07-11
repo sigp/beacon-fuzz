@@ -124,7 +124,7 @@ fuzz-lodestar: lodestar
 ## Try to run each targets for 1 sec
 test-lodestar:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list | grep lodestar); do \
-		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar target $$i -t 1 && test $$? -eq 1; \
+		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar target $$i -t 1; test $$? -eq 1; \
 	done
 
 ## Nothing to clean with lodestar since there

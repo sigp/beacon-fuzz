@@ -2,7 +2,7 @@
 # github: https://github.com/status-im/nim-beacon-chain/
 
 import
-    #chronicles,
+    chronicles,
     ../../../nim-beacon-chain/beacon_chain/spec/crypto,
     ../../../nim-beacon-chain/beacon_chain/spec/datatypes,
     ../../../nim-beacon-chain/beacon_chain/spec/digest,
@@ -62,7 +62,7 @@ proc fuzz_nimbus_block_header*(state: var BeaconState, payload: openarray[byte])
 proc fuzz_nimbus_deposit*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
         let deposit = SSZ.decode(payload, Deposit)
-        discard process_deposit(state, deposit, {})
+        discard process_deposit(mainnetRuntimePreset, state, deposit, {})
     except SSZError: #CatchableError:
         discard
     true

@@ -81,6 +81,6 @@ RUN cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/ && bazel build
 COPY --from=build /eth2fuzz/eth2fuzz .
 
 # Set env for eth2fuzz target listing
-ARG CURRENT_CLIENT="PRYSM"
+ENV CURRENT_CLIENT=PRYSM
 
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

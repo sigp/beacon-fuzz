@@ -69,6 +69,6 @@ COPY . .
 RUN make build
 
 # Set env for eth2fuzz target listing 
-ARG CURRENT_CLIENT="LIGHTHOUSE"
+ENV CURRENT_CLIENT="LIGHTHOUSE"
 
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

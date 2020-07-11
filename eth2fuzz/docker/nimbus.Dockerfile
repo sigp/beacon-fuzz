@@ -72,4 +72,7 @@ WORKDIR /eth2fuzz
 # COPY --from=build shared .
 COPY --from=build /eth2fuzz/eth2fuzz .
 
+# Set env for eth2fuzz target listing
+ARG CURRENT_CLIENT="NIMBUS"
+
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

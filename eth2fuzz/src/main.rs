@@ -12,6 +12,7 @@ extern crate strum_macros;
 
 use crate::strum::IntoEnumIterator;
 use failure::Error;
+use std::env as real_env;
 use structopt::StructOpt;
 
 // load fuzzers
@@ -124,6 +125,30 @@ fn main() {
     }
 }
 
+enum Clients {
+    Lighthouse,
+    Nimbus,
+    Prysm,
+    Teku,
+    Lodestar,
+    All,
+}
+
+fn current_client() -> Clients {
+    let key = "CURRENT_CLIENT";
+    match real_env::var_os(key) {
+        Some(a) => match a.to_str() {
+            Some("LIGHTHOUSE") => Clients::Lighthouse,
+            Some("NIMBUS") => Clients::Nimbus,
+            Some("PRYSM") => Clients::Prysm,
+            Some("TEKU") => Clients::Teku,
+            Some("LODESTAR") => Clients::Lodestar,
+            _ => panic!("CURRENT_CLIENT is invalid"),
+        },
+        None => Clients::All,
+    }
+}
+
 /// Parsing of CLI arguments
 fn run() -> Result<(), Error> {
     use Cli::*;
@@ -179,7 +204,17 @@ fn run() -> Result<(), Error> {
 
 /// List all targets available
 fn list_targets() -> Result<(), Error> {
-    for target in targets::get_targets() {
+    let client = current_client();
+    use Clients::*;
+    let list_targets = match client {
+        Lighthouse => targets::get_lighthouse_targets(),
+        Nimbus => targets::get_nimbus_targets(),
+        Prysm => targets::get_prysm_targets(),
+        Teku => targets::get_teku_targets(),
+        Lodestar => targets::get_lodestar_targets(),
+        All => targets::get_targets(),
+    };
+    for target in list_targets {
         println!("{}", target);
     }
     Ok(())

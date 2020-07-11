@@ -273,47 +273,47 @@ impl Targets {
     }
 }
 
-#[allow(dead_code)]
 // Lighthouse_
-pub fn get_lighthouse_targets() -> Vec<Targets> {
-    let res: Vec<Targets> = Targets::iter()
+pub fn get_lighthouse_targets() -> Vec<String> {
+    let res: Vec<String> = Targets::iter()
         .filter(|target| target.language() == "rust")
+        .map(|x| x.name())
         .collect();
     res
 }
 
-#[allow(dead_code)]
 // Lodestar
-pub fn get_lodestar_targets() -> Vec<Targets> {
-    let res: Vec<Targets> = Targets::iter()
+pub fn get_lodestar_targets() -> Vec<String> {
+    let res: Vec<String> = Targets::iter()
         .filter(|target| target.language() == "js")
+        .map(|x| x.name())
         .collect();
     res
 }
 
-#[allow(dead_code)]
 // Nimbus
-pub fn get_nimbus_targets() -> Vec<Targets> {
-    let res: Vec<Targets> = Targets::iter()
+pub fn get_nimbus_targets() -> Vec<String> {
+    let res: Vec<String> = Targets::iter()
         .filter(|target| target.language() == "nim")
+        .map(|x| x.name())
         .collect();
     res
 }
 
-#[allow(dead_code)]
 // Prysm
-pub fn get_prysm_targets() -> Vec<Targets> {
-    let res: Vec<Targets> = Targets::iter()
+pub fn get_prysm_targets() -> Vec<String> {
+    let res: Vec<String> = Targets::iter()
         .filter(|target| target.language() == "go")
+        .map(|x| x.name())
         .collect();
     res
 }
 
-#[allow(dead_code)]
 // Teku
-pub fn get_teku_targets() -> Vec<Targets> {
-    let res: Vec<Targets> = Targets::iter()
+pub fn get_teku_targets() -> Vec<String> {
+    let res: Vec<String> = Targets::iter()
         .filter(|target| target.language() == "java")
+        .map(|x| x.name())
         .collect();
     res
 }

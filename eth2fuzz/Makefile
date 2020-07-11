@@ -90,7 +90,7 @@ fuzz-lighthouse: lighthouse
 
 ## Try to run each targets for 1 sec
 test-lighthouse:
-	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list | grep lighthouse); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse target $$i -t 1; \
 	done
 
@@ -123,7 +123,7 @@ fuzz-lodestar: lodestar
 
 ## Try to run each targets for 1 sec
 test-lodestar:
-	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list | grep lodestar); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar target $$i -t 1; test $$? -eq 1; \
 	done
 
@@ -151,13 +151,13 @@ fuzz-nimbus: nimbus
 
 ## Try to run each targets for 1 sec
 test-nimbus:
-	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus target $$i -t 1; \
 	done
 
 ## clean compiled fuzzing targets
 clean-nimbus:
-	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list | grep nimbus); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list); do \
 		rm -rf workspace/nimlibfuzzer/$$i; \
 	done
 
@@ -181,7 +181,7 @@ fuzz-prysm: prysm
 
 ## Try to run each targets for 1 sec
 test-prysm:
-	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list | grep prysm); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm target $$i -t 1; \
 	done
 
@@ -210,7 +210,7 @@ fuzz-teku: teku
 
 ## Try to run each targets for 1 sec
 test-teku:
-	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list | grep teku); do \
+	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; test $$? -eq 1; \
 	done
 

@@ -62,4 +62,7 @@ RUN npm i -g jsfuzz
 # COPY --from=build shared .
 COPY --from=build /eth2fuzz/eth2fuzz .
 
+# Set env for eth2fuzz target listing
+ARG CURRENT_CLIENT="LODESTAR"
+
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

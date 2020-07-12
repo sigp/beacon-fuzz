@@ -11,7 +11,7 @@ on:
   # due to client updates
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '*/1440 * * * *'
+    - cron:  '0 0 * * *'
 
 jobs:
   # Check code style quickly by running `rustfmt` over all code

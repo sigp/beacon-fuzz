@@ -83,22 +83,10 @@ Use `help=1` for more arguments (see also [libfuzzer docs](https://llvm.org/docs
 
 ## Roadmap
 
-- Add more implementations
-- Add more fuzz targets
 - Improved onboarding, ease of adding new targets and implementations
 - Improved coverage measurements and visibility
 - Deploy on dedicated production fuzzing infrastructure
 - Structure-aware fuzzing mutations
-- Mutate input `BeaconState`s
-
-
-### Implementation Roadmap
-
-The following implementations will be added to the various fuzzing targets:
-
-* [Prysm](https://github.com/prysmaticlabs/prysm)
-* [Teku](https://github.com/PegaSysEng/artemis)
-* [Lodestar](https://github.com/ChainSafe/lodestar)
 
 ## Contributing
 

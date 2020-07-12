@@ -134,8 +134,6 @@ e.g. `make BFUZZ_NO_DISABLE_BLS=1 all`
 
 ### Adding new implementations for a target
 
-TODO
-
 See pyspec `harness.py`s for a succinct, readable harness implementation example without much boilerplate.
 
 For state transition functions, each client should expect to receive a correctly-encoded SSZ container containing a `BeaconState`,
@@ -161,14 +159,6 @@ There are 3 types of results/outputs that a client is expected to return to the 
     e.g. shuffling an empty list.
 3. Abort/panic.
   - To occur when a client is in an inconsistent state and indicates a bug is present.
-
-### Client modifications
-
-TODO disabling BLS verification?
-
-### Adding a new fuzzing target
-
-TODO
 
 ## Known bugs/limitations
 

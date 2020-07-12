@@ -107,10 +107,15 @@ impl FuzzerJavaJQFAfl {
 
         // handle fuzzing config arguments
         // - timeout option
+        // handle fuzzing options
         let mut args: Vec<String> = Vec::new();
-        if let Some(timeout) = self.config.timeout {
-            args.push("-t".to_string());
-            args.push(format!("{}", timeout));
+        let cmd = match self.config.timeout {
+            None => "/eth2fuzz/jqf/bin/jqf-afl-fuzz".to_string(),
+            Some(time) => {
+                args.push(format!("{}", time));
+                args.push("/eth2fuzz/jqf/bin/jqf-afl-fuzz".to_string());
+                "timeout".to_string()
+            }
         };
         if self.config.thread != None {
             println!("[eth2fuzz] {}: thread not supported", self.name);
@@ -118,6 +123,9 @@ impl FuzzerJavaJQFAfl {
         if self.config.sanitizer != None {
             println!("[eth2fuzz] {}: sanitizer not supported", self.name);
         }
+
+        // enable jqf logging
+        args.push("-v".to_string());
 
         // input corpora
         args.push("-i".to_string());
@@ -144,7 +152,7 @@ impl FuzzerJavaJQFAfl {
         // ../jqf/bin/jqf-afl-fuzz -i ../corpora/block -m none -o out_block -c $(./tekuclass.sh) TekuFuzz teku_block
 
         // Run the fuzzer
-        let fuzzer_bin = Command::new("/eth2fuzz/jqf/bin/jqf-afl-fuzz")
+        let fuzzer_bin = Command::new(cmd)
             // beaconstate folder
             .env(
                 "ETH2FUZZ_BEACONSTATE",

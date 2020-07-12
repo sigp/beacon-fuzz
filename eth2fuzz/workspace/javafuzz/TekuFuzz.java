@@ -48,13 +48,11 @@ import tech.pegasys.teku.core.StateTransition;
 import tech.pegasys.teku.core.StateTransitionException;
 import tech.pegasys.teku.core.exceptions.BlockProcessingException;
 import com.google.common.primitives.UnsignedLong;
+import java.io.FileInputStream;
 
 /* useful links:
 - https://github.com/PegaSysEng/teku/blob/master/ethereum/datastructures/src/main/java/tech/pegasys/teku/datastructures/util/SimpleOffsetSerializer.java
 */
-
-
-
 
 @RunWith(JQF.class)
 public class TekuFuzz {
@@ -62,7 +60,47 @@ public class TekuFuzz {
   // global beaconstate (null if uninitialized)
   public static BeaconState GlobalBeaconState;
 
-  //public static void main(String[] args) {
+  public static void main(String[] args) {
+
+    // compilation
+    // javac -cp .:$(./tekuclass.sh) TekuFuzz.java
+
+    // use DEBUG_BEACONSTATE and DEBUG_CONTAINER env
+
+    // Run the debug cli
+    // DEBUG_BEACONSTATE=beaconstate.ssz DEBUG_CONTAINER=ssz.ssz CLASSPATH=$CLASSPATH:$(./tekuclass.sh) java TekuFuzz
+
+
+    TekuFuzz tk = new TekuFuzz();
+
+    Constants.setConstants("mainnet");
+    SimpleOffsetSerializer.setConstants();
+
+    try {
+      // get the beaconstate
+      String env_beaconstate = System.getenv("DEBUG_BEACONSTATE");
+      File f = new File(env_beaconstate);
+      byte[] fileContent = Files.readAllBytes(f.toPath());
+      tk.GlobalBeaconState = SimpleOffsetSerializer.deserialize(Bytes.wrap(fileContent), BeaconStateImpl.class);
+      System.out.println("[+] beaconstate ok");
+    }catch (IOException e) {
+      System.out.println("[X] loading beaconstate failed");
+    }
+
+    // get the ssz container
+    String env_ssz = System.getenv("DEBUG_CONTAINER");
+    File f2 = new File(env_ssz);
+    try (InputStream in = new FileInputStream(f2)) {
+      // call your target here
+      tk.teku_attester_slashing(in);
+      System.out.println("[+] ssz container ok");
+    }
+    catch (IOException e) {
+      System.out.println("[X] loading ssz container failed");
+    }
+  System.out.println("[+] No crash");
+  }
+
   public void get_beaconstate() {
 
     // mainnet config

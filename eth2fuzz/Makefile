@@ -23,7 +23,7 @@ help:
 	@echo '    make test-all		 							Test one fuzzing hardness over all fuzzers.'
 	@echo '    make test-continuously-{libfuzzer, hfuzz, afl}	Test all fuzzing hardness over choosen fuzzer.'
 	@echo
-	@echo 'TODO - add other commands' 
+	@echo 'TODO - add other commands'
 
 
 # Build the project locally
@@ -82,11 +82,11 @@ lighthouse:
 	-t eth2fuzz_lighthouse \
 	. \
 	$(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list'
+	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list'
 
 ## Fuzz all lighthouse targets during 1 hour each
 fuzz-lighthouse: lighthouse
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600
+	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600
 
 ## Try to run each targets for 1 sec
 test-lighthouse:
@@ -115,11 +115,11 @@ lodestar:
 	-t eth2fuzz_lodestar \
 	. \
 	$(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list'
+	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list'
 
 ## Fuzz all lodestar targets during 1 hour each
 fuzz-lodestar: lodestar
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar continuously -q lodestar -t 3600
+	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar continuously -q lodestar -t 3600
 
 ## Try to run each targets for 1 sec
 test-lodestar:
@@ -143,11 +143,11 @@ nimbus:
 	-t eth2fuzz_nimbus \
 	. \
 	$(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list'
+	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list'
 
 ## Fuzz all nimbus targets during 1 hour each
 fuzz-nimbus: nimbus
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus continuously -q nimbus -t 3600
+	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus continuously -q nimbus -t 3600
 
 ## Try to run each targets for 1 sec
 test-nimbus:
@@ -173,11 +173,11 @@ prysm:
 	-t eth2fuzz_prysm \
 	. \
 	$(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
+	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
 
 ## Fuzz all prysm targets during 1 hour each
 fuzz-prysm: prysm
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm continuously -q prysm -t 3600
+	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm continuously -q prysm -t 3600
 
 ## Try to run each targets for 1 sec
 test-prysm:
@@ -202,11 +202,11 @@ teku:
 	-t eth2fuzz_teku \
 	. \
 	$(CACHE)
-	@echo 'USAGE: docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
+	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
 
 ## Fuzz all teku targets during 1 hour each
 fuzz-teku: teku
-	docker run -it -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku continuously -q teku -t 3600
+	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku continuously -q teku -t 3600
 
 ## Try to run each targets for 1 sec
 test-teku:

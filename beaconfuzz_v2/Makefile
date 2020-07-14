@@ -1,4 +1,4 @@
-.PHONY: default help build fmt clean 
+.PHONY: default help build fmt clean docker
 
 #
 # Utils for eth2diff.
@@ -27,6 +27,15 @@ clean:
 	cargo clean
 	rm -rf target
 	rm -rf ./beaconfuzz_v2
+
+## Create the beaconfuzz_v2 docker
+docker:
+	DOCKER_BUILDKIT=1 docker build \
+	--file docker/Dockerfile \
+	-t beaconfuzz_v2 \
+	. \
+	$(CACHE)
+	@echo 'USAGE: docker run -it -v beaconfuzz_v2'
 
 #
 # CI utils

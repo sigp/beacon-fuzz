@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git clone --depth 1 --recursive --branch v0.11.1 https://github.com/ethereum/eth2.0-spec-tests
+git clone --depth 1 --recursive --branch v0.12.1 https://github.com/ethereum/eth2.0-spec-tests
 eth2_spectests_dir=./eth2.0-spec-tests/tests/
 destination_dir=.
 

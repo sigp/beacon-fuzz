@@ -16,10 +16,16 @@ This project and its inner workings are subject to change.
 
 **A note on terminology:** "client" and "implementation" are used interchangeably here to mean a specific Eth2 implementation.
 
+This README focuses on our differential fuzzing effort, please refer to [`eth2fuzz`](./eth2fuzz) for panic/crashes detection.
+
+## Community Fuzzing
+
+For details on our community fuzzing initative, please refer to the `eth2fuzz` [README](./eth2fuzz/README.md), along with [this blog post](https://blog.sigmaprime.io/beacon-fuzz-06.html).
+
 ## Current Status
 
-Currently fuzzes against Eth2 `v0.9.1` python or Go executable specs
-([pyspec](https://github.com/ethereum/eth2.0-specs/tree/v0.9.1/test_libs/pyspec) or [zrnt](https://github.com/protolambda/zrnt/tree/v0.9.1))
+Currently fuzzes against Eth2 `v0.10.1` python or Go executable specs
+([pyspec](https://github.com/ethereum/eth2.0-specs/tree/v0.10.1/scripts) or [zrnt](https://github.com/protolambda/zrnt/tree/v0.10.1))
 
 
 ### Implementations
@@ -35,16 +41,16 @@ Currently fuzzes against Eth2 `v0.9.1` python or Go executable specs
 
 (and their relevant spec function)
 
-All currently use the "mainnet" config: https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/configs/mainnet.yaml
+All currently use the "mainnet" config: https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/configs/mainnet.yaml
 
-* `attestation` - [`process_attestation`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#attestations)
-* `attester_slashing` - [`process_attester_slashing`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#attester-slashings)
-* `block` - [`state_transition`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#beacon-chain-state-transition-function)
-* `block_header` - [`process_block_header`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#block-header)
-* `deposit` - [`process_deposit`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#deposits)
-* `proposer_slashing` - [`process_proposer_slashing`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#proposer-slashings)
-* `shuffle` -  [`compute_shuffled_index`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#compute_shuffled_index)
-* `voluntary_exit` - [`process_voluntary_exit`](https://github.com/ethereum/eth2.0-specs/blob/v0.9.1/specs/core/0_beacon-chain.md#voluntary-exits)
+* `attestation` - [`process_attestation`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#attestations)
+* `attester_slashing` - [`process_attester_slashing`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#attester-slashings)
+* `block` - [`state_transition`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#beacon-chain-state-transition-function)
+* `block_header` - [`process_block_header`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#block-header)
+* `deposit` - [`process_deposit`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#deposits)
+* `proposer_slashing` - [`process_proposer_slashing`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#proposer-slashings)
+* `shuffle` -  [`compute_shuffled_index`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#compute_shuffled_index)
+* `voluntary_exit` - [`process_voluntary_exit`](https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#voluntary-exits)
 
 See [corpora](https://github.com/sigp/beacon-fuzz-corpora) repository for explanation of input structure.
 
@@ -154,7 +160,7 @@ There are 3 types of results/outputs that a client is expected to return to the 
 
 ## Trophies
 
-Beacon-fuzz helps to find the following bugs inside eth2 clients.
+The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and `beacon`) helps to find the following bugs inside eth2 clients.
 
 ### Nimbus
 
@@ -177,12 +183,13 @@ Beacon-fuzz helps to find the following bugs inside eth2 clients.
 - [Teku: transition subcommand raising `IllegalArgumentException` instead of logging when passed invalid SSZ](https://github.com/PegaSysEng/teku/issues/1677) **fixed**
 - [Teku: `IndexOutOfBoundsException` when SSZ decoding 0-byte `BitList`](https://github.com/PegaSysEng/teku/issues/1678) **fixed**
 - [Teku: `IndexOutOfBoundsException` when passed *invalid* `BeaconState` and committee size is inconsistent with attestation aggregation bits](https://github.com/PegaSysEng/teku/issues/1685). (See [1](#invalidState)) **fixed**
+- [Teku: `ArrayIndexOutOfBoundsException` in `AttesterSlashing` processing](https://github.com/PegaSysEng/teku/issues/2345)
 
 ### Lighthouse
 - [Lighthouse: out-of-bounds offset in variable list SSZ decoding](https://github.com/sigp/lighthouse/pull/974) **fixed**
 - [Lighthouse: multiplication overflow in `compute_proposer_index`](https://github.com/sigp/lighthouse/pull/1009) (See [1](#invalidState)) **fixed**
 - [Lighthouse: ENR panic](https://github.com/AgeManning/enr/pull/12) **fixed**
-- [Lighthouse: Underflow in Snappy (external dependency)](https://github.com/BurntSushi/rust-snappy/pull/30)
+- [Lighthouse: Underflow in Snappy (external dependency)](https://github.com/BurntSushi/rust-snappy/pull/30) **fixed**
 
 ### Lodestar
 - [Lodestar: `TypeError` when SSZ decoding a `Block` with invalid `BigInt` parent scope](https://github.com/ChainSafe/ssz/issues/22) **fixed**

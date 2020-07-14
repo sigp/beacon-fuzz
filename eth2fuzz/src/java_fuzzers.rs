@@ -124,6 +124,10 @@ impl FuzzerJavaJQFAfl {
             println!("[eth2fuzz] {}: sanitizer not supported", self.name);
         }
 
+        // timeout
+        args.push("-t".to_string());
+        args.push("60000".to_string());
+
         // enable jqf logging
         args.push("-v".to_string());
 

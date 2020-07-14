@@ -10,7 +10,7 @@ pub enum Targets {
     LighthouseDeposit,
     LighthouseProposerSlashing,
     LighthouseVoluntaryExit,
-    LighthouseBeaconstate,
+    //LighthouseBeaconstate,
     LighthouseEnr,
     LighthouseBLS,
     // Lodestar
@@ -21,7 +21,7 @@ pub enum Targets {
     LodestarDeposit,
     LodestarProposerSlashing,
     LodestarVoluntaryExit,
-    LodestarBeaconstate,
+    //LodestarBeaconstate,
     LodestarEnr,
     // Nimbus
     NimbusAttestation,
@@ -31,7 +31,7 @@ pub enum Targets {
     NimbusDeposit,
     NimbusProposerSlashing,
     NimbusVoluntaryExit,
-    NimbusBeaconstate,
+    //NimbusBeaconstate,
     NimbusEnr,
     // Prysm
     PrysmAttestation,
@@ -63,7 +63,7 @@ impl Targets {
             Targets::LighthouseDeposit => "lighthouse_deposit",
             Targets::LighthouseProposerSlashing => "lighthouse_proposer_slashing",
             Targets::LighthouseVoluntaryExit => "lighthouse_voluntary_exit",
-            Targets::LighthouseBeaconstate => "lighthouse_beaconstate",
+            //Targets::LighthouseBeaconstate => "lighthouse_beaconstate",
             Targets::LighthouseEnr => "lighthouse_enr",
             Targets::LighthouseBLS => "lighthouse_bls",
             //Lodestar
@@ -74,7 +74,7 @@ impl Targets {
             Targets::LodestarDeposit => "lodestar_deposit",
             Targets::LodestarProposerSlashing => "lodestar_proposer_slashing",
             Targets::LodestarVoluntaryExit => "lodestar_voluntary_exit",
-            Targets::LodestarBeaconstate => "lodestar_beaconstate",
+            //Targets::LodestarBeaconstate => "lodestar_beaconstate",
             Targets::LodestarEnr => "lodestar_enr",
             // Nimbus
             Targets::NimbusAttestation => "nimbus_attestation",
@@ -84,7 +84,7 @@ impl Targets {
             Targets::NimbusDeposit => "nimbus_deposit",
             Targets::NimbusProposerSlashing => "nimbus_proposer_slashing",
             Targets::NimbusVoluntaryExit => "nimbus_voluntary_exit",
-            Targets::NimbusBeaconstate => "nimbus_beaconstate",
+            //Targets::NimbusBeaconstate => "nimbus_beaconstate",
             Targets::NimbusEnr => "nimbus_enr",
             // Prysm
             Targets::PrysmAttestation => "prysm_attestation",
@@ -117,7 +117,7 @@ impl Targets {
             Targets::LighthouseDeposit => "deposit",
             Targets::LighthouseProposerSlashing => "proposer_slashing",
             Targets::LighthouseVoluntaryExit => "voluntary_exit",
-            Targets::LighthouseBeaconstate => "beaconstate",
+            //Targets::LighthouseBeaconstate => "beaconstate",
             Targets::LighthouseEnr => "enr",
             Targets::LighthouseBLS => "bls",
             //Lodestar
@@ -128,7 +128,7 @@ impl Targets {
             Targets::LodestarDeposit => "deposit",
             Targets::LodestarProposerSlashing => "proposer_slashing",
             Targets::LodestarVoluntaryExit => "voluntary_exit",
-            Targets::LodestarBeaconstate => "beaconstate",
+            //Targets::LodestarBeaconstate => "beaconstate",
             Targets::LodestarEnr => "enr",
             // Nimbus
             Targets::NimbusAttestation => "attestation",
@@ -138,7 +138,7 @@ impl Targets {
             Targets::NimbusDeposit => "deposit",
             Targets::NimbusProposerSlashing => "proposer_slashing",
             Targets::NimbusVoluntaryExit => "voluntary_exit",
-            Targets::NimbusBeaconstate => "beaconstate",
+            //Targets::NimbusBeaconstate => "beaconstate",
             Targets::NimbusEnr => "enr",
             // Prysm
             Targets::PrysmAttestation => "attestation",
@@ -171,7 +171,7 @@ impl Targets {
             | Targets::LighthouseDeposit
             | Targets::LighthouseProposerSlashing
             | Targets::LighthouseVoluntaryExit
-            | Targets::LighthouseBeaconstate
+            //| Targets::LighthouseBeaconstate
             | Targets::LighthouseEnr
             | Targets::LighthouseBLS => "rust",
             //Lodestar
@@ -182,7 +182,7 @@ impl Targets {
             | Targets::LodestarDeposit
             | Targets::LodestarProposerSlashing
             | Targets::LodestarVoluntaryExit
-            | Targets::LodestarBeaconstate
+            //| Targets::LodestarBeaconstate
             | Targets::LodestarEnr => "js",
             // Nimbus
             Targets::NimbusAttestation
@@ -192,7 +192,7 @@ impl Targets {
             | Targets::NimbusDeposit
             | Targets::NimbusProposerSlashing
             | Targets::NimbusVoluntaryExit
-            | Targets::NimbusBeaconstate
+            //| Targets::NimbusBeaconstate
             | Targets::NimbusEnr => "nim",
             // Prysm
             Targets::PrysmAttestation

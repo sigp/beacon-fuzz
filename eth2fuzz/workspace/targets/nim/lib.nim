@@ -20,7 +20,7 @@ import
 # state: BeaconState, 
 proc fuzz_nimbus_attestation*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        var cache = get_empty_per_epoch_cache()
+        var cache = StateCache()
         let attestation = SSZ.decode(payload, Attestation)        
         discard process_attestation(state, attestation, {}, cache)
     except SSZError: #CatchableError:
@@ -29,7 +29,7 @@ proc fuzz_nimbus_attestation*(state: var BeaconState, payload: openarray[byte]):
 
 proc fuzz_nimbus_attester_slashing*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        var cache = get_empty_per_epoch_cache()
+        var cache = StateCache()
         let attester =  SSZ.decode(payload, AttesterSlashing)
         discard process_attester_slashing(state, attester, {}, cache)
     except SSZError: #CatchableError:
@@ -52,7 +52,7 @@ proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool 
 
 proc fuzz_nimbus_block_header*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        var cache = get_empty_per_epoch_cache()
+        var cache = StateCache()
         let blck = SSZ.decode(payload, BeaconBlock)
         discard process_block_header(state, blck, {}, cache)
     except SSZError: #CatchableError:
@@ -69,7 +69,7 @@ proc fuzz_nimbus_deposit*(state: var BeaconState, payload: openarray[byte]): boo
 
 proc fuzz_nimbus_proposer_slashing*(state: var BeaconState, payload: openarray[byte]): bool = 
     try:
-        var cache = get_empty_per_epoch_cache()
+        var cache = StateCache()
         let proposer =  SSZ.decode(payload, ProposerSlashing)
         discard process_proposer_slashing(state, proposer, {}, cache)
     except SSZError: #CatchableError:

@@ -21,8 +21,8 @@ function is_lodestar_valid_exception(e)  {
     // following condition are temporary
     // waiting for fix of https://github.com/ChainSafe/ssz/issues/23
     // waiting for fix of https://github.com/ChainSafe/ssz/issues/22
-    else if (e.message == "Offset is outside the bounds of the DataView" ) {} 
-    else if (e.message == "Cannot convert undefined to a BigInt" ) {} 
+    // else if (e.message == "Offset is outside the bounds of the DataView" ) {} 
+    // else if (e.message == "Cannot convert undefined to a BigInt" ) {} 
     else {
         throw e;
     }
@@ -110,7 +110,7 @@ function fuzz_lodestar_enr(buf) {
     } catch (e) {
         // TODO
         if (e.name == "Error") {}
-        else if (e.message == "Cannot read property 'toString' of undefined") {}
+        //else if (e.message == "Cannot read property 'toString' of undefined") {}
         else {throw e;}
         //is_lodestar_valid_exception(e);
     }

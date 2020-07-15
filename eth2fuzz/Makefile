@@ -86,7 +86,7 @@ lighthouse:
 
 ## Fuzz all lighthouse targets during 1 hour each
 fuzz-lighthouse: lighthouse
-	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600
+	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600 -n 1
 
 ## Try to run each targets for 1 sec
 test-lighthouse:

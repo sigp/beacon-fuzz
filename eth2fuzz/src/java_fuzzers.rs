@@ -126,7 +126,7 @@ impl FuzzerJavaJQFAfl {
 
         // timeout
         args.push("-t".to_string());
-        args.push("300000".to_string());
+        args.push("60000".to_string());
 
         // enable jqf logging
         args.push("-v".to_string());
@@ -166,6 +166,7 @@ impl FuzzerJavaJQFAfl {
             .env("AFL_SKIP_CPUFREQ", "1")
             .env("AFL_AUTORESUME", "1")
             .env("AFL_SKIP_CRASHES", "1")
+            .env("AFL_HANG_TMOUT", "60000")
             .env("AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES", "1")
             // fuzzing options
             .args(&args)

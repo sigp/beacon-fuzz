@@ -1,6 +1,6 @@
-use types::{BeaconState, MainnetEthSpec};
+// use types::{BeaconState, MainnetEthSpec};
 
-#[link(name = "nfuzz")]
+#[link(name = "nfuzz", kind = "static")]
 extern "C" {
     fn NimMain();
     fn nfuzz_attestation(
@@ -23,7 +23,7 @@ pub fn process_attestation(ssz_bytes: &[u8], post: &[u8]) -> Vec<u8> {
 
     let mut inn: Vec<u8> = ssz_bytes.into();
     let input_ptr: *mut u8 = inn.as_mut_ptr();
-    let input_size = ssz_bytes.len() as usize;
+    let input_size: usize = ssz_bytes.len() as usize;
     let output_ptr: *mut u8 = out.as_mut_ptr();
     let output_size: *mut usize = &mut (post.len() as usize);
 

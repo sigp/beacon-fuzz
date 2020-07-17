@@ -2,9 +2,9 @@
 extern crate failure;
 extern crate structopt;
 
-use types::{Attestation, BeaconState, EthSpec, MainnetEthSpec};
+use types::{Attestation, BeaconState, MainnetEthSpec};
 
-use ssz::{Decode, Encode};
+use ssz::Encode; //Decode
 use ssz_derive::{Decode, Encode};
 
 use std::env;
@@ -30,9 +30,10 @@ possible to compare ssz parsing result?
 
 mod lighthouse;
 mod nimbus;
+mod prysm;
 mod utils;
 
-fn test_lighthouse() {}
+// fn test_lighthouse() {}
 
 fn info_attestation(attest: &Attestation<MainnetEthSpec>) {
     // access containers info
@@ -49,7 +50,7 @@ struct AttestationTestCase {
 fn main() {
     println!("[+] beaconfuzz_v2");
 
-    let args: Vec<String> = env::args().collect();
+    let _args: Vec<String> = env::args().collect();
 
     //let b = &args[1];
     let b = "beacon.ssz".to_string();
@@ -67,7 +68,7 @@ fn main() {
     let a = lighthouse::ssz_attestation(&attest).expect("attest ssz decode failed");
 
     // debug
-    // info_attestation(&a);
+    info_attestation(&a);
 
     // create testcase ssz struct
     let target: AttestationTestCase = AttestationTestCase {
@@ -79,12 +80,24 @@ fn main() {
     let post = lighthouse::process_attestation(b, a).expect("process failed");
 
     // nimbus processing
-    nimbus::process_attestation(&target.as_ssz_bytes(), &post.as_ssz_bytes());
+    //nimbus::process_attestation(&target.as_ssz_bytes(), &post.as_ssz_bytes());
     //post_state.as_ssz_bytes();
+
+    prysm::process_attestation(
+        &target.pre.as_ssz_bytes(),
+        &target.attestation.as_ssz_bytes(),
+        &post.as_ssz_bytes(),
+    );
+    create_bug_report();
+    prysm::process_attestation(
+        &target.pre.as_ssz_bytes(),
+        &target.attestation.as_ssz_bytes(),
+        &post.as_ssz_bytes(),
+    );
 }
 
 /// Generate a bug report
 /// when result of differential fuzzing is different
 fn create_bug_report() {
-    // TODO
+    println!("TODO");
 }

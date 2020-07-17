@@ -95,6 +95,7 @@ OPTIONS:
         --fuzzer <fuzzer>      Which fuzzer to run [default: Honggfuzz]  [possible values: Afl, Honggfuzz, Libfuzzer]
     -n, --thread <thread>      Set number of thread (only for hfuzz)
     -t, --timeout <timeout>    Set timeout per target [default: 10]
+
 ```
 
 Example command for lighthouse:

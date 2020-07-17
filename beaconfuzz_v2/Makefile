@@ -1,4 +1,4 @@
-.PHONY: default help build fmt clean docker
+.PHONY: default help build fmt clean docker test
 
 #
 # Utils for eth2diff.
@@ -17,6 +17,12 @@ help:
 # Compile the project
 build:
 	cargo +nightly build --release --out-dir=. -Z unstable-options
+
+test: build
+	./beaconfuzz_v2
+
+run :
+	./beaconfuzz_v2
 
 # Run Rust fmt to make code cleaner
 fmt:

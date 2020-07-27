@@ -1,37 +1,109 @@
+extern crate structopt;
+#[macro_use]
+extern crate clap;
 #[macro_use]
 extern crate failure;
-extern crate structopt;
 
-use types::{Attestation, BeaconState, MainnetEthSpec};
+use failure::Error;
+use std::env;
+use structopt::StructOpt;
 
 use ssz::Encode; //Decode
 use ssz_derive::{Decode, Encode};
 
-use std::env;
+use types::{Attestation, BeaconState, MainnetEthSpec};
 
 /*
 
 ROADMAP
 
-- read beaconstate
-- read attestation
-
-- lighthouse beaconstate loading
-- lighthouse attestation loading
-
-
-Question?
-possible to compare ssz parsing result?
-- comparaison each field output structure?
-- need to create getter function?
-
-
+-- cli
+-- read
 */
 
 mod lighthouse;
 mod nimbus;
 mod prysm;
 mod utils;
+
+/// Run beaconfuzz_v2
+#[derive(StructOpt, Debug)]
+enum Cli {
+    /// Run debug command
+    #[structopt(name = "debug")]
+    Debug {
+        /// Which target to run
+        target: String,
+        /// Set corpora path
+        #[structopt(
+            short = "f",
+            long = "corpora",
+            default_value = "../eth2fuzz/workspace/corpora"
+        )]
+        corpora: String,
+    },
+    /// Run fuzzer
+    #[structopt(name = "fuzz")]
+    Fuzz {
+        /// Which target to run
+        target: String,
+        /// Set corpora path
+        #[structopt(
+            short = "f",
+            long = "corpora",
+            default_value = "../eth2fuzz/workspace/corpora"
+        )]
+        corpora: String,
+    },
+    /// List all available fuzzing targets
+    #[structopt(name = "list")]
+    ListTargets,
+}
+
+/// Parsing of CLI arguments
+fn run() -> Result<(), Error> {
+    use Cli::*;
+    let cli = Cli::from_args();
+
+    match cli {
+        // Fuzz one target
+        Debug { target, corpora } => {
+            debug_target(target, corpora)?;
+        }
+        // Fuzz targets
+        Fuzz { target, corpora } => {
+            fuzz_target(target, corpora)?;
+        }
+        // list all targets
+        ListTargets => {
+            list_targets()?;
+        }
+    }
+    Ok(())
+}
+
+/// Main function catching errors
+fn main() {
+    println!("[+] beaconfuzz_v2");
+    if let Err(e) = run() {
+        eprintln!("[-] {}", e);
+        for cause in e.iter_chain().skip(1) {
+            eprintln!("[-] caused by: {}", cause);
+        }
+        ::std::process::exit(1);
+    }
+}
+
+/// List all targets available
+fn list_targets() -> Result<(), Error> {
+    println!("[+] list targets");
+    Ok(())
+}
+
+fn fuzz_target(_target: String, _corpora: String) -> Result<(), Error> {
+    println!("[+] fuzz_target");
+    Ok(())
+}
 
 // fn test_lighthouse() {}
 
@@ -41,15 +113,7 @@ fn info_attestation(attest: &Attestation<MainnetEthSpec>) {
     println!("{}", attest.signature.as_bytes().len());
 }
 
-#[derive(Decode, Encode)]
-struct AttestationTestCase {
-    pub pre: BeaconState<MainnetEthSpec>,
-    pub attestation: Attestation<MainnetEthSpec>,
-}
-
-fn main() {
-    println!("[+] beaconfuzz_v2");
-
+fn debug_target(_target: String, _corpora: String) -> Result<(), Error> {
     let _args: Vec<String> = env::args().collect();
 
     //let b = &args[1];
@@ -70,30 +134,29 @@ fn main() {
     // debug
     info_attestation(&a);
 
-    // create testcase ssz struct
-    let target: AttestationTestCase = AttestationTestCase {
-        pre: b.clone(),
-        attestation: a.clone(),
-    };
-
     // lighthouse processing
     let post = lighthouse::process_attestation(b, a).expect("process failed");
 
     // nimbus processing
-    //nimbus::process_attestation(&target.as_ssz_bytes(), &post.as_ssz_bytes());
+    //nimbus::process_attestation(
+    //    &b, //target.pre.as_ssz_bytes(),
+    //    &a,//target.attestation.as_ssz_bytes(),
+    //    &post.as_ssz_bytes(),
+    //);
     //post_state.as_ssz_bytes();
 
     prysm::process_attestation(
-        &target.pre.as_ssz_bytes(),
-        &target.attestation.as_ssz_bytes(),
+        &beacon, //target.pre.as_ssz_bytes(),
+        &attest, //target.attestation.as_ssz_bytes(),
         &post.as_ssz_bytes(),
     );
     create_bug_report();
     prysm::process_attestation(
-        &target.pre.as_ssz_bytes(),
-        &target.attestation.as_ssz_bytes(),
+        &beacon, //target.pre.as_ssz_bytes(),
+        &attest, //target.attestation.as_ssz_bytes(),
         &post.as_ssz_bytes(),
     );
+    Ok(())
 }
 
 /// Generate a bug report

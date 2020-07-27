@@ -18,11 +18,13 @@ help:
 build:
 	cargo +nightly build --release --out-dir=. -Z unstable-options
 
-test: build
-	./beaconfuzz_v2
+# Run beaconfuzz_v2
+run:
+	./beaconfuzz_v2 debug
 
-run :
-	./beaconfuzz_v2
+# Compile and run beaconfuzz_v2
+test: build
+	./beaconfuzz_v2 debug attestation
 
 # Run Rust fmt to make code cleaner
 fmt:

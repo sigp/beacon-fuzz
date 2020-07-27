@@ -3,7 +3,6 @@
 #[link(name = "pfuzz", kind = "static")]
 extern "C" {
     fn PrysmMain(bls: bool);
-    // pfuzz_attestation(int_ptr unsafe.Pointer) (bool)
     fn pfuzz_attestation(
         beacon_ptr: *mut u8,
         beacon_size: usize,

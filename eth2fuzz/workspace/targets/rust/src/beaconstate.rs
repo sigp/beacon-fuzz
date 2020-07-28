@@ -159,12 +159,6 @@ pub fn fuzz_beaconstate_accessors(beaconstate: &mut BeaconState<MainnetEthSpec>)
     // pub fn initialize_tree_hash_cache(&mut self) {
     let _ = beaconstate.initialize_tree_hash_cache();
 
-    // pub fn build_tree_hash_cache(&mut self) -> Result<(), Error> {
-    let _ = beaconstate.build_tree_hash_cache();
-
-    // pub fn force_build_tree_hash_cache(&mut self) -> Result<(), Error> {
-    let _ = beaconstate.force_build_tree_hash_cache();
-
     // pub fn update_tree_hash_cache(&mut self) -> Result<Hash256, Error> {
     let _ = beaconstate.update_tree_hash_cache();
 

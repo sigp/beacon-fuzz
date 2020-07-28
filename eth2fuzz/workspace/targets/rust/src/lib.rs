@@ -118,5 +118,5 @@ pub fn fuzz_lighthouse_enr(data: &[u8]) {
 #[inline(always)]
 pub fn fuzz_lighthouse_bls(data: &[u8]) {
     use bls::Signature;
-    let _ = Signature::from_bytes(data);
+    let _ = Signature::deserialize(data);
 }

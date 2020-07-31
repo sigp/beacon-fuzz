@@ -110,7 +110,6 @@ fn fuzz_target(_target: String, _corpora: String) -> Result<(), Error> {
 fn info_attestation(attest: &Attestation<MainnetEthSpec>) {
     // access containers info
     println!("{}", attest.aggregation_bits.len());
-    println!("{}", attest.signature.as_bytes().len());
 }
 
 fn debug_target(_target: String, _corpora: String) -> Result<(), Error> {
@@ -132,7 +131,7 @@ fn debug_target(_target: String, _corpora: String) -> Result<(), Error> {
     let a = lighthouse::ssz_attestation(&attest).expect("attest ssz decode failed");
 
     // debug
-    info_attestation(&a);
+    //info_attestation(&a);
 
     // lighthouse processing
     let post = lighthouse::process_attestation(b, a).expect("process failed");

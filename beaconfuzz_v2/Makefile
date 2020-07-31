@@ -45,6 +45,16 @@ docker:
 	$(CACHE)
 	@echo 'USAGE: docker run -it -v beaconfuzz_v2'
 
+fuzz_attestation:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attestation
+
+pfuzz:
+	echo "TODO"
+	# cd ../../prysm/; export GOPATH=$(pwd);
+	# cd pfuzz ; go get .
+	# go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
+
+
 #
 # CI utils
 #

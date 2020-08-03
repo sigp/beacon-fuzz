@@ -133,22 +133,22 @@ fn main() {
         fuzz!(|data| {
             // test if lighthouse decode data properly
             // otherwise doesn't make sense to go deeper
-            if let Ok(att) = lighthouse::ssz_attestation(&data) {
+            if let Ok(att) = lighthouse::ssz_attester_slashing(&data) {
                 // clone the beaconstate locally
                 let beacon_clone = state.clone();
 
                 // call lighthouse and get post result
                 // focus only on valid post here
-                if let Ok(post) = lighthouse::process_attestation(beacon_clone, att.clone()) {
+                if let Ok(post) = lighthouse::process_attester_slashing(beacon_clone, att.clone()) {
                     // call prysm
-                    prysm::process_attestation(
+                    /*prysm::process_attester_slashing(
                         &beacon_blob, //target.pre.as_ssz_bytes(),
                         &data,        //target.attestation.as_ssz_bytes(),
                         &post.as_ssz_bytes(),
-                    );
+                    );*/
 
                     // call nimbus
-                    nimbus::process_attestation(
+                    nimbus::process_attester_slashing(
                         &state.clone(), //target.pre.as_ssz_bytes(),
                         &att,           //target.attestation.as_ssz_bytes(),
                         &post.as_ssz_bytes(),

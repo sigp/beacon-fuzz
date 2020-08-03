@@ -48,6 +48,10 @@ docker:
 fuzz_attestation:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attestation
 
+fuzz_attester_slashing:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attester_slashing
+
+
 pfuzz:
 	echo "TODO"
 	# cd ../../prysm/; export GOPATH=$(pwd);

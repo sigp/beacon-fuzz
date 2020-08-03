@@ -17,6 +17,10 @@ eth2_ssz = { path = "../../lighthouse/consensus/ssz/" }
 eth2_ssz_derive = { path = "../../lighthouse/consensus/ssz_derive/" }
 state_processing = { path = "../../lighthouse/consensus/state_processing/" }
 types = { path = "../../lighthouse/consensus/types" }
+# local library
+nimbus = { path = "nimbus" }
+prysm = { path = "prysm" }
+lighthouse = { path = "lighthouse" }
 
 [patch.crates-io]
 # Needed to provide paths to some relevant dependencies

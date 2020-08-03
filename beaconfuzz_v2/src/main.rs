@@ -21,9 +21,9 @@ ROADMAP
 -- read
 */
 
-mod lighthouse;
-mod nimbus;
-mod prysm;
+//mod lighthouse;
+//use nimbus::process_attestation;
+//use prysm::process_attestation;
 mod utils;
 
 /// Run beaconfuzz_v2

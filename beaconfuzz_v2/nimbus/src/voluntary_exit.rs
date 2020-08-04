@@ -25,7 +25,7 @@ pub fn process_voluntary_exit(
     beacon: &BeaconState<MainnetEthSpec>,
     exit: &SignedVoluntaryExit,
     post: &[u8],
-) -> Vec<u8> {
+) -> bool {
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
 
     // create testcase ssz struct
@@ -51,7 +51,7 @@ pub fn process_voluntary_exit(
 
     assert_eq!(out, post);
     println!("[good]: {}", res);
-    out
+    res
 }
 
 // Nimbus API libnfuzz (see here)

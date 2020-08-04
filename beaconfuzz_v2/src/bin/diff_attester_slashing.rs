@@ -29,7 +29,6 @@ use rand::thread_rng;
 #[inline(always)]
 fn list_files_in_folder(path_str: &String) -> Result<Vec<String>, ()> {
     let mut list: Vec<String> = Vec::<String>::new();
-
     for entry in WalkDir::new(path_str).into_iter().filter_map(|e| e.ok()) {
         if entry.metadata().unwrap().is_file() {
             //println!("{}", entry.path().display());
@@ -141,11 +140,11 @@ fn main() {
                 // focus only on valid post here
                 if let Ok(post) = lighthouse::process_attester_slashing(beacon_clone, att.clone()) {
                     // call prysm
-                    /*prysm::process_attester_slashing(
+                    prysm::process_attester_slashing(
                         &beacon_blob, //target.pre.as_ssz_bytes(),
                         &data,        //target.attestation.as_ssz_bytes(),
                         &post.as_ssz_bytes(),
-                    );*/
+                    );
 
                     // call nimbus
                     nimbus::process_attester_slashing(

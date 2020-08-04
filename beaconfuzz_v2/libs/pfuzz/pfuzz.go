@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"context"
 	"unsafe"
@@ -7,6 +8,8 @@ import (
 
 	"github.com/prysmaticlabs/prysm/beacon-chain/core/blocks"
 	stateTrie "github.com/prysmaticlabs/prysm/beacon-chain/state"
+	"github.com/prysmaticlabs/prysm/beacon-chain/core/state"
+	// prylabs_testing "github.com/prysmaticlabs/prysm/fuzz/testing"
 	"github.com/prysmaticlabs/prysm/shared/params"
 	"github.com/prysmaticlabs/prysm/shared/featureconfig"
 	ethpb "github.com/prysmaticlabs/ethereumapis/eth/v1alpha1"
@@ -23,77 +26,514 @@ func PrysmMain(bls bool) {
 	})
 }
 
-// process the given beaconstate and attestation pointer
-// post beaconstate is store inside out_ptr
-// return false if something failed
+func fail(err error) (bool) {
+	shouldPanic := false
+	if shouldPanic {
+		panic(err)
+	}
+	return false
+}
 
+/*
+
+        input_ptr: *mut u8,
+        input_size: usize,
+        output_ptr: *mut u8,
+        output_size: *mut usize,
+        disable_bls: bool,
+
+(uint8_t* input_ptr, size_t input_size,
+  uint8_t* output_ptr, size_t* output_size, bool disable_bls);
+*/
+
+// BeaconFuzzAttestation implements libfuzzer and beacon fuzz interface.
 //export pfuzz_attestation
 func pfuzz_attestation(
 	beacon_ptr unsafe.Pointer, input_size int,
 	attest_ptr unsafe.Pointer, attest_size int,
 	out_ptr unsafe.Pointer, out_size int) (bool) {
-
 	// mainnet config
 	params.UseMainnetConfig()
 
-	// Create reflect for the beaconstate pointer 
+	// pointer into beaconstate 
 	var beacon []byte
-	s1 := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
-	s1.Data = uintptr(beacon_ptr)
-	s1.Len = input_size
-	s1.Cap = input_size
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
 
 
-	// UnmarshalSSZ the beaconstate
-	beaconstate := &pb.BeaconState{}
-	if err := beaconstate.UnmarshalSSZ(beacon); err != nil {
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		//return false
+		panic("BeaconState failed ")
 		return false
 	}
 
-	// Create reflect for the Attestation pointer  
+	// pointer into Attestation 
 	var attest []byte
-	s2 := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
-	s2.Data = uintptr(attest_ptr)
-	s2.Len = attest_size
-	s2.Cap = attest_size
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
 
-	// UnmarshalSSZ the Attestation
+	// load the container
 	data := &ethpb.Attestation{}
 	if err := data.UnmarshalSSZ(attest); err != nil {
 		return false
 	}
 
-	// Initialize with the beaconstate
-	s, err := stateTrie.InitializeFromProto(beaconstate)
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
 	if err != nil {
 		// should never happen
-		return false
+		panic("stateTrie InitializeFromProto")
 	}
-
 	// process the container
 	post, err := blocks.ProcessAttestationNoVerify(context.Background(), s, data)
 	if err != nil {
 		return false
 	}
+	if post == nil {
+		return false
+	}
 
-	// marshalSSZ the post beaconstate into ssz format
-	post_ssz, err := ssz.Marshal(post.InnerStateUnsafe())
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
 	if err != nil {
 		panic(err)
 	}
 
-	// Create reflect for out_ptr
+	// pointer into Attestation 
 	var out []byte
-	s3 := (*reflect.SliceHeader)(unsafe.Pointer(&out))
-	s3.Data = uintptr(out_ptr)
-	s3.Len = len(post_ssz)
-	s3.Cap = len(post_ssz)
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
 
 	// TODO - check len(result) == out_size?
 
-	// copy post_ssz into out_ptr
-	copy(out, post_ssz)
+	copy(out, result)
 
+	return true
+}
+
+
+//export pfuzz_attester_slashing
+func pfuzz_attester_slashing(
+	beacon_ptr unsafe.Pointer, input_size int,
+	attest_ptr unsafe.Pointer, attest_size int,
+	out_ptr unsafe.Pointer, out_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into beaconstate 
+	var beacon []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		//return false
+		panic("BeaconState failed ")
+		return false
+	}
+
+	// pointer into Attestation 
+	var attest []byte
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
+
+	// load the container
+	data := &ethpb.AttesterSlashing{}
+	if err := data.UnmarshalSSZ(attest); err != nil {
+		return false
+	}
+
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
+	if err != nil {
+		// should never happen
+		panic("stateTrie InitializeFromProto")
+	}
+	// process the container
+	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}})
+	if err != nil {
+		return false
+	}
+	if post == nil {
+		return false
+	}
+
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
+	if err != nil {
+		panic(err)
+	}
+
+	// pointer into Attestation 
+	var out []byte
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
+
+	// TODO - check len(result) == out_size?
+
+	copy(out, result)
+
+	return true
+}
+
+//export pfuzz_block
+func pfuzz_block(
+	beacon_ptr unsafe.Pointer, input_size int,
+	attest_ptr unsafe.Pointer, attest_size int,
+	out_ptr unsafe.Pointer, out_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into beaconstate 
+	var beacon []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		//return false
+		panic("BeaconState failed ")
+		return false
+	}
+
+	// pointer into Attestation 
+	var attest []byte
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
+
+	// load the container
+	data := &ethpb.SignedBeaconBlock{}
+	if err := data.UnmarshalSSZ(attest); err != nil {
+		return false
+	}
+
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
+	if err != nil {
+		// should never happen
+		panic("stateTrie InitializeFromProto")
+	}
+	// process the container
+	post, err := state.ProcessBlock(context.Background(), s, data)
+	if err != nil {
+		return false
+	}
+	if post == nil {
+		return false
+	}
+
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
+	if err != nil {
+		panic(err)
+	}
+
+	// pointer into Attestation 
+	var out []byte
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
+
+	// TODO - check len(result) == out_size?
+
+	copy(out, result)
+
+	return true
+}
+
+//export pfuzz_block_header
+func pfuzz_block_header(
+	beacon_ptr unsafe.Pointer, input_size int,
+	attest_ptr unsafe.Pointer, attest_size int,
+	out_ptr unsafe.Pointer, out_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into beaconstate 
+	var beacon []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		//return false
+		panic("BeaconState failed ")
+		return false
+	}
+
+	// pointer into Attestation 
+	var attest []byte
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
+
+	// load the container
+	data := &ethpb.BeaconBlock{}
+	if err := data.UnmarshalSSZ(attest); err != nil {
+		return false
+	}
+
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
+	if err != nil {
+		// should never happen
+		panic("stateTrie InitializeFromProto")
+	}
+	// process the container
+	post, err := blocks.ProcessBlockHeaderNoVerify(s, data)
+	if err != nil {
+		return false
+	}
+	if post == nil {
+		return false
+	}
+
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
+	if err != nil {
+		panic(err)
+	}
+
+	// pointer into Attestation 
+	var out []byte
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
+
+	// TODO - check len(result) == out_size?
+
+	copy(out, result)
+
+	return true
+}
+
+//export pfuzz_deposit
+func pfuzz_deposit(
+	beacon_ptr unsafe.Pointer, input_size int,
+	attest_ptr unsafe.Pointer, attest_size int,
+	out_ptr unsafe.Pointer, out_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into beaconstate 
+	var beacon []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		return false
+	}
+
+	// pointer into Attestation 
+	var attest []byte
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
+
+	// load the container
+	data := &ethpb.Deposit{}
+	if err := data.UnmarshalSSZ(attest); err != nil {
+		return false
+	}
+
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
+	if err != nil {
+		// should never happen
+		panic("stateTrie InitializeFromProto")
+	}
+	// process the container
+	post, err := blocks.ProcessDeposit(s, data, true)
+	if err != nil {
+		return false
+	}
+	if post == nil {
+		return false
+	}
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
+	if err != nil {
+		panic(err)
+	}
+
+	// pointer into Attestation 
+	var out []byte
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
+
+	// TODO - check len(result) == out_size?
+
+	copy(out, result)
+
+	return true
+}
+
+//export pfuzz_proposer_slashing
+func pfuzz_proposer_slashing(
+	beacon_ptr unsafe.Pointer, input_size int,
+	attest_ptr unsafe.Pointer, attest_size int,
+	out_ptr unsafe.Pointer, out_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into beaconstate 
+	var beacon []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		//return false
+		panic("BeaconState failed ")
+		return false
+	}
+
+	// pointer into Attestation 
+	var attest []byte
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
+	// load the container
+	data := &ethpb.ProposerSlashing{}
+	if err := data.UnmarshalSSZ(attest); err != nil {
+		return false
+	}
+
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
+	if err != nil {
+		// should never happen
+		panic("stateTrie InitializeFromProto")
+	}
+	// process the container
+	post, err := blocks.ProcessProposerSlashings(context.Background(), s, &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}})
+	if err != nil {
+		return false
+	}
+	if post == nil {
+		return false
+	}
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
+	if err != nil {
+		panic(err)
+	}
+
+	// pointer into Attestation 
+	var out []byte
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
+
+	// TODO - check len(result) == out_size?
+	copy(out, result)
+	return true
+}
+
+//export pfuzz_voluntary_exit
+func pfuzz_voluntary_exit(
+	beacon_ptr unsafe.Pointer, input_size int,
+	attest_ptr unsafe.Pointer, attest_size int,
+	out_ptr unsafe.Pointer, out_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into beaconstate 
+	var beacon []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&beacon))
+	sh.Data = uintptr(beacon_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+	// load the beaconstate
+	st := &pb.BeaconState{}
+	if err := st.UnmarshalSSZ(beacon); err != nil {
+		//return false
+		panic("BeaconState failed ")
+		return false
+	}
+
+	// pointer into Attestation 
+	var attest []byte
+	sa := (*reflect.SliceHeader)(unsafe.Pointer(&attest))
+	sa.Data = uintptr(attest_ptr)
+	sa.Len = attest_size
+	sa.Cap = attest_size
+	// load the container
+	data := &ethpb.VoluntaryExit{}
+	if err := data.UnmarshalSSZ(attest); err != nil {
+		return false
+	}
+
+	// get a valid beaconstate
+	//st := getbeaconstate()
+	s, err := stateTrie.InitializeFromProto(st)
+	if err != nil {
+		// should never happen
+		panic("stateTrie InitializeFromProto")
+	}
+	// process the container
+	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{{Exit: data}}})
+	if err != nil {
+		return false
+	}
+	if post == nil {
+		return false
+	}
+	result, err := ssz.Marshal(post.InnerStateUnsafe())
+	if err != nil {
+		panic(err)
+	}
+
+	// pointer into Attestation 
+	var out []byte
+	so := (*reflect.SliceHeader)(unsafe.Pointer(&out))
+	so.Data = uintptr(out_ptr)
+	so.Len = len(result)
+	so.Cap = len(result)
+
+	// TODO - check len(result) == out_size?
+	copy(out, result)
 	return true
 }
 

@@ -19,12 +19,12 @@ build:
 	cargo +nightly build --release --out-dir=. -Z unstable-options
 
 # Run beaconfuzz_v2
-run:
-	./beaconfuzz_v2 debug
+run: build
+	./beaconfuzz_v2 list
 
 # Compile and run beaconfuzz_v2
 test: build
-	./beaconfuzz_v2 debug attestation
+	./beaconfuzz_v2 debug beacon.ssz attest.ssz Attestation 
 
 # Run Rust fmt to make code cleaner
 fmt:
@@ -50,6 +50,21 @@ fuzz_attestation:
 
 fuzz_attester_slashing:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attester_slashing
+
+fuzz_block:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block
+
+fuzz_block_header:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block_header
+
+fuzz_deposit:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_deposit
+
+fuzz_proposer_slashing:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_proposer_slashing
+
+fuzz_voluntary_exit:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_voluntary_exit
 
 
 pfuzz:

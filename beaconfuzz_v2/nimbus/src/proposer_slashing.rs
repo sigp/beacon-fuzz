@@ -25,7 +25,7 @@ pub fn process_proposer_slashing(
     beacon: &BeaconState<MainnetEthSpec>,
     proposer_slashing: &ProposerSlashing,
     post: &[u8],
-) -> Vec<u8> {
+) -> bool {
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
 
     // create testcase ssz struct
@@ -51,5 +51,5 @@ pub fn process_proposer_slashing(
 
     assert_eq!(out, post);
     println!("[good]: {}", res);
-    out
+    res
 }

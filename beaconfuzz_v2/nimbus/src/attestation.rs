@@ -25,7 +25,7 @@ pub fn process_attestation(
     beacon: &BeaconState<MainnetEthSpec>,
     attest: &Attestation<MainnetEthSpec>,
     post: &[u8],
-) -> Vec<u8> {
+) -> bool {
     // beacon: &[u8], attest: &[u8],
     //let out: Vec<u8> = Vec::with_capacity(post.len());
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
@@ -59,5 +59,5 @@ pub fn process_attestation(
 
     assert_eq!(out, post);
     println!("[good]: {}", res);
-    out
+    res
 }

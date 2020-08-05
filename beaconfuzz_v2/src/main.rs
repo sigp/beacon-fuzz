@@ -9,17 +9,6 @@ use structopt::StructOpt;
 
 use ssz::Encode; //Decode
 
-/*
-
-ROADMAP
-
--- cli
--- read
-*/
-
-//mod lighthouse;
-//use nimbus::process_attestation;
-//use prysm::process_attestation;
 mod utils;
 
 /// Run beaconfuzz_v2
@@ -30,9 +19,9 @@ enum Cli {
     Debug {
         /// Pre-Beaconstate
         beaconstate_filename: String,
-        /// Which target to run
+        /// Container
         container_filename: String,
-        /// Type of the container
+        /// Container type
         #[structopt(
             possible_values = &self::Containers::variants(),
             case_insensitive = true
@@ -42,8 +31,6 @@ enum Cli {
     /// Run fuzzer
     #[structopt(name = "fuzz")]
     Fuzz {
-        /// Which target to run
-        target: String,
         /// Set corpora path
         #[structopt(
             short = "f",
@@ -51,6 +38,12 @@ enum Cli {
             default_value = "../eth2fuzz/workspace/corpora"
         )]
         corpora: String,
+        /// Which target to run
+        #[structopt(
+            possible_values = &self::Containers::variants(),
+            case_insensitive = true
+        )]
+        container_type: Containers,
     },
     /// List all available fuzzing targets
     #[structopt(name = "list")]
@@ -72,8 +65,11 @@ fn run() -> Result<(), Error> {
             debug_target(beaconstate_filename, container_filename, container_type)?;
         }
         // Fuzz targets
-        Fuzz { target, corpora } => {
-            fuzz_target(target, corpora)?;
+        Fuzz {
+            corpora,
+            container_type,
+        } => {
+            fuzz_target(corpora, container_type)?;
         }
         // list all targets
         ListTargets => {
@@ -116,8 +112,10 @@ fn list_targets() -> Result<(), Error> {
     Ok(())
 }
 
-fn fuzz_target(_target: String, _corpora: String) -> Result<(), Error> {
+fn fuzz_target(corpora: String, container_type: Containers) -> Result<(), Error> {
     println!("[+] fuzz_target");
+    println!("[+] corpora: {}", corpora);
+    println!("[+] container_type: {:?}", container_type);
     Ok(())
 }
 
@@ -128,9 +126,6 @@ fn run_attestation(beacon_blob: &[u8], container_blob: &[u8]) {
     // SSZ Decoding of the container depending of the type
     let container =
         lighthouse::ssz_attestation(&container_blob).expect("container ssz decoding failed");
-
-    // lighthouse processing
-    let post = lighthouse::process_attestation(beacon.clone(), container).expect("process failed");
 
     let data = container_blob;
     let state = beacon;
@@ -149,14 +144,12 @@ fn run_attestation(beacon_blob: &[u8], container_blob: &[u8]) {
 
             println!("[DEBUG] PRYSM: start");
             let res = prysm::process_attestation(
-                &beacon_blob, //target.pre.as_ssz_bytes(),
-                &data,        //target.attestation.as_ssz_bytes(),
+                &beacon_blob, //beacon &[u8]
+                &data,        //container &[u8]
                 &post.as_ssz_bytes(),
             );
             assert_eq!(res, true);
-            println!("[DEBUG] PRYSM: end");
 
-            // call nimbus
             println!("[DEBUG] NIMBUS: start");
             let res = nimbus::process_attestation(
                 &state.clone(), //target.pre.as_ssz_bytes(),
@@ -164,11 +157,11 @@ fn run_attestation(beacon_blob: &[u8], container_blob: &[u8]) {
                 &post.as_ssz_bytes(),
             );
             assert_eq!(res, true);
-            println!("[DEBUG] NIMBUS: end");
         } else {
-            // we assert that we should get false
-            // as return value because lighthouse process
-            // returned an error
+            // Lighthouse returned an error during container
+            // processing meaning other client should do the same
+
+            println!("[DEBUG] PRYSM: start");
             let res = prysm::process_attestation(
                 &beacon_blob, //target.pre.as_ssz_bytes(),
                 &data,        //target.attestation.as_ssz_bytes(),
@@ -178,13 +171,12 @@ fn run_attestation(beacon_blob: &[u8], container_blob: &[u8]) {
             );
             assert_eq!(res, false);
 
-            // we assert that we should get false
-            // as return value because lighthouse process
-            // returned an error
+            println!("[DEBUG] NIMBUS: start");
             let res = nimbus::process_attestation(
-                &state.clone(), //target.pre.as_ssz_bytes(),
-                &att,           //target.attestation.as_ssz_bytes(),
-                &[],
+                &state.clone(),
+                &att,
+                &[], // we don't care of the value here because prysm
+                     // will reject the container before
             );
             assert_eq!(res, false);
         }
@@ -196,11 +188,10 @@ fn run_attestation(beacon_blob: &[u8], container_blob: &[u8]) {
         // we assert that we should get false as return value
         // because the ssz data is incorrect for lighthouse
         let res = prysm::process_attestation(
-            &beacon_blob, //target.pre.as_ssz_bytes(),
-            &data,        //target.attestation.as_ssz_bytes(),
-            &[],          // we don't care of the value here
-                          // because prysm should reject
-                          // the module first
+            &beacon_blob,
+            &data,
+            &[], // we don't care of the value here because prysm
+                 // will reject the container before
         );
         assert_eq!(res, false);
 
@@ -213,7 +204,7 @@ fn run_deposit(beacon_blob: &[u8], container_blob: &[u8]) {
     let beacon = lighthouse::ssz_beaconstate(&beacon_blob).expect("beacon ssz decode failed");
 
     let data = container_blob;
-    let state = beacon.clone();
+    let state = beacon;
 
     // SSZ Decoding of the container depending of the type
     if let Ok(att) = lighthouse::ssz_deposit(&data) {
@@ -223,6 +214,8 @@ fn run_deposit(beacon_blob: &[u8], container_blob: &[u8]) {
         // call lighthouse and get post result
         // focus only on valid post here
         if let Ok(post) = lighthouse::process_deposit(beacon_clone, att.clone()) {
+            println!("[LIGHTHOUSE]: {}", true);
+
             // call prysm
             let res = prysm::process_deposit(
                 &beacon_blob, //target.pre.as_ssz_bytes(),
@@ -239,6 +232,7 @@ fn run_deposit(beacon_blob: &[u8], container_blob: &[u8]) {
             );
             assert_eq!(res, true);
         } else {
+            println!("[LIGHTHOUSE]: {}", false);
             // we assert that we should get false
             // as return value because lighthouse process
             // returned an error
@@ -282,18 +276,97 @@ fn run_deposit(beacon_blob: &[u8], container_blob: &[u8]) {
     }
 }
 
+fn run_voluntary_exit(beacon_blob: &[u8], container_blob: &[u8]) {
+    // SSZ Decoding of the beaconstate
+    let beacon = lighthouse::ssz_beaconstate(&beacon_blob).expect("beacon ssz decode failed");
+
+    let data = container_blob;
+    let state = beacon;
+
+    // SSZ Decoding of the container depending of the type
+    if let Ok(att) = lighthouse::ssz_voluntary_exit(&data) {
+        // clone the beaconstate locally
+        let beacon_clone = state.clone();
+
+        // call lighthouse and get post result
+        // focus only on valid post here
+        if let Ok(post) = lighthouse::process_voluntary_exit(beacon_clone, att.clone()) {
+            println!("[LIGHTHOUSE]: {}", true);
+
+            // call prysm
+            let res = prysm::process_voluntary_exit(
+                &beacon_blob, //target.pre.as_ssz_bytes(),
+                &data,        //target.attestation.as_ssz_bytes(),
+                &post.as_ssz_bytes(),
+            );
+            assert_eq!(res, true);
+
+            // call nimbus
+            let res = nimbus::process_voluntary_exit(
+                &state.clone(), //target.pre.as_ssz_bytes(),
+                &att,           //target.attestation.as_ssz_bytes(),
+                &post.as_ssz_bytes(),
+            );
+            assert_eq!(res, true);
+        } else {
+            println!("[LIGHTHOUSE]: {}", false);
+            // we assert that we should get false
+            // as return value because lighthouse process
+            // returned an error
+            let res = prysm::process_voluntary_exit(
+                &beacon_blob, //target.pre.as_ssz_bytes(),
+                &data,        //target.attestation.as_ssz_bytes(),
+                &[],          // we don't care of the value here
+                              // because prysm should reject
+                              // the module first
+            );
+            assert_eq!(res, false);
+
+            // we assert that we should get false
+            // as return value because lighthouse process
+            // returned an error
+            let res = nimbus::process_voluntary_exit(
+                &state.clone(), //target.pre.as_ssz_bytes(),
+                &att,           //target.attestation.as_ssz_bytes(),
+                &[],
+            );
+            assert_eq!(res, false);
+        }
+    // Invalid SSZ container
+    } else {
+        // data is an invalid ssz
+        // we need to verify it is detected as well by other
+        // eth2client
+
+        // we assert that we should get false as return value
+        // because the ssz data is incorrect for lighthouse
+        let res = prysm::process_voluntary_exit(
+            &beacon_blob, //target.pre.as_ssz_bytes(),
+            &data,        //target.attestation.as_ssz_bytes(),
+            &[],          // we don't care of the value here
+                          // because prysm should reject
+                          // the module first
+        );
+        assert_eq!(res, false);
+
+        // TODO for nimbus
+    }
+}
+
+#[link(name = "pfuzz", kind = "static")]
+extern "C" {
+    fn PrysmMain(bls: bool);
+}
+#[link(name = "nfuzz", kind = "static")]
+extern "C" {
+    fn NimMain();
+}
+
 fn debug_target(
     beaconstate_filename: String,
     container_filename: String,
     container_type: Containers,
 ) -> Result<(), Error> {
-    //let _args: Vec<String> = env::args().collect();
-
-    //let b = &args[1];
-    //let b = beaconstate_path; //"beacon.ssz".to_string();
-    //let a = &args[2];
-    //let a = container_path; //"attest.ssz".to_string();
-
     // Read beaconstate ssz file
     println!("[DEBUG] beaconstate_path = {}", &beaconstate_filename);
     let beacon_blob = utils::read_from_path(&beaconstate_filename).expect("beacon not here");
@@ -327,12 +400,21 @@ fn debug_target(
         }
     };*/
 
+    // Initialize eth2client environment
+    unsafe {
+        PrysmMain(false);
+        NimMain();
+    }
+
     match container_type {
         Containers::Attestation => {
             run_attestation(&beacon_blob, &container_blob);
         }
         Containers::Deposit => {
             run_deposit(&beacon_blob, &container_blob);
+        }
+        Containers::VoluntaryExit => {
+            run_voluntary_exit(&beacon_blob, &container_blob);
         }
         _ => panic!("not supported container yet"),
     }

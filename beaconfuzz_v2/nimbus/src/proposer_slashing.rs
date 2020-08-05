@@ -44,12 +44,12 @@ pub fn process_proposer_slashing(
 
     let res = unsafe {
         // initialize nim gc memory, types and stack
-        NimMain();
+        //NimMain();
 
         nfuzz_proposer_slashing(input_ptr, input_size, output_ptr, output_size, false)
     };
 
     assert_eq!(out, post);
-    println!("[good]: {}", res);
+    println!("[NIMBUS]: {}", res);
     res
 }

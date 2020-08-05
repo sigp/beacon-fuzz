@@ -25,6 +25,15 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
+#[link(name = "pfuzz", kind = "static")]
+extern "C" {
+    fn PrysmMain(bls: bool);
+}
+#[link(name = "nfuzz", kind = "static")]
+extern "C" {
+    fn NimMain();
+}
+
 /// List file in folder and return list of files paths
 #[inline(always)]
 fn list_files_in_folder(path_str: &String) -> Result<Vec<String>, ()> {
@@ -126,6 +135,12 @@ fn main() {
 
     // get correct beaconstate as u8
     let beacon_blob = read_contents_from_path(&path).unwrap();
+
+    // Initialize eth2client environment
+    unsafe {
+        PrysmMain(false);
+        NimMain();
+    }
 
     // Run fuzzing loop
     loop {

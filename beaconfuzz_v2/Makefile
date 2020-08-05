@@ -54,8 +54,9 @@ fuzz_attester_slashing:
 fuzz_block:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block
 
-fuzz_block_header:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block_header
+# TODO - fix this one
+#fuzz_block_header:
+#	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block_header
 
 fuzz_deposit:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_deposit

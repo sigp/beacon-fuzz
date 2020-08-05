@@ -59,6 +59,40 @@ WORKDIR nim-beacon-chain
 RUN make libnfuzz.so libnfuzz.a
 
 #####################################
+############ prysm #################
+
+WORKDIR /prysm
+
+# Update ubuntu
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends \
+		ca-certificates \
+		software-properties-common \
+		curl \
+		git \
+		clang
+
+# Install golang
+RUN add-apt-repository ppa:longsleep/golang-backports
+RUN apt-get update && \
+	apt-get install -y \
+	golang
+
+# Copy all
+COPY libs/pfuzz .
+
+# Setup golang path
+ENV GOPATH="/prysm"
+ENV GOBIN=$GOPATH/bin
+
+# Get all golang dependencies
+RUN go get .
+
+# Compile pfuzz lib
+RUN  go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
+
+
+#####################################
 ############ eth2fuzz ###############
 
 WORKDIR /beacon-fuzz/beaconfuzz_v2

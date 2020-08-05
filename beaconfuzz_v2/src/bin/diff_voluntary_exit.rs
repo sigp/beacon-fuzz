@@ -25,15 +25,6 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-#[link(name = "pfuzz", kind = "static")]
-extern "C" {
-    fn PrysmMain(bls: bool);
-}
-#[link(name = "nfuzz", kind = "static")]
-extern "C" {
-    fn NimMain();
-}
-
 /// List file in folder and return list of files paths
 #[inline(always)]
 fn list_files_in_folder(path_str: &String) -> Result<Vec<String>, ()> {
@@ -84,6 +75,15 @@ fn fuzz_logging(path: &String) {
     if let Err(e) = writeln!(file, "pid: {} | beaconstate: {}", pid, path) {
         eprintln!("Couldn't write to file: {}", e);
     }
+}
+
+#[link(name = "pfuzz", kind = "static")]
+extern "C" {
+    fn PrysmMain(bls: bool);
+}
+#[link(name = "nfuzz", kind = "static")]
+extern "C" {
+    fn NimMain();
 }
 
 fn main() {
@@ -146,29 +146,70 @@ fn main() {
     // Run fuzzing loop
     loop {
         fuzz!(|data| {
-            // test if lighthouse decode data properly
-            // otherwise doesn't make sense to go deeper
-            if let Ok(att) = lighthouse::ssz_attestation(&data) {
+            // SSZ Decoding of the container depending of the type
+            if let Ok(att) = lighthouse::ssz_voluntary_exit(&data) {
                 // clone the beaconstate locally
                 let beacon_clone = state.clone();
 
                 // call lighthouse and get post result
                 // focus only on valid post here
-                if let Ok(post) = lighthouse::process_attestation(beacon_clone, att.clone()) {
+                if let Ok(post) = lighthouse::process_voluntary_exit(beacon_clone, att.clone()) {
                     // call prysm
-                    prysm::process_attestation(
+                    let res = prysm::process_voluntary_exit(
                         &beacon_blob, //target.pre.as_ssz_bytes(),
                         &data,        //target.attestation.as_ssz_bytes(),
                         &post.as_ssz_bytes(),
                     );
+                    assert_eq!(res, true);
 
                     // call nimbus
-                    nimbus::process_attestation(
+                    let res = nimbus::process_voluntary_exit(
                         &state.clone(), //target.pre.as_ssz_bytes(),
                         &att,           //target.attestation.as_ssz_bytes(),
                         &post.as_ssz_bytes(),
                     );
+                    assert_eq!(res, true);
+                } else {
+                    // we assert that we should get false
+                    // as return value because lighthouse process
+                    // returned an error
+                    let res = prysm::process_voluntary_exit(
+                        &beacon_blob, //target.pre.as_ssz_bytes(),
+                        &data,        //target.attestation.as_ssz_bytes(),
+                        &[],          // we don't care of the value here
+                                      // because prysm should reject
+                                      // the module first
+                    );
+                    assert_eq!(res, false);
+
+                    // we assert that we should get false
+                    // as return value because lighthouse process
+                    // returned an error
+                    let res = nimbus::process_voluntary_exit(
+                        &state.clone(), //target.pre.as_ssz_bytes(),
+                        &att,           //target.attestation.as_ssz_bytes(),
+                        &[],
+                    );
+                    assert_eq!(res, false);
                 }
+            // Invalid SSZ container
+            } else {
+                // data is an invalid ssz
+                // we need to verify it is detected as well by other
+                // eth2client
+
+                // we assert that we should get false as return value
+                // because the ssz data is incorrect for lighthouse
+                let res = prysm::process_voluntary_exit(
+                    &beacon_blob, //target.pre.as_ssz_bytes(),
+                    &data,        //target.attestation.as_ssz_bytes(),
+                    &[],          // we don't care of the value here
+                                  // because prysm should reject
+                                  // the module first
+                );
+                assert_eq!(res, false);
+
+                // TODO for nimbus
             }
         })
     }

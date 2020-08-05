@@ -38,10 +38,10 @@ pub fn process_attestation(
 
     let ssz_bytes = target.as_ssz_bytes();
 
-    println!("{:?}", ssz_bytes.as_ptr());
-    println!("{:?}", ssz_bytes.len());
-    println!("{:?}", out.as_ptr());
-    println!("{:?}", post.len());
+    //println!("{:?}", ssz_bytes.as_ptr());
+    //println!("{:?}", ssz_bytes.len());
+    //println!("{:?}", out.as_ptr());
+    //println!("{:?}", post.len());
 
     let ssz_bytes_len = ssz_bytes.len();
     let mut inn: Vec<u8> = ssz_bytes.into();
@@ -52,12 +52,12 @@ pub fn process_attestation(
 
     let res = unsafe {
         // initialize nim gc memory, types and stack
-        NimMain();
+        //NimMain();
 
         nfuzz_attestation(input_ptr, input_size, output_ptr, output_size, false)
     };
 
     assert_eq!(out, post);
-    println!("[good]: {}", res);
+    println!("[NIMBUS]: {}", res);
     res
 }

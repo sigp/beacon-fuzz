@@ -7,7 +7,7 @@ extern crate walkdir;
 extern crate ssz;
 extern crate ssz_derive;
 
-use ssz::{Decode, Encode};
+use ssz::Decode;
 
 use types::{BeaconState, MainnetEthSpec};
 
@@ -77,15 +77,6 @@ fn fuzz_logging(path: &String) {
     }
 }
 
-#[link(name = "pfuzz", kind = "static")]
-extern "C" {
-    fn PrysmMain(bls: bool);
-}
-#[link(name = "nfuzz", kind = "static")]
-extern "C" {
-    fn NimMain();
-}
-
 fn main() {
     // provide only valid beaconstate in this folder
     // valid ssz beaconstate here: ../../../corpora/mainnet/beaconstate/
@@ -132,85 +123,18 @@ fn main() {
 
     // Can't panic here since we have already check if
     // beaconstate.is_err()
-    let state = beaconstate.unwrap();
+    let _state = beaconstate.unwrap();
 
     // get correct beaconstate as u8
     let beacon_blob = read_contents_from_path(&path).unwrap();
 
     // Initialize eth2client environment
-    unsafe {
-        PrysmMain(false);
-        NimMain();
-    }
+    eth2clientsfuzz::initialize_clients(true);
 
     // Run fuzzing loop
     loop {
         fuzz!(|data| {
-            // SSZ Decoding of the container depending of the type
-            if let Ok(att) = lighthouse::ssz_proposer_slashing(&data) {
-                // clone the beaconstate locally
-                let beacon_clone = state.clone();
-
-                // call lighthouse and get post result
-                // focus only on valid post here
-                if let Ok(post) = lighthouse::process_proposer_slashing(beacon_clone, att.clone()) {
-                    // call prysm
-                    let res = prysm::process_proposer_slashing(
-                        &beacon_blob, //target.pre.as_ssz_bytes(),
-                        &data,        //target.attestation.as_ssz_bytes(),
-                        &post.as_ssz_bytes(),
-                    );
-                    assert_eq!(res, true);
-
-                    // call nimbus
-                    let res = nimbus::process_proposer_slashing(
-                        &state.clone(), //target.pre.as_ssz_bytes(),
-                        &att,           //target.attestation.as_ssz_bytes(),
-                        &post.as_ssz_bytes(),
-                    );
-                    assert_eq!(res, true);
-                } else {
-                    // we assert that we should get false
-                    // as return value because lighthouse process
-                    // returned an error
-                    let res = prysm::process_proposer_slashing(
-                        &beacon_blob, //target.pre.as_ssz_bytes(),
-                        &data,        //target.attestation.as_ssz_bytes(),
-                        &[],          // we don't care of the value here
-                                      // because prysm should reject
-                                      // the module first
-                    );
-                    assert_eq!(res, false);
-
-                    // we assert that we should get false
-                    // as return value because lighthouse process
-                    // returned an error
-                    let res = nimbus::process_proposer_slashing(
-                        &state.clone(), //target.pre.as_ssz_bytes(),
-                        &att,           //target.attestation.as_ssz_bytes(),
-                        &[],
-                    );
-                    assert_eq!(res, false);
-                }
-            // Invalid SSZ container
-            } else {
-                // data is an invalid ssz
-                // we need to verify it is detected as well by other
-                // eth2client
-
-                // we assert that we should get false as return value
-                // because the ssz data is incorrect for lighthouse
-                let res = prysm::process_proposer_slashing(
-                    &beacon_blob, //target.pre.as_ssz_bytes(),
-                    &data,        //target.attestation.as_ssz_bytes(),
-                    &[],          // we don't care of the value here
-                                  // because prysm should reject
-                                  // the module first
-                );
-                assert_eq!(res, false);
-
-                // TODO for nimbus
-            }
+            eth2clientsfuzz::fuzz_proposer_slashing(&beacon_blob, &data);
         })
     }
 }

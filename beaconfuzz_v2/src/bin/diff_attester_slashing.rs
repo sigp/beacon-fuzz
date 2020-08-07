@@ -7,7 +7,7 @@ extern crate walkdir;
 extern crate ssz;
 extern crate ssz_derive;
 
-use ssz::{Decode, Encode};
+use ssz::Decode;
 
 use types::{BeaconState, MainnetEthSpec};
 
@@ -25,19 +25,11 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-#[link(name = "pfuzz", kind = "static")]
-extern "C" {
-    fn PrysmMain(bls: bool);
-}
-#[link(name = "nfuzz", kind = "static")]
-extern "C" {
-    fn NimMain();
-}
-
 /// List file in folder and return list of files paths
 #[inline(always)]
 fn list_files_in_folder(path_str: &String) -> Result<Vec<String>, ()> {
     let mut list: Vec<String> = Vec::<String>::new();
+
     for entry in WalkDir::new(path_str).into_iter().filter_map(|e| e.ok()) {
         if entry.metadata().unwrap().is_file() {
             //println!("{}", entry.path().display());
@@ -131,44 +123,18 @@ fn main() {
 
     // Can't panic here since we have already check if
     // beaconstate.is_err()
-    let state = beaconstate.unwrap();
+    let _state = beaconstate.unwrap();
 
     // get correct beaconstate as u8
     let beacon_blob = read_contents_from_path(&path).unwrap();
 
     // Initialize eth2client environment
-    unsafe {
-        PrysmMain(false);
-        NimMain();
-    }
+    eth2clientsfuzz::initialize_clients(true);
 
     // Run fuzzing loop
     loop {
         fuzz!(|data| {
-            // test if lighthouse decode data properly
-            // otherwise doesn't make sense to go deeper
-            if let Ok(att) = lighthouse::ssz_attester_slashing(&data) {
-                // clone the beaconstate locally
-                let beacon_clone = state.clone();
-
-                // call lighthouse and get post result
-                // focus only on valid post here
-                if let Ok(post) = lighthouse::process_attester_slashing(beacon_clone, att.clone()) {
-                    // call prysm
-                    prysm::process_attester_slashing(
-                        &beacon_blob, //target.pre.as_ssz_bytes(),
-                        &data,        //target.attestation.as_ssz_bytes(),
-                        &post.as_ssz_bytes(),
-                    );
-
-                    // call nimbus
-                    nimbus::process_attester_slashing(
-                        &state.clone(), //target.pre.as_ssz_bytes(),
-                        &att,           //target.attestation.as_ssz_bytes(),
-                        &post.as_ssz_bytes(),
-                    );
-                }
-            }
+            eth2clientsfuzz::fuzz_attester_slashing(&beacon_blob, &data);
         })
     }
 }

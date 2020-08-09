@@ -15,7 +15,7 @@ pub fn read_from_path(path_str: &String) -> Result<Vec<u8>, io::Error> {
 }
 
 /// List files names in folder string
-fn list_files_in_folder(path_str: &str) -> Result<Vec<String>, ()> {
+pub fn list_files_in_folder(path_str: &str) -> Result<Vec<String>, ()> {
     let mut list: Vec<String> = Vec::<String>::new();
     for entry in WalkDir::new(path_str).into_iter().filter_map(|e| e.ok()) {
         if entry.metadata().unwrap().is_file() {

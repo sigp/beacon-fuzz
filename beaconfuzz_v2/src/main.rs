@@ -7,6 +7,11 @@ extern crate failure;
 use failure::Error;
 use structopt::StructOpt;
 
+use std::fs::File;
+use std::io::Write;
+use std::time::Instant;
+
+mod rand;
 mod utils;
 
 /// Run beaconfuzz_v2
@@ -111,9 +116,69 @@ fn list_targets() -> Result<(), Error> {
 }
 
 fn fuzz_target(corpora: String, container_type: Containers) -> Result<(), Error> {
+    // init random generator
+    let mut rng = rand::Rng::new();
+
     println!("[+] fuzz_target");
     println!("[+] corpora: {}", corpora);
     println!("[+] container_type: {:?}", container_type);
+
+    // Get the list of beacon files
+    let beacon_folder = &format!("{}/{}", corpora, "beaconstate");
+    let beacon_files = utils::list_files_in_folder(&beacon_folder).expect("no beacon files here");
+
+    // Pick one random beacon file
+    let index = rng.rand() % beacon_files.len();
+    let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+    println!("[+] Beacon file: {}", &beacon_files[index]);
+
+    // Get the list of container files
+    let container_folder = &format!("{}/{}", corpora, "attestation");
+    let container_files =
+        utils::list_files_in_folder(&container_folder).expect("no container files here");
+
+    // Pick one random Attestation to fuzz
+    let index = rng.rand() % container_files.len();
+    let container_blob =
+        utils::read_from_path(&container_files[index]).expect("container not here");
+
+    // Create log file
+    let mut outfd = File::create("log.txt").unwrap();
+
+    // Initialize eth2client environment and disable bls
+    eth2clientsfuzz::initialize_clients(true);
+
+    // Call the fuzzing function
+    let it = Instant::now();
+
+    for iters in 1u64.. {
+        // Initialize eth2client environment and disable bls
+        //eth2clientsfuzz::initialize_clients(true);
+
+        nimbus::init_nimbus(true);
+        // Pick one random beacon file
+        let index = rng.rand() % beacon_files.len();
+        let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+        println!("[+] Beacon file: {}", &beacon_files[index]);
+
+        // Pick one random Attestation to fuzz
+        // TODO(optimization) - load contents in memory
+        let index = rng.rand() % container_files.len();
+        let container_blob =
+            utils::read_from_path(&container_files[index]).expect("container not here");
+        println!("[+] Container file: {}", &container_files[index]);
+
+        // call the function
+        eth2clientsfuzz::run_attestation(&beacon_blob, &container_blob);
+
+        // stats monitoring
+        if (iters & 0xff) == 0 {
+            let elapsed = (Instant::now() - it).as_secs_f64();
+            let cases_per_sec = iters as f64 / elapsed;
+            writeln!(outfd, "cases/sec: {:12.4}", cases_per_sec)?;
+        }
+    }
+
     Ok(())
 }
 

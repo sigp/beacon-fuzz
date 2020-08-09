@@ -70,7 +70,8 @@ RUN apt-get update && \
 		software-properties-common \
 		curl \
 		git \
-		clang
+		clang \
+		gpg-agent
 
 # Install golang
 RUN add-apt-repository ppa:longsleep/golang-backports
@@ -78,18 +79,33 @@ RUN apt-get update && \
 	apt-get install -y \
 	golang
 
+# Install Bazel
+RUN curl https://bazel.build/bazel-release.pub.gpg | \
+	apt-key add -
+RUN echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
+RUN apt-get update && \
+	apt-get install -y \
+		cmake \
+		git \
+		bazel \
+ 		bazel-3.2.0
+
 # Copy all
-COPY libs/pfuzz .
+COPY libs/pfuzz /prysm/pfuzz/
 
 # Setup golang path
 ENV GOPATH="/prysm"
-ENV GOBIN=$GOPATH/bin
 
 # Get all golang dependencies
-RUN go get .
+RUN go get -u github.com/prysmaticlabs/prysm || true
+RUN go get -u sigs.k8s.io/structured-merge-diff/v3/value || true
+
+# Build prysm with bazel
+# RUN cd /prysm/src/github.com/prysmaticlabs/prysm/ && bazel build
 
 # Compile pfuzz lib
-RUN  go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
+RUN cd /prysm/pfuzz/ && go get ./...
+RUN go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
 
 
 #####################################

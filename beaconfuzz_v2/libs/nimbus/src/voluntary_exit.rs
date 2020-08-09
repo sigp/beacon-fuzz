@@ -52,8 +52,6 @@ pub fn process_voluntary_exit(
     }
 
     // Verify nimbus's post is equal to lighthouse's post
-    if out != post {
-        panic!("[NIMBUS] Mismatch post");
-    }
+    assert!(out == post, "[NIMBUS] Mismatch post");
     res
 }

@@ -11,16 +11,16 @@ pub mod deposit;
 pub mod proposer_slashing;
 pub mod voluntary_exit;
 
-const DISABLE_BLS_SIGN_VERIF: bool = true;
+static mut DISABLE_BLS: bool = true;
 
 #[link(name = "nfuzz", kind = "static")]
 extern "C" {
     fn NimMain();
 }
 
-// TODO - handle bls bool globaly
-pub fn init_nimbus(_disable_bls: bool) {
+pub fn init_nimbus(disable_bls: bool) {
     unsafe {
+        DISABLE_BLS = disable_bls;
         NimMain();
     }
 }
@@ -30,7 +30,7 @@ pub fn process_attestation(
     attest: &Attestation<MainnetEthSpec>,
     post: &[u8],
 ) -> bool {
-    self::attestation::process_attestation(beacon, attest, post, DISABLE_BLS_SIGN_VERIF)
+    self::attestation::process_attestation(beacon, attest, post, unsafe { DISABLE_BLS })
 }
 
 pub fn process_attester_slashing(
@@ -38,12 +38,9 @@ pub fn process_attester_slashing(
     attester_slashing: &AttesterSlashing<MainnetEthSpec>,
     post: &[u8],
 ) -> bool {
-    self::attester_slashing::process_attester_slashing(
-        beacon,
-        attester_slashing,
-        post,
-        DISABLE_BLS_SIGN_VERIF,
-    )
+    self::attester_slashing::process_attester_slashing(beacon, attester_slashing, post, unsafe {
+        DISABLE_BLS
+    })
 }
 
 pub fn process_block(
@@ -51,7 +48,7 @@ pub fn process_block(
     beacon_block: &SignedBeaconBlock<MainnetEthSpec>,
     post: &[u8],
 ) -> bool {
-    self::block::process_block(beacon, beacon_block, post, DISABLE_BLS_SIGN_VERIF)
+    self::block::process_block(beacon, beacon_block, post, unsafe { DISABLE_BLS })
 }
 
 pub fn process_block_header(
@@ -59,7 +56,7 @@ pub fn process_block_header(
     beacon_block: &BeaconBlock<MainnetEthSpec>,
     post: &[u8],
 ) -> bool {
-    self::block_header::process_block_header(beacon, beacon_block, post, DISABLE_BLS_SIGN_VERIF)
+    self::block_header::process_block_header(beacon, beacon_block, post, unsafe { DISABLE_BLS })
 }
 
 pub fn process_deposit(
@@ -67,7 +64,7 @@ pub fn process_deposit(
     deposit: &Deposit,
     post: &[u8],
 ) -> bool {
-    self::deposit::process_deposit(beacon, deposit, post, DISABLE_BLS_SIGN_VERIF)
+    self::deposit::process_deposit(beacon, deposit, post, unsafe { DISABLE_BLS })
 }
 
 pub fn process_proposer_slashing(
@@ -75,12 +72,9 @@ pub fn process_proposer_slashing(
     proposer_slashing: &ProposerSlashing,
     post: &[u8],
 ) -> bool {
-    self::proposer_slashing::process_proposer_slashing(
-        beacon,
-        proposer_slashing,
-        post,
-        DISABLE_BLS_SIGN_VERIF,
-    )
+    self::proposer_slashing::process_proposer_slashing(beacon, proposer_slashing, post, unsafe {
+        DISABLE_BLS
+    })
 }
 
 pub fn process_voluntary_exit(
@@ -88,5 +82,5 @@ pub fn process_voluntary_exit(
     exit: &SignedVoluntaryExit,
     post: &[u8],
 ) -> bool {
-    self::voluntary_exit::process_voluntary_exit(beacon, exit, post, DISABLE_BLS_SIGN_VERIF)
+    self::voluntary_exit::process_voluntary_exit(beacon, exit, post, unsafe { DISABLE_BLS })
 }

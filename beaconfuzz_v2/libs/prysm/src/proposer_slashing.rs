@@ -55,8 +55,6 @@ pub fn process_proposer_slashing(
     }
 
     // Verify prysm's post is equal to lighthouse's post
-    if out != post {
-        panic!("[PRYSM] Mismatch post");
-    }
+    assert!(out == post, "[PRYSM] Mismatch post");
     res
 }

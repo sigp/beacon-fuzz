@@ -39,8 +39,6 @@ pub fn process_attester_slashing(beacon: &[u8], container: &[u8], post: &[u8]) -
     }
 
     // Verify prysm's post is equal to lighthouse's post
-    if out != post {
-        panic!("[PRYSM] Mismatch post");
-    }
+    assert!(out == post, "[PRYSM] Mismatch post");
     res
 }

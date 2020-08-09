@@ -30,7 +30,7 @@ pub fn run_attestation(beacon_blob: &[u8], data: &[u8], debug: bool) {
             assert_eq!(res, true);
 
             if debug {
-                println!("[PRYSM] Processing {}", true);
+                println!("[PRYSM] Processing {}", res);
             }
 
             // call nimbus
@@ -42,7 +42,7 @@ pub fn run_attestation(beacon_blob: &[u8], data: &[u8], debug: bool) {
             assert_eq!(res, true);
 
             if debug {
-                println!("[NIMBUS] Processing {}", true);
+                println!("[NIMBUS] Processing {}", res);
             }
         } else {
             if debug {
@@ -55,14 +55,14 @@ pub fn run_attestation(beacon_blob: &[u8], data: &[u8], debug: bool) {
             let res = prysm::process_attestation(
                 &beacon_blob, //target.pre.as_ssz_bytes(),
                 &data,
-                &[], // we don't care of the value here
-                     // because prysm should reject
-                     // the module first
+                &beacon_blob.clone(), // we don't care of the value here
+                                      // because prysm should reject
+                                      // the module first
             );
             assert_eq!(res, false);
 
             if debug {
-                println!("[PRYSM] Processing {}", false);
+                println!("[PRYSM] Processing {}", res);
             }
 
             // we assert that we should get false
@@ -76,7 +76,7 @@ pub fn run_attestation(beacon_blob: &[u8], data: &[u8], debug: bool) {
             assert_eq!(res, false);
 
             if debug {
-                println!("[NIMBUS] Processing {}", false);
+                println!("[NIMBUS] Processing {}", res);
             }
         }
     // Data is an invalid SSZ container

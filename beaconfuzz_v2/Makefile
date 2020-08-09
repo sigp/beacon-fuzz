@@ -1,10 +1,10 @@
 .PHONY: default help build fmt clean docker test
 
 #
-# Utils for eth2diff.
+# Utils for beaconfuzz_v2.
 #
 
-default: build
+default: run
 
 help:
 	@echo 'Management commands for beacon-fuzz v2'
@@ -22,9 +22,13 @@ build:
 run: build
 	./beaconfuzz_v2 list
 
-# Compile and run beaconfuzz_v2
+# Compile and run beaconfuzz_v2 with debug command
 test: build
 	./beaconfuzz_v2 debug beacon.ssz attest.ssz Attestation 
+
+# Compile and run beaconfuzz_v2 with fuzz command
+test-fuzz: build
+	./beaconfuzz_v2 fuzz attestation
 
 # Run Rust fmt to make code cleaner
 fmt:

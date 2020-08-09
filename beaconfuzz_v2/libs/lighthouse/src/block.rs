@@ -33,7 +33,7 @@ pub fn process_block(
             &mut beaconstate,
             &block,
             None,
-            BlockSignatureStrategy::VerifyIndividual,
+            BlockSignatureStrategy::NoVerification, //VerifyIndividual,
             spec,
         )?;
         beaconstate

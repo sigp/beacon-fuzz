@@ -1,8 +1,6 @@
 # nim-beacon-chain
 
-
 Implementation of Ethereum Sharded Casper v2.1 Beacon Chain - [github](https://github.com/status-im/nim-beacon-chain)
-
 
 ## Installation
 

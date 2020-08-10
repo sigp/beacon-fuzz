@@ -5,7 +5,6 @@ use state_processing::{
 
 use types::{BeaconState, EthSpec, MainnetEthSpec, SignedVoluntaryExit};
 
-/// Run `process_exits`
 pub fn process_voluntary_exit(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     voluntary_exit: SignedVoluntaryExit,
@@ -15,7 +14,6 @@ pub fn process_voluntary_exit(
     process_exits(
         &mut beaconstate,
         &[voluntary_exit],
-        // TODO(gnattishness) check whether we validate these consistently
         VerifySignatures::False,
         &spec,
     )?;

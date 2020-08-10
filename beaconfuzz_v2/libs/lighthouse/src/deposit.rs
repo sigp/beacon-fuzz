@@ -4,7 +4,6 @@ use state_processing::{
 
 use types::{BeaconState, Deposit, EthSpec, MainnetEthSpec};
 
-/// Run `process_deposit`
 pub fn process_deposit(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     deposit: Deposit,

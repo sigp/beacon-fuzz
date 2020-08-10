@@ -12,16 +12,13 @@ pub fn process_attester_slashing(
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
-    let state = &mut beaconstate;
     // Ensure the current epoch cache is built.
-    // Required by slash_validator->initiate_validator_exit->get_churn_limit
-    state.build_committee_cache(RelativeEpoch::Current, &spec)?;
+    beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
     process_attester_slashings(
-        &mut beaconstate, // TODO - should it be state instead?
+        &mut beaconstate,
         &[attester_slashing],
-        // TODO(gnattishness) check whether we validate these consistently
-        VerifySignatures::False, // TODO - should we verify it?
+        VerifySignatures::False,
         &spec,
     )?;
 

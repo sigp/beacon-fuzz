@@ -42,12 +42,8 @@ pub fn process_attestation(
     let output_ptr: *mut u8 = out.as_mut_ptr();
     let output_size: *mut usize = &mut (post.len() as usize);
 
-    let res = unsafe {
-        // initialize nim gc memory, types and stack
-        //NimMain();
-
-        nfuzz_attestation(input_ptr, input_size, output_ptr, output_size, disable_bls)
-    };
+    let res =
+        unsafe { nfuzz_attestation(input_ptr, input_size, output_ptr, output_size, disable_bls) };
 
     // If error triggered during processing, we return immediately
     if !res {

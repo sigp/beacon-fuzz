@@ -1,6 +1,5 @@
 #[link(name = "pfuzz", kind = "static")]
 extern "C" {
-    // FFI binding definition
     fn pfuzz_attestation(
         beacon_ptr: *mut u8,
         beacon_size: usize,

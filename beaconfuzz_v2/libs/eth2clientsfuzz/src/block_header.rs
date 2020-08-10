@@ -7,7 +7,7 @@ pub fn run_block_header(beacon_blob: &[u8], data: &[u8], debug: bool) {
         .expect("[LIGHTHOUSE] BeaconState SSZ decoding failed");
 
     // SSZ Decoding of the container
-    if let Ok(cont) = lighthouse::ssz_block_header(&data) {
+    if let Ok(att) = lighthouse::ssz_block_header(&data) {
         if debug {
             println!("[LIGHTHOUSE] SSZ decoding {}", true);
         }
@@ -16,69 +16,52 @@ pub fn run_block_header(beacon_blob: &[u8], data: &[u8], debug: bool) {
 
         // call lighthouse and get post result
         // focus only on valid post here
-        if let Ok(post) = lighthouse::process_block_header(beacon_clone, cont.clone()) {
+        if let Ok(post) = lighthouse::process_block_header(beacon_clone, att.clone()) {
             if debug {
                 println!("[LIGHTHOUSE] Processing {}", true);
             }
 
             // call prysm
-            let res = prysm::process_block_header(
-                &beacon_blob, //target.pre.as_ssz_bytes(),
-                &data,
-                &post.as_ssz_bytes(),
-            );
-            assert_eq!(res, true);
+            let res = prysm::process_block_header(&beacon_blob, &data, &post.as_ssz_bytes());
 
             if debug {
-                println!("[PRYSM] Processing {}", true);
+                println!("[PRYSM] Processing {}", res);
+            } else {
+                assert_eq!(res, true);
             }
 
             // call nimbus
-            let res = nimbus::process_block_header(
-                &state.clone(), //target.pre.as_ssz_bytes(),
-                &cont,
-                &post.as_ssz_bytes(),
-            );
-            assert_eq!(res, true);
+            let res = nimbus::process_block_header(&state.clone(), &att, &post.as_ssz_bytes());
 
             if debug {
-                println!("[NIMBUS] Processing {}", true);
+                println!("[NIMBUS] Processing {}", res);
+            } else {
+                assert_eq!(res, true);
             }
         } else {
             if debug {
                 println!("[LIGHTHOUSE] Processing {}", false);
             }
 
-            // we assert that we should get false
-            // as return value because lighthouse process
-            // returned an error
-            let res = prysm::process_block_header(
-                &beacon_blob, //target.pre.as_ssz_bytes(),
-                &data,
-                &[], // we don't care of the value here
-                     // because prysm should reject
-                     // the module first
-            );
-            assert_eq!(res, false);
+            // Verify that prysm give same result than lighthouse
+            let res = prysm::process_block_header(&beacon_blob, &data, &beacon_blob.clone());
 
             if debug {
-                println!("[PRYSM] Processing {}", false);
+                println!("[PRYSM] Processing {}", res);
+            } else {
+                assert_eq!(res, false);
             }
 
-            // we assert that we should get false
-            // as return value because lighthouse process
-            // returned an error
-            let res = nimbus::process_block_header(
-                &state.clone(), //target.pre.as_ssz_bytes(),
-                &cont,
-                &[],
-            );
-            assert_eq!(res, false);
+            // Verify that nimbus give same result than lighthouse
+            let res = nimbus::process_block_header(&state.clone(), &att, &beacon_blob.clone());
 
             if debug {
-                println!("[NIMBUS] Processing {}", false);
+                println!("[NIMBUS] Processing {}", res);
+            } else {
+                assert_eq!(res, false);
             }
         }
+
     // Data is an invalid SSZ container
     } else {
         if debug {
@@ -86,17 +69,12 @@ pub fn run_block_header(beacon_blob: &[u8], data: &[u8], debug: bool) {
         }
 
         // Verify that prysm give same result than lighthouse
-        let res = prysm::process_block_header(
-            &beacon_blob, //target.pre.as_ssz_bytes(),
-            &data,
-            &[], // we don't care of the value here
-                 // because prysm should reject
-                 // the module first
-        );
-        assert_eq!(res, false);
+        let res = prysm::process_block_header(&beacon_blob, &data, &beacon_blob.clone());
 
         if debug {
             println!("[PRYSM] Container SSZ decoding {}", false);
+        } else {
+            assert_eq!(res, false);
         }
 
         // TODO - nimbus decoding

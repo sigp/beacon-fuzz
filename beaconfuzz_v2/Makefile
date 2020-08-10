@@ -13,6 +13,7 @@ help:
 	@echo '    make build 										Compile the project.'
 	@echo '    make fmt 										Run Rust fmt.'
 	@echo '    make clean 										Clean the project artifacts.'
+	@echo '    make fuzz-* 										Run fuzzing target using honggfuzz.'
 
 # Compile the project
 build:
@@ -52,11 +53,20 @@ docker:
 fuzz_attestation:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attestation
 
+fuzz_attestation-struct:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_attestation
+
 fuzz_attester_slashing:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attester_slashing
 
+fuzz_attester_slashing-struct:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_attester_slashing
+
 fuzz_block:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block
+
+fuzz_block-struct:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_block
 
 # TODO - fix this one
 #fuzz_block_header:
@@ -65,12 +75,20 @@ fuzz_block:
 fuzz_deposit:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_deposit
 
+fuzz_deposit-struct:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_deposit
+
 fuzz_proposer_slashing:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_proposer_slashing
+
+fuzz_proposer_slashing-struct:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_proposer_slashing
 
 fuzz_voluntary_exit:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_voluntary_exit
 
+fuzz_voluntary_exit-struct:
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_voluntary_exit
 
 pfuzz:
 	echo "TODO"

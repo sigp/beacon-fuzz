@@ -13,7 +13,6 @@ pub fn process_attestation(
     let spec = MainnetEthSpec::default_spec();
 
     // Ensure the current epoch cache is built.
-    //let state = &mut beaconstate;
     beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
     let ret = process_attestations(

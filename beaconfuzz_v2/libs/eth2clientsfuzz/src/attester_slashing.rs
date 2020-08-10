@@ -22,63 +22,46 @@ pub fn run_attester_slashing(beacon_blob: &[u8], data: &[u8], debug: bool) {
             }
 
             // call prysm
-            let res = prysm::process_attester_slashing(
-                &beacon_blob, //target.pre.as_ssz_bytes(),
-                &data,
-                &post.as_ssz_bytes(),
-            );
-            assert_eq!(res, true);
+            let res = prysm::process_attester_slashing(&beacon_blob, &data, &post.as_ssz_bytes());
 
             if debug {
-                println!("[PRYSM] Processing {}", true);
+                println!("[PRYSM] Processing {}", res);
+            } else {
+                assert_eq!(res, true);
             }
 
             // call nimbus
-            let res = nimbus::process_attester_slashing(
-                &state.clone(), //target.pre.as_ssz_bytes(),
-                &att,
-                &post.as_ssz_bytes(),
-            );
-            assert_eq!(res, true);
+            let res = nimbus::process_attester_slashing(&state.clone(), &att, &post.as_ssz_bytes());
 
             if debug {
-                println!("[NIMBUS] Processing {}", true);
+                println!("[NIMBUS] Processing {}", res);
+            } else {
+                assert_eq!(res, true);
             }
         } else {
             if debug {
                 println!("[LIGHTHOUSE] Processing {}", false);
             }
 
-            // we assert that we should get false
-            // as return value because lighthouse process
-            // returned an error
-            let res = prysm::process_attester_slashing(
-                &beacon_blob, //target.pre.as_ssz_bytes(),
-                &data,
-                &[], // we don't care of the value here
-                     // because prysm should reject
-                     // the module first
-            );
-            assert_eq!(res, false);
+            // Verify that prysm give same result than lighthouse
+            let res = prysm::process_attester_slashing(&beacon_blob, &data, &beacon_blob.clone());
 
             if debug {
-                println!("[PRYSM] Processing {}", false);
+                println!("[PRYSM] Processing {}", res);
+            } else {
+                assert_eq!(res, false);
             }
 
-            // we assert that we should get false
-            // as return value because lighthouse process
-            // returned an error
-            let res = nimbus::process_attester_slashing(
-                &state.clone(), //target.pre.as_ssz_bytes(),
-                &att,
-                &[],
-            );
-            assert_eq!(res, false);
+            // Verify that nimbus give same result than lighthouse
+            let res = nimbus::process_attester_slashing(&state.clone(), &att, &beacon_blob.clone());
 
             if debug {
-                println!("[NIMBUS] Processing {}", false);
+                println!("[NIMBUS] Processing {}", res);
+            } else {
+                assert_eq!(res, false);
             }
         }
+
     // Data is an invalid SSZ container
     } else {
         if debug {
@@ -86,17 +69,12 @@ pub fn run_attester_slashing(beacon_blob: &[u8], data: &[u8], debug: bool) {
         }
 
         // Verify that prysm give same result than lighthouse
-        let res = prysm::process_attester_slashing(
-            &beacon_blob, //target.pre.as_ssz_bytes(),
-            &data,
-            &[], // we don't care of the value here
-                 // because prysm should reject
-                 // the module first
-        );
-        assert_eq!(res, false);
+        let res = prysm::process_attester_slashing(&beacon_blob, &data, &beacon_blob.clone());
 
         if debug {
             println!("[PRYSM] Container SSZ decoding {}", false);
+        } else {
+            assert_eq!(res, false);
         }
 
         // TODO - nimbus decoding

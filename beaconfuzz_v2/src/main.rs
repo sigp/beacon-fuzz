@@ -152,10 +152,6 @@ fn fuzz_target(corpora: String, container_type: Containers) -> Result<(), Error>
     let it = Instant::now();
 
     for iters in 1u64.. {
-        // Initialize eth2client environment and disable bls
-        //eth2clientsfuzz::initialize_clients(true);
-
-        nimbus::init_nimbus(true);
         // Pick one random beacon file
         let index = rng.rand() % beacon_files.len();
         let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");

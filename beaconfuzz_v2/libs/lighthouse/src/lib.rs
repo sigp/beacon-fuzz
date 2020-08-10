@@ -5,11 +5,10 @@ use types::{
     ProposerSlashing, SignedBeaconBlock, SignedVoluntaryExit,
 };
 
-use ssz::Decode; // Encode
+use ssz::Decode;
 
-/// Decode SSZ-encoded `Attestation` bytes
-/// - input: SSZ-encoded bytes
-/// - output: Ok(Attestation) or Err()
+/* SSZ DECODING */
+
 pub fn ssz_attestation(ssz_bytes: &[u8]) -> Result<Attestation<MainnetEthSpec>, ssz::DecodeError> {
     Ok(Attestation::from_ssz_bytes(&ssz_bytes)?)
 }
@@ -44,12 +43,14 @@ pub fn ssz_beaconstate(ssz_bytes: &[u8]) -> Result<BeaconState<MainnetEthSpec>, 
     Ok(BeaconState::from_ssz_bytes(&ssz_bytes)?)
 }
 
+/* SSZ PROCESSING */
+
 pub mod attestation;
 pub fn process_attestation(
     beaconstate: BeaconState<MainnetEthSpec>,
     attestation: Attestation<MainnetEthSpec>,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
-    self::attestation::process_attestation(beaconstate, attestation, true)
+    self::attestation::process_attestation(beaconstate, attestation, false)
 }
 
 pub mod attester_slashing;

@@ -8,11 +8,10 @@ pub mod voluntary_exit;
 
 #[link(name = "pfuzz", kind = "static")]
 extern "C" {
-    // initialize nim gc memory, types and stack
     fn PrysmMain(bls: bool);
 }
 
-/// Initialize Nimbus
+/// Initialize Prysm
 pub fn init_prysm(disable_bls: bool) {
     unsafe {
         PrysmMain(disable_bls);

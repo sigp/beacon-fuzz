@@ -2,20 +2,14 @@ use state_processing::{per_block_processing, BlockProcessingError, BlockSignatur
 
 use types::{BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch, SignedBeaconBlock};
 
-/// Run `process_block`
-/// TODO N convert to a library in lighthouse that we import
-/// Most of this is copied from lighthouse/ef_tests/src/cases/sanity_blocks.rs,
-/// as lighthouse doesn't directly implement the state_transition function.
 pub fn process_block(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     block: SignedBeaconBlock<MainnetEthSpec>,
     validate_state_root: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
-    let spec = &MainnetEthSpec::default_spec();
-    //let mut state = beaconstate; // No need to clone here, but means state_transition can only be called once?
+    let spec = MainnetEthSpec::default_spec();
 
-    // TODO(gnattishness) any reason why we would want to unwrap and panic here vs returning an error?
-    beaconstate.build_all_caches(spec)?;
+    beaconstate.build_all_caches(&spec)?;
     let result = {
         /* not good for fuzzing (in some spectests cases, this can loop for 65k iteration )
         while state.slot < block.slot() {
@@ -25,16 +19,14 @@ pub fn process_block(
             per_slot_processing(&mut state, None, spec).unwrap();
         }
         */
-        beaconstate
-            .build_committee_cache(RelativeEpoch::Current, spec)
-            .unwrap();
+        beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
         per_block_processing(
             &mut beaconstate,
             &block,
             None,
             BlockSignatureStrategy::NoVerification, //VerifyIndividual,
-            spec,
+            &spec,
         )?;
         beaconstate
     };

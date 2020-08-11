@@ -63,7 +63,7 @@ fn fuzz_logging(path: &String) {
     let mut file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open("all_fuzz_log_fuzz.txt")
+        .open("struct_fuzz.txt")
         .unwrap();
 
     // write info in the logging file

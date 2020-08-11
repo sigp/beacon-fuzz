@@ -11,6 +11,8 @@ extern "C" {
 
 }
 
+use crate::debug::dump_post_state;
+
 pub fn process_proposer_slashing(
     beacon: &[u8],
     container: &[u8],
@@ -38,15 +40,9 @@ pub fn process_proposer_slashing(
         )
     };
 
+    // dump post files for debugging
     if debug {
-        use std::fs::File;
-        use std::io::Write;
-        let mut file_post = File::create("debug_post.ssz").expect("Cannot open debug_post file");
-        file_post
-            .write(&post)
-            .expect("Cannot write debug_post file");
-        let mut file_out = File::create("debug_out.ssz").expect("Cannot open debug_out file");
-        file_out.write(&out).expect("Cannot write debug_out file");
+        dump_post_state(&post, &out);
     }
 
     // If error triggered during processing, we return immediately

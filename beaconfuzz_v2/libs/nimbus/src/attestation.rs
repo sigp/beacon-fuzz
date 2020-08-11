@@ -20,11 +20,14 @@ struct AttestationTestCase {
     attestation: Attestation<MainnetEthSpec>,
 }
 
+use crate::debug::dump_post_state;
+
 pub fn process_attestation(
     beacon: &BeaconState<MainnetEthSpec>,
     attest: &Attestation<MainnetEthSpec>,
     post: &[u8],
     disable_bls: bool,
+    debug: bool,
 ) -> bool {
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
 
@@ -44,6 +47,11 @@ pub fn process_attestation(
 
     let res =
         unsafe { nfuzz_attestation(input_ptr, input_size, output_ptr, output_size, disable_bls) };
+
+    // dump post files for debugging
+    if debug {
+        dump_post_state(&post, &out);
+    }
 
     // If error triggered during processing, we return immediately
     if !res {

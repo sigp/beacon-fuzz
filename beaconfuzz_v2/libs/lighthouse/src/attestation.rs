@@ -8,7 +8,6 @@ use types::{Attestation, BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch};
 pub fn process_attestation(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     attestation: Attestation<MainnetEthSpec>,
-    debug: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
@@ -21,10 +20,6 @@ pub fn process_attestation(
         VerifySignatures::False,
         &spec,
     );
-
-    if debug {
-        println!("[LIGHTHOUSE] process_attestation: {:?}", ret);
-    };
 
     if let Err(e) = ret {
         Err(e)

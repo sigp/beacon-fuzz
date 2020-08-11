@@ -50,7 +50,7 @@ pub fn process_attestation(
     beaconstate: BeaconState<MainnetEthSpec>,
     attestation: Attestation<MainnetEthSpec>,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
-    self::attestation::process_attestation(beaconstate, attestation, false)
+    self::attestation::process_attestation(beaconstate, attestation)
 }
 
 pub mod attester_slashing;

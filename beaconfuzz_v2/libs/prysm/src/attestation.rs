@@ -10,7 +10,9 @@ extern "C" {
     ) -> bool;
 }
 
-pub fn process_attestation(beacon: &[u8], container: &[u8], post: &[u8]) -> bool {
+use crate::debug::dump_post_state;
+
+pub fn process_attestation(beacon: &[u8], container: &[u8], post: &[u8], debug: bool) -> bool {
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
     let mut b: Vec<u8> = beacon.into();
     let beacon_ptr: *mut u8 = b.as_mut_ptr();
@@ -31,6 +33,11 @@ pub fn process_attestation(beacon: &[u8], container: &[u8], post: &[u8]) -> bool
             out_size,
         )
     };
+
+    // dump post files for debugging
+    if debug {
+        dump_post_state(&post, &out);
+    }
 
     // If error triggered during processing, we return immediately
     if !res {

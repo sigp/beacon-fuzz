@@ -20,11 +20,14 @@ struct ProposerSlashingTestCase {
     pub proposer_slashing: ProposerSlashing,
 }
 
+use crate::debug::dump_post_state;
+
 pub fn process_proposer_slashing(
     beacon: &BeaconState<MainnetEthSpec>,
     proposer_slashing: &ProposerSlashing,
     post: &[u8],
     disable_bls: bool,
+    debug: bool,
 ) -> bool {
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
 
@@ -45,6 +48,11 @@ pub fn process_proposer_slashing(
     let res = unsafe {
         nfuzz_proposer_slashing(input_ptr, input_size, output_ptr, output_size, disable_bls)
     };
+
+    // dump post files for debugging
+    if debug {
+        dump_post_state(&post, &out);
+    }
 
     // If error triggered during processing, we return immediately
     if !res {

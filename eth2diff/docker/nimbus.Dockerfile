@@ -21,8 +21,7 @@ RUN git clone \
 WORKDIR nim-beacon-chain
 
 # Build nimbus
-RUN make ncli_hash_tree_root \
-	ncli_pretty ncli_query ncli_transition \
+RUN make ncli \
 	libnfuzz.so libnfuzz.a
 
 #

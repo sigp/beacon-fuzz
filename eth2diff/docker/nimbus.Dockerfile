@@ -31,7 +31,4 @@ RUN make ncli_hash_tree_root \
 FROM scratch AS export
 
 COPY --from=build /nim-beacon-chain/build/libnfuzz* .
-COPY --from=build /nim-beacon-chain/build/ncli_hash_tree_root .
-COPY --from=build /nim-beacon-chain/build/ncli_pretty .
-COPY --from=build /nim-beacon-chain/build/ncli_query .
-COPY --from=build /nim-beacon-chain/build/ncli_transition .
+COPY --from=build /nim-beacon-chain/build/ncli .

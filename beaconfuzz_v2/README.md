@@ -42,7 +42,7 @@ CARGO_NIMBUS_DIR=~/path/to/nim-beacon-chain
 ```
 
 ### prysm setup
-
+<!---
 Create a prysm folder:
 ```
 mkdir prysm
@@ -54,10 +54,10 @@ Compile the prysm fuzzing library:
 go get .
 go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
 ```
-
-Finally, set the following variable with the current path of prysm:
+ -->
+Set the following variable with the current path of prysm:
 ```
-CARGO_PRYSM_DIR=~/path/to/prysm
+CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs/pfuzz
 ```
 
 ### Beaconfuzz_v2 compilation

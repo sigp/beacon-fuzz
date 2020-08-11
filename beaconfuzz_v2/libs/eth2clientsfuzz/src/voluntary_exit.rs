@@ -69,7 +69,7 @@ pub fn run_voluntary_exit(beacon_blob: &[u8], data: &[u8], debug: bool) {
         }
 
         // Verify that prysm give same result than lighthouse
-        let res = prysm::process_voluntary_exit(&beacon_blob, &data, &beacon_blob.clone());
+        let res = prysm::ssz_voluntary_exit(&data);
 
         if debug {
             println!("[PRYSM] Container SSZ decoding {}", false);

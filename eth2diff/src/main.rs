@@ -350,10 +350,11 @@ fn pretty(ssztype: SSZContainer, input: String) -> Result<(), Error> {
     // NIMBUS
     eth2_clients.push(Eth2Client::new(
         "NIMBUS".into(),
-        cwd.join("shared").join("nimbus").join("ncli_pretty"),
+        cwd.join("shared").join("nimbus").join("ncli"),
         [
-            format!("--kind={}", ssztype.name()),
-            format!("--file={}", input),
+            "pretty".into(),
+            format!("--prettyKind={}", ssztype.name()),
+            format!("--prettyFile={}", input),
         ]
         .to_vec(),
     ));
@@ -397,12 +398,11 @@ fn hash_tree_root(ssztype: SSZContainer, input: String) -> Result<(), Error> {
     // NIMBUS
     eth2_clients.push(Eth2Client::new(
         "NIMBUS".into(),
-        cwd.join("shared")
-            .join("nimbus")
-            .join("ncli_hash_tree_root"),
+        cwd.join("shared").join("nimbus").join("ncli"),
         [
-            format!("--kind={}", ssztype.name()),
-            format!("--file={}", input),
+            "hashTreeRoot".into(),
+            format!("--htrKind={}", ssztype.name()),
+            format!("--htrFile={}", input),
         ]
         .to_vec(),
     ));
@@ -439,11 +439,12 @@ fn state_transition(beaconstate: String, block: String) -> Result<(), Error> {
 
     eth2_clients.push(Eth2Client::new(
         "NIMBUS".into(),
-        cwd.join("shared").join("nimbus").join("ncli_transition"),
+        cwd.join("shared").join("nimbus").join("ncli"),
         [
-            format!("--pre={}", beaconstate),
+            "transition".into(),
+            format!("--preState={}", beaconstate),
             format!("--blck={}", block),
-            "--post=/dev/null".into(),
+            "--postState=/dev/null".into(),
         ]
         .to_vec(),
     ));

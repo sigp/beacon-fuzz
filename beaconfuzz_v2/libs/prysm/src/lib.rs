@@ -21,6 +21,43 @@ pub fn init_prysm(disable_bls: bool) {
 
 static DEBUG: bool = false;
 
+// SSZ decoding
+
+/// SSZ decoding for Attestation container
+pub fn ssz_attestation(input: &[u8]) -> bool {
+    self::attestation::ssz_attestation(input)
+}
+
+/// SSZ decoding for AttesterSlashing container
+pub fn ssz_attester_slashing(input: &[u8]) -> bool {
+    self::attester_slashing::ssz_attester_slashing(input)
+}
+
+/// SSZ decoding for Block container
+pub fn ssz_block(input: &[u8]) -> bool {
+    self::block::ssz_block(input)
+}
+
+/// SSZ decoding for BlockHeader container
+pub fn ssz_block_header(input: &[u8]) -> bool {
+    self::block_header::ssz_block_header(input)
+}
+
+/// SSZ decoding for Deposit container
+pub fn ssz_deposit(input: &[u8]) -> bool {
+    self::deposit::ssz_deposit(input)
+}
+
+/// SSZ decoding for ProposerSlashing container
+pub fn ssz_proposer_slashing(input: &[u8]) -> bool {
+    self::proposer_slashing::ssz_proposer_slashing(input)
+}
+
+/// SSZ decoding for VoluntaryExit container
+pub fn ssz_voluntary_exit(input: &[u8]) -> bool {
+    self::voluntary_exit::ssz_voluntary_exit(input)
+}
+
 /// process Attestation container
 pub fn process_attestation(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
     self::attestation::process_attestation(beacon, attest, post, DEBUG)

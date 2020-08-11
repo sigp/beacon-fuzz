@@ -8,10 +8,19 @@ extern "C" {
         out_ptr: *mut u8,
         out_size: usize,
     ) -> bool;
-
+    fn pfuzz_ssz_attester_slashing(input_ptr: *mut u8, input_size: usize) -> bool;
 }
 
 use crate::debug::dump_post_state;
+
+pub fn ssz_attester_slashing(input: &[u8]) -> bool {
+    let mut inp: Vec<u8> = input.into();
+    let input_ptr: *mut u8 = inp.as_mut_ptr();
+    let input_size: usize = input.len() as usize;
+
+    let res = unsafe { pfuzz_ssz_attester_slashing(input_ptr, input_size) };
+    res
+}
 
 pub fn process_attester_slashing(
     beacon: &[u8],

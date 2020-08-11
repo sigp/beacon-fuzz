@@ -69,7 +69,7 @@ pub fn run_block_header(beacon_blob: &[u8], data: &[u8], debug: bool) {
         }
 
         // Verify that prysm give same result than lighthouse
-        let res = prysm::process_block_header(&beacon_blob, &data, &beacon_blob.clone());
+        let res = prysm::ssz_block_header(&data);
 
         if debug {
             println!("[PRYSM] Container SSZ decoding {}", false);

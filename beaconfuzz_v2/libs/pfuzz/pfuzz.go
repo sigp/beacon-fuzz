@@ -25,14 +25,199 @@ func PrysmMain(bls bool) {
 	})
 }
 
+/*
+
+TODO - (patrick to nat) can you make it work?
+
+
+// To save making the reflection type every time the harness is called
+var containerTypeMap = map[string]reflect.Type{
+	"Attestation":  reflect.TypeOf((*ethpb.Attestation)(nil)).Elem(),
+	"AttesterSlashing": reflect.TypeOf((*ethpb.AttesterSlashing)(nil)).Elem(),
+	"SignedBeaconBlock":      reflect.TypeOf((*ethpb.SignedBeaconBlock)(nil)).Elem(),
+	"BeaconBlock":    reflect.TypeOf((*ethpb.BeaconBlock)(nil)).Elem(),
+	"Deposit":    reflect.TypeOf((*ethpb.Deposit)(nil)).Elem(),
+	"ProposerSlashing":    reflect.TypeOf((*ethpb.ProposerSlashing)(nil)).Elem(),
+	"SignedVoluntaryExit":    reflect.TypeOf((*ethpb.SignedVoluntaryExit)(nil)).Elem(),
+}
+
+
+func pfuzz_ssz_container(input_ptr unsafe.Pointer, input_size int, typ reflect.Type) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	val := reflect.New(typ)
+	conType := reflect.Type(typ)
+	valIface := &val.Elem().Interface().(conType)
+	if err := valIface.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+
+}
+
+//export pfuzz_ssz_attestation
+func pfuzz_ssz_attestation(
+	input_ptr unsafe.Pointer, input_size int) (bool) {
+	return pfuzz_ssz_container(input_ptr, input_size, containerTypeMap["Attestation"])
+}*/
+
+//export pfuzz_ssz_attestation
+func pfuzz_ssz_attestation(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.Attestation{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+//export pfuzz_ssz_attester_slashing
+func pfuzz_ssz_attester_slashing(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.AttesterSlashing{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+//export pfuzz_ssz_block
+func pfuzz_ssz_block(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.SignedBeaconBlock{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+//export pfuzz_ssz_block_header
+func pfuzz_ssz_block_header(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.BeaconBlock{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+//export pfuzz_ssz_deposit
+func pfuzz_ssz_deposit(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.Deposit{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+//export pfuzz_ssz_proposer_slashing
+func pfuzz_ssz_proposer_slashing(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.ProposerSlashing{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+//export pfuzz_ssz_voluntary_exit
+func pfuzz_ssz_voluntary_exit(input_ptr unsafe.Pointer, input_size int) (bool) {
+	// mainnet config
+	params.UseMainnetConfig()
+
+	// pointer into container 
+	var container []byte
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(&container))
+	sh.Data = uintptr(input_ptr)
+	sh.Len = input_size
+	sh.Cap = input_size
+
+	// load the container
+	data := &ethpb.SignedVoluntaryExit{}
+	if err := data.UnmarshalSSZ(container); err != nil {
+		return false
+	}
+	return true
+}
+
+
 // BeaconFuzzAttestation implements libfuzzer and beacon fuzz interface.
 //export pfuzz_attestation
 func pfuzz_attestation(
 	beacon_ptr unsafe.Pointer, input_size int,
 	attest_ptr unsafe.Pointer, attest_size int,
 	out_ptr unsafe.Pointer, out_size int) (bool) {
-	// mainnet config
-	params.UseMainnetConfig()
+
 
 	// pointer into beaconstate 
 	var beacon []byte
@@ -492,7 +677,7 @@ func pfuzz_voluntary_exit(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{ data}})
+	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{data}})
 	if err != nil {
 		return false
 	}

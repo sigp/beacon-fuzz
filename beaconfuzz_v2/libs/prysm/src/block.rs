@@ -8,9 +8,19 @@ extern "C" {
         out_ptr: *mut u8,
         out_size: usize,
     ) -> bool;
+    fn pfuzz_ssz_block(input_ptr: *mut u8, input_size: usize) -> bool;
 }
 
 use crate::debug::dump_post_state;
+
+pub fn ssz_block(input: &[u8]) -> bool {
+    let mut inp: Vec<u8> = input.into();
+    let input_ptr: *mut u8 = inp.as_mut_ptr();
+    let input_size: usize = input.len() as usize;
+
+    let res = unsafe { pfuzz_ssz_block(input_ptr, input_size) };
+    res
+}
 
 pub fn process_block(beacon: &[u8], container: &[u8], post: &[u8], debug: bool) -> bool {
     let mut out: Vec<u8> = vec![0 as u8; post.len()];

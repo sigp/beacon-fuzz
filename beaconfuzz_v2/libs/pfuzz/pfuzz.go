@@ -479,7 +479,7 @@ func pfuzz_voluntary_exit(
 	sa.Len = attest_size
 	sa.Cap = attest_size
 	// load the container
-	data := &ethpb.VoluntaryExit{}
+	data := &ethpb.SignedVoluntaryExit{}
 	if err := data.UnmarshalSSZ(attest); err != nil {
 		return false
 	}
@@ -492,7 +492,7 @@ func pfuzz_voluntary_exit(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{{Exit: data}}})
+	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{ data}})
 	if err != nil {
 		return false
 	}

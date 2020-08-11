@@ -57,7 +57,7 @@ go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
  -->
 Set the following variable with the current path of prysm:
 ```
-CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs/pfuzz
+CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs
 ```
 
 ### Beaconfuzz_v2 compilation

@@ -139,7 +139,7 @@ lazy_static! {
     };
 }
 
-fuzz_target!(|wrapper: Deposit<MainnetEthSpec>| {
+fuzz_target!(|wrapper: Deposit| {
     if *INIT_OK {
         let data = wrapper.as_ssz_bytes();
         eth2clientsfuzz::fuzz_deposit(&BEACONSTATE, &data);

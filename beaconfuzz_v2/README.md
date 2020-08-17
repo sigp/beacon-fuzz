@@ -37,8 +37,8 @@ make libnfuzz.a libnfuzz.so
 ```
 
 Finally, set the following variable with the current path of nimbus:
-``` 
-CARGO_NIMBUS_DIR=~/path/to/nim-beacon-chain
+```
+export CARGO_NIMBUS_DIR=~/path/to/nim-beacon-chain
 ```
 
 ### prysm setup
@@ -57,7 +57,7 @@ go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
  -->
 Set the following variable with the current path of prysm:
 ```
-CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs
+export CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs
 ```
 
 ### Beaconfuzz_v2 compilation
@@ -85,5 +85,4 @@ fuzz_attester_slashing-struct  fuzz_deposit-struct            fuzz_voluntary_exi
 
 there is two differents kind of fuzzing targets:
 - `fuzz_*`: Mutation fuzzing using honggfuzz
-- `fuzz_*-struct`: structural fuzzing using libfuzzer + arbitrary 
-
+- `fuzz_*-struct`: structural fuzzing using libfuzzer + arbitrary

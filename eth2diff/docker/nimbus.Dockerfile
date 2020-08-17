@@ -21,8 +21,7 @@ RUN git clone \
 WORKDIR nim-beacon-chain
 
 # Build nimbus
-RUN make ncli_hash_tree_root \
-	ncli_pretty ncli_query ncli_transition \
+RUN make ncli \
 	libnfuzz.so libnfuzz.a
 
 #
@@ -31,7 +30,4 @@ RUN make ncli_hash_tree_root \
 FROM scratch AS export
 
 COPY --from=build /nim-beacon-chain/build/libnfuzz* .
-COPY --from=build /nim-beacon-chain/build/ncli_hash_tree_root .
-COPY --from=build /nim-beacon-chain/build/ncli_pretty .
-COPY --from=build /nim-beacon-chain/build/ncli_query .
-COPY --from=build /nim-beacon-chain/build/ncli_transition .
+COPY --from=build /nim-beacon-chain/build/ncli .

@@ -1,0 +1,4 @@
+# ignore some workspace folder
+target/*
+hfuzz_target/*
+hfuzz_workspace/*

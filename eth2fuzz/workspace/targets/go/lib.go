@@ -231,7 +231,7 @@ func Prysm_proposer_slashing(b []byte) int {
 
 func Prysm_voluntary_exit(b []byte) int {
 	params.UseMainnetConfig()
-	data := &ethpb.VoluntaryExit{}
+	data := &ethpb.SignedVoluntaryExit{}
 	if err := data.UnmarshalSSZ(b); err != nil {
 		return 0
 	}
@@ -243,7 +243,7 @@ func Prysm_voluntary_exit(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{{Exit: data}}})
+	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{data}})
 	if err != nil {
 		return 0
 	}

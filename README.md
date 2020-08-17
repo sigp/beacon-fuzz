@@ -165,7 +165,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 ### Nimbus
 
 - [Nimbus: `process_attestation` missing index validation](https://github.com/status-im/nim-beacon-chain/issues/659) **fixed**
-- [Nimbus: `process_deposit` not validating merkle proofs](https://github.com/status-im/nim-beacon-chain/issues/703) **fixed**
+- [Nimbus **(Consensus Bug)**: `process_deposit` not validating merkle proofs](https://github.com/status-im/nim-beacon-chain/issues/703) **fixed**
 - [Nimbus: `ncli_pretty` `Deposit` SSZ parsing `AssertionError`](https://github.com/status-im/nim-beacon-chain/issues/895) **fixed**
 - [Nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with empty container](https://github.com/status-im/nim-beacon-chain/issues/896) **fixed**
 - [Nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with variable list reporting 0 length](https://github.com/status-im/nim-beacon-chain/issues/920) **fixed**
@@ -173,6 +173,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Nimbus: `ncli_transition` `AssertionError` due to inconsistent aggregation bits and committee length when passed *invalid* `BeaconState` and `BeaconBlock`](https://github.com/status-im/nim-beacon-chain/issues/922) (See [1](#invalidState)) **fixed**
 - [Nimbus: `ncli` `IndexError` decoding 0-byte SSZ BitList](https://github.com/status-im/nim-beacon-chain/issues/931) **fixed**
 - [Nimbus: `IndexError` during `AttesterSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1207) **fixed**
+- [Nimbus:  Unhandled `IndexError` during `ProposerSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1323) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
 
 ### Trinity
 - [Trinity: some block validation raising `IndexError`, not caught by `BeaconChainSyncer`](https://github.com/ethereum/trinity/issues/1497)
@@ -196,11 +197,15 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Lodestar: `RangeError` when SSZ decoding an empty `Block` container](https://github.com/ChainSafe/ssz/issues/23)
 - [Lodestar: `TypeError` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/56) **fixed**
 - [Lodestar: `TypeError: public key must be a Buffer` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/59) **fixed**
-- [Lodestar: memory exhaustion / OOM when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/64)
+- [Lodestar: memory exhaustion / OOM when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/64) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
+- [Lodestar: `AssertionError` in `bcrypto` library when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/70) **fixed** (thanks [@Buttaa](https://github.com/Buttaa) for helping identify this bug!)
+- [Lodestar: Failed assertion `val->IsArrayBufferView` when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/71) (thanks [@cooganb](https://github.com/cooganb) for helping identify this bug!)
+
 
 ### Prysm
 - [Prysm: `panic: runtime error: slice bounds out of range` when parsing SSZ container](https://github.com/prysmaticlabs/prysm/issues/6083) **fixed**
 - [Prysm: `panic: runtime error: nil pointer dereference` when processing ProposerSlashing](https://github.com/prysmaticlabs/prysm/issues/6127) **fixed**
+- [Prysm **(Consensus Bug)**: Missing validation of attestation indices in batch attestation processing](https://github.com/prysmaticlabs/prysm/pull/6983) **fixed**
 
 <a name="invalidState">1</a>: **NOTE** `BeaconState` objects are considered trusted inputs (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values, for now.
 

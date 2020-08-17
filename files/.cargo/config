@@ -1,8 +1,0 @@
-# flags with spaces cannot be passed via RUSTFLAGS env var
-# https://github.com/rust-lang/cargo/issues/6139
-
-[build]
-rustflags = [
-    '-Cpasses=sancov',
-    '-Cllvm-args=-sanitizer-coverage-trace-pc-guard -sanitizer-coverage-trace-compares=1 -sanitizer-coverage-trace-geps=1 -sanitizer-coverage-trace-divs=1',
-]

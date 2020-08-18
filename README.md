@@ -147,7 +147,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Lodestar: `TypeError: public key must be a Buffer` when decoding invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/59) **fixed**
 - [Lodestar: memory exhaustion / OOM when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/64) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
 - [Lodestar: `AssertionError` in `bcrypto` library when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/70) **fixed** (thanks [@Buttaa](https://github.com/Buttaa) for helping identify this bug!)
-- [Lodestar: Failed assertion `val->IsArrayBufferView` when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/71) (thanks [@cooganb](https://github.com/cooganb) for helping identify this bug!)
+- [Lodestar: Failed assertion `val->IsArrayBufferView` when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/71) (thanks [@cooganb](https://github.com/cooganb) and [@MysticRyuujin](https://github.com/MysticRyuujin) for helping identify this bug!)
 
 
 ### Prysm

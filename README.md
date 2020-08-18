@@ -51,11 +51,9 @@ By leveraging the latest update to the `libfuzzer-sys` and `cargo_fuzz` crates, 
 * [Teku](https://github.com/PegaSysEng/teku) (Java)
 
 
-### Operational Fuzz Targets:
+### Operational Fuzz Targets
 
-(and their relevant spec function)
-
-All currently use the "mainnet" config: https://github.com/ethereum/eth2.0-specs/blob/v0.12.2/configs/mainnet.yaml
+This project currently focuses on core state transition functions. All fuzzing targets currently use the ["mainnet" config](https://github.com/ethereum/eth2.0-specs/blob/v0.12.2/configs/mainnet.yaml).
 
 * `attestation` - [`process_attestation`](https://github.com/ethereum/eth2.0-specs/blob/v0.12.2/specs/phase0/beacon-chain.md#attestations)
 * `attester_slashing` - [`process_attester_slashing`](https://github.com/ethereum/eth2.0-specs/blob/v0.12.2/specs/phase0/beacon-chain.md#attester-slashings)
@@ -81,11 +79,11 @@ Please refer to each tool's `README` for detailed instructions:
 
 - [x] Development of `ethfuzz`
 - [x] Development of `eth2diff`
-- [ ] Development of `beaconfuzz_v2`
+- [ ] Development of `beaconfuzz_v2` (WIP)
   - [x] Integration of Prysm
   - [x] Integration of Lighthouse
   - [x] Integration of Nimbus
-  - [ ] Integration of Teku
+  - [ ] Integration of Teku (WIP)
 - [x] Improved onboarding, ease of adding new targets and implementations
 - [x] Improved coverage measurements and visibility
 - [x] Structure-aware fuzzing mutations in `beaconfuzz_v2`
@@ -110,7 +108,7 @@ It is generally fine to run `build.sh` multiple times, and previously built comp
 
 ## Trophies
 
-The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and `beacon`) helps to find the following bugs inside eth2 clients.
+The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and `beaconfuzz_v2`) helped identify the following bugs inside eth2 clients.
 
 ### Nimbus
 

@@ -132,7 +132,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Teku: transition subcommand raising `IllegalArgumentException` instead of logging when passed invalid SSZ](https://github.com/PegaSysEng/teku/issues/1677) **fixed**
 - [Teku: `IndexOutOfBoundsException` when SSZ decoding 0-byte `BitList`](https://github.com/PegaSysEng/teku/issues/1678) **fixed**
 - [Teku: `IndexOutOfBoundsException` when passed *invalid* `BeaconState` and committee size is inconsistent with attestation aggregation bits](https://github.com/PegaSysEng/teku/issues/1685). (See [1](#invalidState)) **fixed**
-- [Teku: `ArrayIndexOutOfBoundsException` in `AttesterSlashing` processing](https://github.com/PegaSysEng/teku/issues/2345)
+- [Teku: `ArrayIndexOutOfBoundsException` in `AttesterSlashing` processing](https://github.com/PegaSysEng/teku/issues/2345) **fixed**
 
 ### Lighthouse
 - [Lighthouse: out-of-bounds offset in variable list SSZ decoding](https://github.com/sigp/lighthouse/pull/974) **fixed**

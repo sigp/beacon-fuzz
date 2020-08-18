@@ -121,7 +121,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Nimbus: `ncli_transition` `AssertionError` due to inconsistent aggregation bits and committee length when passed *invalid* `BeaconState` and `BeaconBlock`](https://github.com/status-im/nim-beacon-chain/issues/922) (See [1](#invalidState)) **fixed**
 - [Nimbus: `ncli` `IndexError` decoding 0-byte SSZ BitList](https://github.com/status-im/nim-beacon-chain/issues/931) **fixed**
 - [Nimbus: `IndexError` during `AttesterSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1207) **fixed**
-- [Nimbus:  Unhandled `IndexError` during `ProposerSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1323) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
+- [Nimbus:  Integer Underflow/overflow in `ProposerSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1323) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
 
 ### Trinity
 - [Trinity: some block validation raising `IndexError`, not caught by `BeaconChainSyncer`](https://github.com/ethereum/trinity/issues/1497)

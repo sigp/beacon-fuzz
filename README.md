@@ -7,7 +7,7 @@ Maintained by Sigma Prime for the Ethereum Foundation.
 
 ## Community Fuzzing
 
-For details on our community fuzzing initative, please refer to the `eth2fuzz` [README](./eth2fuzz/README.md), along with [this blog post](https://blog.sigmaprime.io/beacon-fuzz-06.html).
+For details on our community fuzzing initiative, please refer to the `eth2fuzz` [README](./eth2fuzz/README.md), along with [this blog post](https://blog.sigmaprime.io/beacon-fuzz-06.html).
 
 ## Overview
 
@@ -100,11 +100,6 @@ Use [pre-commit](https://pre-commit.com/)
 $ pre-commit install
 ```
 (see also [.pre-commit-config.yaml](./.pre-commit-config.yaml))
-
-If build fails, comment the `RUN /eth2/build.sh` in `Dockerfile`, and run it manually from within the container.
-Can adjust Makefiles as needed.
-
-It is generally fine to run `build.sh` multiple times, and previously built components will be ignored.
 
 ## Trophies
 

@@ -77,7 +77,7 @@ Please refer to each tool's `README` for detailed instructions:
 
 ## Progress and Roadmap
 
-- [x] Development of `ethfuzz`
+- [x] Development of `eth2fuzz`
 - [x] Development of `eth2diff`
 - [ ] Development of `beaconfuzz_v2` (WIP)
   - [x] Integration of Prysm

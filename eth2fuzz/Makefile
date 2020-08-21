@@ -19,9 +19,9 @@ help:
 	@echo
 	@echo '    make test		 								Simple test to check if eth2fuzz is working.'
 	@echo '    make test-debug		 							Test running a simple wasm to a debugging tool.'
-	@echo '    make test-{libfuzzer, hfuzz, afl}				Test one fuzzing hardness over choosen fuzzer.'
-	@echo '    make test-all		 							Test one fuzzing hardness over all fuzzers.'
-	@echo '    make test-continuously-{libfuzzer, hfuzz, afl}	Test all fuzzing hardness over choosen fuzzer.'
+	@echo '    make test-{libfuzzer, hfuzz, afl}				Test one fuzzing harness over choosen fuzzer.'
+	@echo '    make test-all		 							Test one fuzzing harness over all fuzzers.'
+	@echo '    make test-continuously-{libfuzzer, hfuzz, afl}	Test all fuzzing harness over choosen fuzzer.'
 	@echo
 	@echo 'TODO - add other commands'
 
@@ -84,11 +84,11 @@ lighthouse:
 	$(CACHE)
 	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list'
 
-## Fuzz all lighthouse targets during 1 hour each
+## Fuzz all lighthouse targets for 1 hour each
 fuzz-lighthouse: lighthouse
 	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse continuously -q lighthouse -t 3600 -n 1
 
-## Try to run each targets for 1 sec
+## Try to run each target for 1 sec
 test-lighthouse:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lighthouse target $$i -t 1; \
@@ -117,11 +117,11 @@ lodestar:
 	$(CACHE)
 	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list'
 
-## Fuzz all lodestar targets during 1 hour each
+## Fuzz all lodestar targets for 1 hour each
 fuzz-lodestar: lodestar
 	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar continuously -q lodestar -t 3600
 
-## Try to run each targets for 1 sec
+## Try to run each target for 1 sec
 test-lodestar:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_lodestar target $$i -t 1; test $$? -eq 1; \
@@ -145,11 +145,11 @@ nimbus:
 	$(CACHE)
 	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list'
 
-## Fuzz all nimbus targets during 1 hour each
+## Fuzz all nimbus targets for 1 hour each
 fuzz-nimbus: nimbus
 	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus continuously -q nimbus -t 3600
 
-## Try to run each targets for 1 sec
+## Try to run each target for 1 sec
 test-nimbus:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_nimbus target $$i -t 1; \
@@ -175,11 +175,11 @@ prysm:
 	$(CACHE)
 	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list'
 
-## Fuzz all prysm targets during 1 hour each
+## Fuzz all prysm targets for 1 hour each
 fuzz-prysm: prysm
 	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm continuously -q prysm -t 3600
 
-## Try to run each targets for 1 sec
+## Try to run each target for 1 sec
 test-prysm:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_prysm target $$i -t 1; \
@@ -204,11 +204,11 @@ teku:
 	$(CACHE)
 	@echo 'USAGE: docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list'
 
-## Fuzz all teku targets during 1 hour each
+## Fuzz all teku targets for 1 hour each
 fuzz-teku: teku
 	docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku continuously -q teku -t 3600
 
-## Try to run each targets for 1 sec
+## Try to run each target for 1 sec
 test-teku:
 	for i in $(shell docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku list); do \
 		docker run -v `pwd`/workspace:/eth2fuzz/workspace eth2fuzz_teku target $$i -t 1; test $$? -eq 1; \
@@ -234,34 +234,34 @@ test-debug: build
 		workspace/corpora/beaconstate/004a360e8f5b1d4a32c158c2c688fc4e.ssz \
 		workspace/corpora/attestation/05db7ea93a4ee2467a1a04f3a0fa8f38.ssz
 
-# Run one fuzzing hardness over honggfuzz during 2s
+# Run one fuzzing harness over honggfuzz for 2s
 test-hfuzz: build
 	./eth2fuzz target lighthouse_attestation -t 2
 
-# Run one fuzzing hardness over afl during 2s
+# Run one fuzzing harness over afl for 2s
 test-afl: build
 	./eth2fuzz target lighthouse_attestation --fuzzer afl -t 2
 
-# Run one fuzzing hardness over libfuzzer during 2s
+# Run one fuzzing harness over libfuzzer for 2s
 test-libfuzzer: build
 	./eth2fuzz target lighthouse_attestation --fuzzer libfuzzer -t 2
 
-# Run one fuzzing hardness over nim-libfuzzer during 2s
+# Run one fuzzing harness over nim-libfuzzer for 2s
 test-nim-libfuzzer: build
 	./eth2fuzz target nimbus_enr --fuzzer NimLibfuzzer -t 2
 
-# Run one fuzzing hardness over all fuzzer
+# Run one fuzzing harness over all fuzzer
 test-all: test-hfuzz test-afl test-libfuzzer test-nim-libfuzzer
 
-# Run all fuzzing hardness over honggfuzz
+# Run all fuzzing harness over honggfuzz
 test-continuously-hfuzz: build
 	./eth2fuzz continuously -t 2 --fuzzer honggfuzz
 
-# Run all fuzzing hardness over libfuzzer
+# Run all fuzzing harness over libfuzzer
 test-continuously-libfuzzer: build
 	./eth2fuzz continuously -t 2 --fuzzer libfuzzer
 
-# Run all fuzzing hardness over afl
+# Run all fuzzing harness over afl
 test-continuously-afl: build
 	./eth2fuzz continuously -t 2 --fuzzer afl
 

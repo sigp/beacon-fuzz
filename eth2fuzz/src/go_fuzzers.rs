@@ -32,7 +32,7 @@ impl FuzzerGoLibfuzzer {
         println!("[eth2fuzz] Testing FuzzerGoLibfuzzer is available");
         let fuzzer_output = Command::new("bin/go114-fuzz-build").arg("-h").output()?;
 
-        if fuzzer_output.status.code() != Some(2) {
+        if fuzzer_output.status.code() != Some(0) {
             bail!("go114-fuzz-build not available, install with `go get -u github.com/mdempsky/go114-fuzz-build`");
         }
         Ok(())

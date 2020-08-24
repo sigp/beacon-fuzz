@@ -17,17 +17,17 @@ import
 
 
 
-# state: BeaconState, 
-proc fuzz_nimbus_attestation*(state: var BeaconState, payload: openarray[byte]): bool = 
+# state: BeaconState,
+proc fuzz_nimbus_attestation*(state: var BeaconState, payload: openarray[byte]): bool =
     try:
         var cache = StateCache()
-        let attestation = SSZ.decode(payload, Attestation)        
+        let attestation = SSZ.decode(payload, Attestation)
         discard process_attestation(state, attestation, {}, cache)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_attester_slashing*(state: var BeaconState, payload: openarray[byte]): bool = 
+proc fuzz_nimbus_attester_slashing*(state: var BeaconState, payload: openarray[byte]): bool =
     try:
         var cache = StateCache()
         let attester =  SSZ.decode(payload, AttesterSlashing)
@@ -36,7 +36,7 @@ proc fuzz_nimbus_attester_slashing*(state: var BeaconState, payload: openarray[b
         discard
     true
 
-proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool = 
+proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool =
     # There's not a perfect approach here, but it's not worth switching the rest
     # and requiring HashedBeaconState (yet). So to keep consistent, puts wrapper
     # only in one function.
@@ -50,7 +50,7 @@ proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool 
         discard
     true
 
-proc fuzz_nimbus_block_header*(state: var BeaconState, payload: openarray[byte]): bool = 
+proc fuzz_nimbus_block_header*(state: var BeaconState, payload: openarray[byte]): bool =
     try:
         var cache = StateCache()
         let blck = SSZ.decode(payload, BeaconBlock)
@@ -59,7 +59,7 @@ proc fuzz_nimbus_block_header*(state: var BeaconState, payload: openarray[byte])
         discard
     true
 
-proc fuzz_nimbus_deposit*(state: var BeaconState, payload: openarray[byte]): bool = 
+proc fuzz_nimbus_deposit*(state: var BeaconState, payload: openarray[byte]): bool =
     try:
         let deposit = SSZ.decode(payload, Deposit)
         discard process_deposit(mainnetRuntimePreset, state, deposit, {})
@@ -67,7 +67,7 @@ proc fuzz_nimbus_deposit*(state: var BeaconState, payload: openarray[byte]): boo
         discard
     true
 
-proc fuzz_nimbus_proposer_slashing*(state: var BeaconState, payload: openarray[byte]): bool = 
+proc fuzz_nimbus_proposer_slashing*(state: var BeaconState, payload: openarray[byte]): bool =
     try:
         var cache = StateCache()
         let proposer =  SSZ.decode(payload, ProposerSlashing)
@@ -76,22 +76,23 @@ proc fuzz_nimbus_proposer_slashing*(state: var BeaconState, payload: openarray[b
         discard
     true
 
-proc fuzz_nimbus_voluntary_exit*(state: var BeaconState, payload: openarray[byte]): bool = 
+proc fuzz_nimbus_voluntary_exit*(state: var BeaconState, payload: openarray[byte]): bool =
     try:
+        var cache = StateCache()
         let exit = SSZ.decode(payload, SignedVoluntaryExit)
-        discard process_voluntary_exit(state, exit, {})
+        discard process_voluntary_exit(state, exit, {}, cache)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_beaconstate*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_beaconstate*(payload: openarray[byte]): bool =
     try:
         discard SSZ.decode(payload, BeaconState)
     except SSZError: #CatchableError:
         discard
     true
 
-proc fuzz_nimbus_enr*(payload: openarray[byte]): bool = 
+proc fuzz_nimbus_enr*(payload: openarray[byte]): bool =
     try:
         discard parseBootstrapAddress($payload)
     except SSZError: #CatchableError:

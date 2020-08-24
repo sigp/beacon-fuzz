@@ -3,21 +3,22 @@
 package prysm
 
 import (
-    "fmt"
-    "io/ioutil"
-    "os"
-    "path/filepath"
-    "math/rand"
-    "time"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 import (
 	"context"
 
 	ethpb "github.com/prysmaticlabs/ethereumapis/eth/v1alpha1"
-	pb "github.com/prysmaticlabs/prysm/proto/beacon/p2p/v1"
-	stateTrie "github.com/prysmaticlabs/prysm/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/beacon-chain/core/state"
+	stateTrie "github.com/prysmaticlabs/prysm/beacon-chain/state"
+	pb "github.com/prysmaticlabs/prysm/proto/beacon/p2p/v1"
+
 	//"github.com/prysmaticlabs/go-ssz"
 	"github.com/prysmaticlabs/prysm/beacon-chain/core/blocks"
 	//"github.com/prysmaticlabs/prysm/shared/params/spectest"
@@ -26,13 +27,13 @@ import (
 )
 
 func Shuffle(vals []string) {
-  r := rand.New(rand.NewSource(time.Now().Unix()))
-  for len(vals) > 0 {
-    n := len(vals)
-    randIndex := r.Intn(n)
-    vals[n-1], vals[randIndex] = vals[randIndex], vals[n-1]
-    vals = vals[:n-1]
-  }
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	for len(vals) > 0 {
+		n := len(vals)
+		randIndex := r.Intn(n)
+		vals[n-1], vals[randIndex] = vals[randIndex], vals[n-1]
+		vals = vals[:n-1]
+	}
 }
 
 const fileBase = "not_existing" // TODO simplify
@@ -41,48 +42,48 @@ const fileBaseENV = "ETH2FUZZ_BEACONSTATE"
 var GlobalBeaconstate = getbeaconstate()
 
 // TODO - optimize to only be called once by libfuzzer
-func getbeaconstate() (*pb.BeaconState){
+func getbeaconstate() *pb.BeaconState {
 
 	base := fileBase
 	var files []string
 
 	// get environment variable
 	if p, ok := os.LookupEnv(fileBaseENV); ok {
-		base = p  // should always be executed
-				// otherwise ETH2FUZZ_BEACONSTATE is not set
+		base = p // should always be executed
+		// otherwise ETH2FUZZ_BEACONSTATE is not set
 	}
 	// print the env variable
 	// fmt.Println("ETH2FUZZ_BEACONSTATE:", base)
 
 	// get all files paths
-    err := filepath.Walk(base, func(path string, info os.FileInfo, err error) error {
-        files = append(files, path)
-        return nil
-    })
-    if err != nil {
-        panic("empty ETH2FUZZ_BEACONSTATE")
-    }
+	err := filepath.Walk(base, func(path string, info os.FileInfo, err error) error {
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		panic("empty ETH2FUZZ_BEACONSTATE")
+	}
 
-    // shuffle the beaconstates files names
-    Shuffle(files)
+	// shuffle the beaconstates files names
+	Shuffle(files)
 
 	st := &pb.BeaconState{}
-    // iterate over all beaconstate
-    for _, file_name := range files {
-	    data, err := ioutil.ReadFile(file_name)
-	    if err != nil {
-	        continue
-	    }
+	// iterate over all beaconstate
+	for _, file_name := range files {
+		data, err := ioutil.ReadFile(file_name)
+		if err != nil {
+			continue
+		}
 
-	    st := &pb.BeaconState{}
+		st := &pb.BeaconState{}
 		if err := st.UnmarshalSSZ(data); err == nil {
 			// we found a good beaconstate
 			// TODO - add beaconstate filename to a logging file
 			fmt.Println("beaconstate choosen: ", file_name)
 			break
 		}
-    }
-    return st
+	}
+	return st
 }
 
 func Prysm_attestation(b []byte) int {
@@ -99,7 +100,7 @@ func Prysm_attestation(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessAttestationNoVerify(context.Background(), s, data)
+	post, err := blocks.ProcessAttestationNoVerifySignature(context.Background(), s, data)
 	if err != nil {
 		return 0
 	}
@@ -244,7 +245,7 @@ func Prysm_voluntary_exit(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{{Exit: data}}})
+	post, err := blocks.ProcessVoluntaryExitsNoVerifySignature(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{{Exit: data}}})
 	if err != nil {
 		return 0
 	}

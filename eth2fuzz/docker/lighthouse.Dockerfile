@@ -46,7 +46,7 @@ RUN git clone \
 	--depth 1 \
 	https://github.com/sigp/lighthouse
 
-# build lighthouse 
+# build lighthouse
 RUN cd lighthouse && make
 
 #####################################
@@ -66,9 +66,9 @@ WORKDIR /eth2fuzz
 COPY . .
 
 # Build the CLI tool
-RUN make build
+RUN make -f eth2fuzz.mk build
 
-# Set env for eth2fuzz target listing 
+# Set env for eth2fuzz target listing
 ENV CURRENT_CLIENT="LIGHTHOUSE"
 
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

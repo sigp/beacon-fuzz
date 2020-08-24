@@ -23,7 +23,7 @@ WORKDIR /eth2fuzz
 COPY . .
 
 # Build the CLI tool
-RUN make build
+RUN make -f eth2fuzz.mk build
 
 #####################################
 ############ prysm #################

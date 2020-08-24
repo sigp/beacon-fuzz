@@ -2,12 +2,14 @@ name: Eth2fuzz
 
 on:
   push:
+    branches:
+      - master
     paths:
       - 'eth2fuzz/**'
   pull_request:
-    paths: 
+    paths:
       - 'eth2fuzz/**'
-  # Run this once per day to be sure there is no breaking change 
+  # Run this once per day to be sure there is no breaking change
   # due to client updates
   schedule:
     # * is a special character in YAML so you have to quote this string
@@ -57,11 +59,11 @@ jobs:
         with:
             toolchain: nightly
             override: true
-      
+
       - name: Submodule update
         run: git submodule update --init
       - name: Build
-        run: cd eth2fuzz && make build
+        run: cd eth2fuzz && make -f eth2fuzz.mk build
 
   # Try to compile the lighthouse dockerfile
   build-docker-lighthouse:
@@ -69,15 +71,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
       - name: Build Docker
         run: cd eth2fuzz && make lighthouse
-      - name: Build target
+      - name: Run target
         run: cd eth2fuzz && make test-lighthouse
 
   # Try to compile the lodestar dockerfile
@@ -86,15 +82,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
       - name: Build Docker
         run: cd eth2fuzz && make lodestar
-      - name: Build target
+      - name: Run target
         run: cd eth2fuzz && make test-lodestar
 
   # Try to compile the nimbus dockerfile
@@ -103,15 +93,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
       - name: Build Docker
         run: cd eth2fuzz && make nimbus
-      - name: Build target
+      - name: Run target
         run: cd eth2fuzz && make test-nimbus
 
   # Try to compile the prysm dockerfile
@@ -120,15 +104,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
       - name: Build Docker
         run: cd eth2fuzz && make prysm
-      - name: Build target
+      - name: Run target
         run: cd eth2fuzz && make test-prysm
 
   # Try to compile the teku dockerfile
@@ -137,13 +115,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-
       - name: Build Docker
         run: cd eth2fuzz && make teku
-      - name: Build target
+      - name: Run target
         run: cd eth2fuzz && make test-teku
+

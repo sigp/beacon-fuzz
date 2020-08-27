@@ -1,7 +1,7 @@
 FROM ubuntu:18.04 AS build
 
 ARG RUST_TOOLCHAIN="nightly"
-ARG GIT_BRANCH="master"
+ARG GIT_BRANCH="v0.2.7"
 
 ENV CARGO_HOME=/usr/local/rust
 ENV RUSTUP_HOME=/usr/local/rust
@@ -42,7 +42,7 @@ RUN curl --proto '=https' \
 # Clone lighthouse
 RUN git clone \
 	--branch "$GIT_BRANCH" \
-	--recursive \
+	--recurse-submodules \
 	--depth 1 \
 	https://github.com/sigp/lighthouse
 

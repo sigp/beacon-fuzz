@@ -30,6 +30,9 @@ RUN make -f eth2fuzz.mk build
 
 FROM ubuntu:18.04
 
+ARG LODESTAR_VERSION="0.11.0"
+ARG DISCV5_VERSION="0.3.2"
+
 # Update ubuntu
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends \
@@ -51,7 +54,8 @@ RUN apt-get update && \
 WORKDIR /eth2fuzz
 
 # Install lodestar
-RUN npm i @chainsafe/lodestar-types @chainsafe/discv5
+RUN npm i "@chainsafe/lodestar-types@$LODESTAR_VERSION"
+RUN npm i "@chainsafe/discv5@$DISCV5_VERSION"
 
 # Install Javascript fuzzer
 RUN npm i -g jsfuzz

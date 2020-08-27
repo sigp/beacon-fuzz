@@ -25,12 +25,13 @@ COPY . .
 # Build the CLI tool
 RUN make -f eth2fuzz.mk build
 
-#####################################
-############ prysm #################
+###################################
+############ teku #################
 
 FROM ubuntu:18.04
 
 ARG GIT_BRANCH="master"
+ARG T_VERSION="0.12.5"
 ARG PRESET="preset_mainnet"
 
 # Update ubuntu
@@ -69,13 +70,19 @@ RUN apt-get update && \
 
 WORKDIR /eth2fuzz
 
+# TODO uncomment once a9abcb472cab80cda3652268aec2a03ee8bfc1d7 is part of a suitable Teku release
+#RUN git clone \
+#	--branch "$TEKU_VERSION" \
+#	--depth 1 \
+#	https://github.com/PegaSysEng/teku.git
+
 RUN git clone \
-	--branch "$GIT_BRANCH" \
+	--branch "$T_VERSION" \
 	--depth 1 \
 	https://github.com/PegaSysEng/teku.git
 
+# Build Teku
 RUN cd teku && \
-	# Build Teku
 	./gradlew distTar installDist
 
 # install JQF fuzzer

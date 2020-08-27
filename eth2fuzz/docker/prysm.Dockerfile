@@ -32,6 +32,7 @@ FROM ubuntu:18.04
 
 ARG GIT_BRANCH="master"
 ARG PRESET="preset_mainnet"
+ARG PRYSM_VERSION="v1.0.0-alpha.23"
 
 # Update ubuntu
 RUN apt-get update && \
@@ -65,7 +66,13 @@ WORKDIR /eth2fuzz
 ENV GOPATH="/eth2fuzz"
 
 # Install prysm
-RUN go get github.com/prysmaticlabs/prysm || true
+# (Hacky way to get specific version in GOPATH mode)
+RUN mkdir -p /eth2fuzz/src/github.com/prysmaticlabs/
+RUN cd /eth2fuzz/src/github.com/prysmaticlabs/ && \
+    git clone --branch "$PRYSM_VERSION" \
+    --recurse-submodules \
+    --depth 1 \
+    https://github.com/prysmaticlabs/prysm
 RUN go get github.com/herumi/bls-eth-go-binary/bls
 
 # Install go-fuzz 114

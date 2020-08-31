@@ -3,8 +3,8 @@
 Open-source fuzzing framework for Ethereum 2.0 (Eth2) Phase0 implementations.
 Maintained by Sigma Prime for the Ethereum Foundation.
 
-![Eth2Fuzz](https://github.com/sigmaprime/beacon-fuzz/workflows/Eth2Fuzz/badge.svg)
-![Eth2Diff](https://github.com/sigmaprime/beacon-fuzz/workflows/Eth2Diff/badge.svg)
+![Eth2fuzz](https://github.com/sigp/beacon-fuzz/workflows/Eth2fuzz/badge.svg)
+![Eth2diff](https://github.com/sigp/beacon-fuzz/workflows/Eth2diff/badge.svg)
 
 ## Community Fuzzing
 

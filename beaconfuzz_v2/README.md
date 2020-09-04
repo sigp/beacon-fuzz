@@ -17,7 +17,7 @@ After setup and installation, your workspace should look as following:
 
 Clone this repository
 ```
-git clone https://github.com/sigp/beacon-fuzz --branch beaconfuzz_v2
+git clone https://github.com/sigp/beacon-fuzz
 ```
 
 ### lighthouse setup

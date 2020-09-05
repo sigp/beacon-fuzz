@@ -123,12 +123,7 @@ func Prysm_attester_slashing(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	block := &ethpb.SignedBeaconBlock{
-		Block: &ethpb.BeaconBlock{
-			Body: &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}},
-		},
-	}
-	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, block)
+	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}})
 	if err != nil {
 		return 0
 	}
@@ -223,13 +218,8 @@ func Prysm_proposer_slashing(b []byte) int {
 		// should never happen
 		panic("stateTrie InitializeFromProto")
 	}
-	block := &ethpb.SignedBeaconBlock{
-		Block: &ethpb.BeaconBlock{
-			Body: &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}},
-		},
-	}
 	// process the container
-	post, err := blocks.ProcessProposerSlashings(context.Background(), s, block)
+	post, err := blocks.ProcessProposerSlashings(context.Background(), s, &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}})
 	if err != nil {
 		return 0
 	}

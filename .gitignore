@@ -10,10 +10,21 @@ eth2fuzz/workspace/corpora/*
 eth2fuzz/workspace/hfuzz/hfuzz_target/*
 eth2fuzz/workspace/afl/target/*
 eth2fuzz/workspace/libfuzzer/fuzz/target/*
+
+# local crashes & logs
+eth2fuzz/workspace/nimlibfuzzer/crash-*
+eth2fuzz/workspace/nimlibfuzzer/slow-unit-*
+eth2fuzz/workspace/nimlibfuzzer/timeout-*
+eth2fuzz/workspace/nimlibfuzzer/*.log
+eth2fuzz/workspace/gofuzz/crash-*
+eth2fuzz/workspace/gofuzz/*.log
+eth2fuzz/workspace/jsfuzz/crash-*
+
+
 # dev testing
 lighthouse/*
 
-target/
+**/*.txt
 **/*.rs.bk
 Cargo.lock
 files/tools/*/bin

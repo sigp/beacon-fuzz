@@ -109,7 +109,7 @@ pub fn fuzz_lighthouse_enr(data: &[u8]) {
         Ok(d) => d,
         _ => return,
     };
-    let _a = Enr::from_str(d);
+    let _a = Enr::from_str(&d);
     //println!("{:?}", a);
 }
 
@@ -118,5 +118,61 @@ pub fn fuzz_lighthouse_enr(data: &[u8]) {
 #[inline(always)]
 pub fn fuzz_lighthouse_bls(data: &[u8]) {
     use bls::Signature;
-    let _ = Signature::deserialize(data);
+    let _ = Signature::deserialize(&data);
 }
+
+/* discv5 */
+pub fn fuzz_lighthouse_discv5_packet(data: &[u8]) {
+    use eth2_libp2p::discv5::packet::Packet;
+
+    // around half chance to trigger whoareyou packet
+    if data.len() > 32 && data[0] > 126 {
+        let mut magic_data = [0u8; 32];
+        magic_data.copy_from_slice(&data[..32]);
+        if let Ok(packet) = Packet::decode(&data[32..], &magic_data) {
+            packet.encode();
+        }
+    }
+}
+
+// From beacon_node/eth2-libp2p/src/rpc/protocol.rs
+// const MAX_RPC_SIZE: usize = 1_048_576; // 1M
+
+/* snappy
+pub fn fuzz_lighthouse_snappy(data: &[u8]) {
+    use eth2_libp2p::rpc::{Encoding, Protocol, ProtocolId, SSZSnappyInboundCodec, Version};
+    use libp2p::bytes::BytesMut;
+    use tokio_util::codec::Decoder;
+
+    let protocol = ProtocolId::new(Protocol::Status, Version::V1, Encoding::SSZSnappy);
+    let mut codec = SSZSnappyInboundCodec::<MainnetEthSpec>::new(protocol, MAX_RPC_SIZE);
+    let mut buffer = BytesMut::from(&data);
+    let _ = codec.decode(&mut buffer);
+
+
+    /// The Status protocol name.
+    //Status,
+    /// The Goodbye protocol name.
+    //Goodbye,
+    /// The `BlocksByRange` protocol name.
+    //BlocksByRange,
+    /// The `BlocksByRoot` protocol name.
+    //BlocksByRoot,
+    /// The `Ping` protocol name.
+    //Ping,s
+    /// The `MetaData` protocol name.
+    //MetaData,
+
+}
+*/
+/* gossip
+pub fn fuzz_lighthouse_gossip(data: &[u8]) {
+    use bytes::BytesMut;
+    use eth2_libp2p::GossipTopic::{protocol::GossipsubCodec, ValidationMode};
+    use futures_codec::{Decoder, Encoder};
+    use unsigned_varint::codec;
+
+    let mut codec = GossipsubCodec::new(codec::UviBytes::default(), ValidationMode::Anonymous);
+    let mut buf: BytesMut = data.into();
+    let _ = codec.decode(&mut buf);
+} */

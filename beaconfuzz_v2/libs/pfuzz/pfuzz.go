@@ -256,7 +256,7 @@ func pfuzz_attestation(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessAttestationNoVerify(context.Background(), s, data)
+	post, err := blocks.ProcessAttestationNoVerifySignature(context.Background(), s, data)
 	if err != nil {
 		return false
 	}
@@ -329,7 +329,12 @@ func pfuzz_attester_slashing(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}})
+	block := &ethpb.SignedBeaconBlock{
+		Block: &ethpb.BeaconBlock{
+			Body: &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}},
+		},
+	}
+	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, block)
 	if err != nil {
 		return false
 	}
@@ -473,7 +478,7 @@ func pfuzz_block_header(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessBlockHeaderNoVerify(s, data)
+	post, err := blocks.ProcessBlockHeaderNoVerify(context.Background(), s, &ethpb.SignedBeaconBlock{Block: data})
 	if err != nil {
 		return false
 	}
@@ -610,8 +615,13 @@ func pfuzz_proposer_slashing(
 		// should never happen
 		panic("stateTrie InitializeFromProto")
 	}
+	block := &ethpb.SignedBeaconBlock{
+		Block: &ethpb.BeaconBlock{
+			Body: &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}},
+		},
+	}
 	// process the container
-	post, err := blocks.ProcessProposerSlashings(context.Background(), s, &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}})
+	post, err := blocks.ProcessProposerSlashings(context.Background(), s, block)
 	if err != nil {
 		return false
 	}
@@ -677,7 +687,7 @@ func pfuzz_voluntary_exit(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{data}})
+	post, err := blocks.ProcessVoluntaryExitsNoVerifySignature(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{data}})
 	if err != nil {
 		return false
 	}

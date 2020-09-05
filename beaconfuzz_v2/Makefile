@@ -41,6 +41,12 @@ clean:
 	rm -rf target
 	rm -rf ./beaconfuzz_v2
 
+# Compile the project (called by docker)
+build-docker:
+	CARGO_PRYSM_DIR=../../prysm \
+	CARGO_NIMBUS_DIR=../../nim-beacon-chain \
+	cargo +nightly build --release --out-dir=. -Z unstable-options
+
 ## Create the beaconfuzz_v2 docker
 docker:
 	DOCKER_BUILDKIT=1 docker build \

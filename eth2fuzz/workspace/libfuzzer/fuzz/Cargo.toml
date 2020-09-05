@@ -92,3 +92,9 @@ name = "lighthouse_bls"
 path = "fuzz_targets/lighthouse_bls.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "lighthouse_discv5_packet"
+path = "fuzz_targets/lighthouse_discv5_packet.rs"
+test = false
+doc = false

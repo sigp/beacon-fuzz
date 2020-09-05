@@ -1,0 +1,30 @@
+name: Beaconfuzz_v2
+
+on:
+  push:
+    paths:
+      - 'beaconfuzz_v2/**'
+  pull_request:
+    paths: 
+      - 'beaconfuzz_v2/**'
+  # Run this once per day to be sure there is no breaking change 
+  # due to client updates
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 * * *'
+
+jobs:
+  # Try to compile the docker
+  build-docker:
+    name: Building docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+
+      - name: Build Docker
+        run: cd beaconfuzz_v2 && make docker

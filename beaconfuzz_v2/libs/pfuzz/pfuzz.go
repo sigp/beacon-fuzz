@@ -329,7 +329,12 @@ func pfuzz_attester_slashing(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}})
+	block := &ethpb.SignedBeaconBlock{
+		Block: &ethpb.BeaconBlock{
+			Body: &ethpb.BeaconBlockBody{AttesterSlashings: []*ethpb.AttesterSlashing{data}},
+		},
+	}
+	post, err := blocks.ProcessAttesterSlashings(context.Background(), s, block)
 	if err != nil {
 		return false
 	}
@@ -610,8 +615,13 @@ func pfuzz_proposer_slashing(
 		// should never happen
 		panic("stateTrie InitializeFromProto")
 	}
+	block := &ethpb.SignedBeaconBlock{
+		Block: &ethpb.BeaconBlock{
+			Body: &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}},
+		},
+	}
 	// process the container
-	post, err := blocks.ProcessProposerSlashings(context.Background(), s, &ethpb.BeaconBlockBody{ProposerSlashings: []*ethpb.ProposerSlashing{data}})
+	post, err := blocks.ProcessProposerSlashings(context.Background(), s, block)
 	if err != nil {
 		return false
 	}

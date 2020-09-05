@@ -98,15 +98,21 @@ ENV GOPATH="/prysm"
 
 # Get all golang dependencies
 RUN go get -u github.com/prysmaticlabs/prysm || true
-RUN go get -u sigs.k8s.io/structured-merge-diff/v3/value || true
+# RUN go get -u sigs.k8s.io/structured-merge-diff/v3/value || true
 
 # Build prysm with bazel
 # RUN cd /prysm/src/github.com/prysmaticlabs/prysm/ && bazel build
 
 # Compile pfuzz lib
-RUN cd /prysm/pfuzz/ && go get ./...
-RUN go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
+RUN cd /prysm/pfuzz/ && go get . || true
+RUN cd /prysm/pfuzz/ && go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
 
+
+
+#####################################
+########### Rust fuzzer #############
+
+RUN cargo install cargo-fuzz
 
 #####################################
 ############ eth2fuzz ###############
@@ -117,6 +123,6 @@ WORKDIR /beacon-fuzz/beaconfuzz_v2
 COPY . .
 
 # Build the CLI tool
-RUN make build
+RUN make build-docker
 
 ENTRYPOINT ["/beacon-fuzz/beaconfuzz_v2/beaconfuzz_v2"]

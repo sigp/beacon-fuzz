@@ -13,6 +13,7 @@ pub enum Targets {
     //LighthouseBeaconstate,
     LighthouseEnr,
     LighthouseBLS,
+    LighthouseDiscv5Packet,
     // Lodestar
     LodestarAttestation,
     LodestarAttesterSlashing,
@@ -66,6 +67,7 @@ impl Targets {
             //Targets::LighthouseBeaconstate => "lighthouse_beaconstate",
             Targets::LighthouseEnr => "lighthouse_enr",
             Targets::LighthouseBLS => "lighthouse_bls",
+            Targets::LighthouseDiscv5Packet => "lighthouse_discv5_packet",
             //Lodestar
             Targets::LodestarAttestation => "lodestar_attestation",
             Targets::LodestarAttesterSlashing => "lodestar_attester_slashing",
@@ -120,6 +122,7 @@ impl Targets {
             //Targets::LighthouseBeaconstate => "beaconstate",
             Targets::LighthouseEnr => "enr",
             Targets::LighthouseBLS => "bls",
+            Targets::LighthouseDiscv5Packet => "discv5_packet",
             //Lodestar
             Targets::LodestarAttestation => "attestation",
             Targets::LodestarAttesterSlashing => "attester_slashing",
@@ -173,7 +176,8 @@ impl Targets {
             | Targets::LighthouseVoluntaryExit
             //| Targets::LighthouseBeaconstate
             | Targets::LighthouseEnr
-            | Targets::LighthouseBLS => "rust",
+            | Targets::LighthouseBLS
+            | Targets::LighthouseDiscv5Packet => "rust",
             //Lodestar
             Targets::LodestarAttestation
             | Targets::LodestarAttesterSlashing

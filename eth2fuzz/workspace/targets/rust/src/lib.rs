@@ -136,9 +136,9 @@ pub fn fuzz_lighthouse_discv5_packet(data: &[u8]) {
 }
 
 // From beacon_node/eth2-libp2p/src/rpc/protocol.rs
-const MAX_RPC_SIZE: usize = 1_048_576; // 1M
+// const MAX_RPC_SIZE: usize = 1_048_576; // 1M
 
-/* snappy */
+/* snappy
 pub fn fuzz_lighthouse_snappy(data: &[u8]) {
     use eth2_libp2p::rpc::{Encoding, Protocol, ProtocolId, SSZSnappyInboundCodec, Version};
     use libp2p::bytes::BytesMut;
@@ -149,7 +149,7 @@ pub fn fuzz_lighthouse_snappy(data: &[u8]) {
     let mut buffer = BytesMut::from(&data);
     let _ = codec.decode(&mut buffer);
 
-    /*
+
     /// The Status protocol name.
     //Status,
     /// The Goodbye protocol name.
@@ -162,9 +162,9 @@ pub fn fuzz_lighthouse_snappy(data: &[u8]) {
     //Ping,s
     /// The `MetaData` protocol name.
     //MetaData,
-     */
-}
 
+}
+*/
 /* gossip
 pub fn fuzz_lighthouse_gossip(data: &[u8]) {
     use bytes::BytesMut;

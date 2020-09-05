@@ -25,7 +25,6 @@ eth2fuzz/workspace/jsfuzz/crash-*
 lighthouse/*
 
 **/*.txt
-target/
 **/*.rs.bk
 Cargo.lock
 files/tools/*/bin

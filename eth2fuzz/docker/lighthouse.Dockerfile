@@ -47,7 +47,7 @@ RUN git clone \
 	https://github.com/sigp/lighthouse
 
 # build lighthouse 
-RUN cd lighthouse && make install
+RUN cd lighthouse && make
 
 #####################################
 ############ FUZZERS ################

@@ -99,7 +99,7 @@ func Prysm_attestation(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessAttestationNoVerify(context.Background(), s, data)
+	post, err := blocks.ProcessAttestationNoVerifySignature(context.Background(), s, data)
 	if err != nil {
 		return 0
 	}
@@ -200,7 +200,7 @@ func Prysm_deposit(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessDeposit(s, data)
+	post, err := blocks.ProcessDeposit(s, data, true)
 	if err != nil {
 		return 0
 	}
@@ -253,7 +253,7 @@ func Prysm_voluntary_exit(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessVoluntaryExitsNoVerify(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{data}})
+	post, err := blocks.ProcessVoluntaryExitsNoVerifySignature(s, &ethpb.BeaconBlockBody{VoluntaryExits: []*ethpb.SignedVoluntaryExit{data}})
 	if err != nil {
 		return 0
 	}

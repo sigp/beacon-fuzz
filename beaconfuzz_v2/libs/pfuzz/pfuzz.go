@@ -478,7 +478,7 @@ func pfuzz_block_header(
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessBlockHeaderNoVerify(s, data)
+	post, err := blocks.ProcessBlockHeaderNoVerify(s, &ethpb.SignedBeaconBlock{Block: data})
 	if err != nil {
 		return false
 	}

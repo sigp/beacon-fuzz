@@ -23,15 +23,19 @@ WORKDIR /eth2fuzz
 COPY . .
 
 # Build the CLI tool
-RUN make build
+RUN make -f eth2fuzz.mk build
 
 #####################################
 ############ nimbus #################
 
 FROM ubuntu:18.04
 
+# Nimbus doesn't use git tags for versioning, so pin to specific commit
 ARG NIMBUS_GIT_BRANCH="devel"
+ARG NIMBUS_GIT_COMMIT="207397775b86f7244bf3e7226a54375d512c976a"
 ARG NIMUTIL_GIT_BRANCH="master"
+#ARG NIMUTIL_GIT_COMMIT="61e5e1ec817cc73fc43585acae4def287180e78e"
+ARG NIMUTIL_GIT_COMMIT="1601894ec1fd1c7095d405eb0c846cac212fb18f"
 ARG PRESET="mainnet"
 
 # Update ubuntu
@@ -47,17 +51,22 @@ RUN apt-get update && \
 # Clone the nim-testutils fuzzers
 RUN git clone \
 	--branch "$NIMUTIL_GIT_BRANCH" \
-	--recursive \
-	https://github.com/status-im/nim-testutils
-
-RUN cd nim-testutils && git checkout 1601894ec1fd1c7095d405eb0c846cac212fb18f
+	--recurse-submodules \
+	https://github.com/status-im/nim-testutils && \
+    cd nim-testutils && \
+    git checkout "$NIMUTIL_GIT_COMMIT" \
+    --recurse-submodules
 
 # Clone the project
 RUN git clone \
 	--branch "$NIMBUS_GIT_BRANCH" \
-	--recursive \
- 	--depth 1 \
-	https://github.com/status-im/nim-beacon-chain
+	--recurse-submodules \
+ 	--single-branch \
+	https://github.com/status-im/nim-beacon-chain && \
+    cd nim-beacon-chain && \
+    git checkout "$NIMBUS_GIT_COMMIT" \
+	--recurse-submodules
+
 
 WORKDIR nim-beacon-chain
 

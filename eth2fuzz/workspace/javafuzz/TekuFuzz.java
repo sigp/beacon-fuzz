@@ -46,8 +46,9 @@ import tech.pegasys.teku.ssz.SSZTypes.SSZList;
 import tech.pegasys.teku.core.BlockProcessorUtil;
 import tech.pegasys.teku.core.StateTransition;
 import tech.pegasys.teku.core.StateTransitionException;
+import tech.pegasys.teku.core.lookup.IndexedAttestationProvider;
 import tech.pegasys.teku.core.exceptions.BlockProcessingException;
-import com.google.common.primitives.UnsignedLong;
+import tech.pegasys.teku.infrastructure.unsigned.UInt64;
 import java.io.FileInputStream;
 
 /* useful links:
@@ -171,7 +172,9 @@ public class TekuFuzz {
       TekuFuzz.GlobalBeaconState.updated(
         state -> {
           BlockProcessorUtil.process_attestations(
-              state, SSZList.singleton(structuredInput));
+              state,
+              SSZList.singleton(structuredInput),
+              IndexedAttestationProvider.DIRECT_PROVIDER);
         });
 
     } catch (IOException e) {    
@@ -235,7 +238,7 @@ public class TekuFuzz {
 
     // prevent timeout when dealing with huge slot value
     if(structuredInput.getSlot().compareTo(
-        TekuFuzz.GlobalBeaconState.getSlot().plus(UnsignedLong.valueOf("100"))) > 0
+        TekuFuzz.GlobalBeaconState.getSlot().plus(UInt64.valueOf("100"))) > 0
       ){
       StateTransition transition = new StateTransition();
       BeaconState postState =

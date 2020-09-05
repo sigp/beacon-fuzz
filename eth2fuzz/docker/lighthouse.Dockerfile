@@ -1,7 +1,7 @@
 FROM ubuntu:18.04 AS build
 
 ARG RUST_TOOLCHAIN="nightly"
-ARG GIT_BRANCH="master"
+ARG GIT_BRANCH="v0.2.7"
 
 ENV CARGO_HOME=/usr/local/rust
 ENV RUSTUP_HOME=/usr/local/rust
@@ -42,11 +42,11 @@ RUN curl --proto '=https' \
 # Clone lighthouse
 RUN git clone \
 	--branch "$GIT_BRANCH" \
-	--recursive \
+	--recurse-submodules \
 	--depth 1 \
 	https://github.com/sigp/lighthouse
 
-# build lighthouse 
+# build lighthouse
 RUN cd lighthouse && make
 
 #####################################
@@ -66,9 +66,9 @@ WORKDIR /eth2fuzz
 COPY . .
 
 # Build the CLI tool
-RUN make build
+RUN make -f eth2fuzz.mk build
 
-# Set env for eth2fuzz target listing 
+# Set env for eth2fuzz target listing
 ENV CURRENT_CLIENT="LIGHTHOUSE"
 
 ENTRYPOINT ["/eth2fuzz/eth2fuzz"]

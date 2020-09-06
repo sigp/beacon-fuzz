@@ -69,7 +69,7 @@ ENV GOPATH="/eth2fuzz"
 # (Hacky way to get specific version in GOPATH mode)
 RUN mkdir -p /eth2fuzz/src/github.com/prysmaticlabs/
 RUN cd /eth2fuzz/src/github.com/prysmaticlabs/ && \
-    git clone --branch "$PRYSM_VERSION" \
+    git clone --branch "$GIT_BRANCH" \
     --recurse-submodules \
     --depth 1 \
     https://github.com/prysmaticlabs/prysm
@@ -79,7 +79,7 @@ RUN go get github.com/herumi/bls-eth-go-binary/bls
 RUN go get -u github.com/mdempsky/go114-fuzz-build
 
 # Build prysm with bazel
-RUN cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/ && bazel build
+# RUN cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/ && bazel build
 
 #####################################
 ############ eth2fuzz ###############

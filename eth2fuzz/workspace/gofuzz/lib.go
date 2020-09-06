@@ -99,10 +99,7 @@ func Prysm_attestation(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	// TODO uncomment and replace once https://github.com/prysmaticlabs/prysm/commit/55074bcc6cf5e9f6e47f1c7e43f17bd16417f767
-	// is included in a release
-	// post, err := blocks.ProcessAttestationNoVerifySignature(context.Background(), s, data)
-	post, err := blocks.ProcessAttestationNoVerify(context.Background(), s, data)
+	post, err := blocks.ProcessAttestationNoVerifySignature(context.Background(), s, data)
 	if err != nil {
 		return 0
 	}

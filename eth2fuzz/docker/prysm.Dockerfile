@@ -79,7 +79,7 @@ RUN go get github.com/herumi/bls-eth-go-binary/bls
 RUN go get -u github.com/mdempsky/go114-fuzz-build
 
 # Build prysm with bazel
-# RUN cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/ && bazel build
+RUN cd /eth2fuzz/src/github.com/prysmaticlabs/prysm/ && bazel build
 
 #####################################
 ############ eth2fuzz ###############

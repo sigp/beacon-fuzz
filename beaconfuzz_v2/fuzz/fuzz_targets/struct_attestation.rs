@@ -138,9 +138,16 @@ lazy_static! {
     };
 }
 
+pub fn dump(out: &[u8]) {
+    let mut file_post = File::create("debug_file.ssz").expect("Cannot create debug_file.ssz");
+    // write the content
+    file_post.write(&out).expect("Cannot write debug_file.ssz");
+}
+
 fuzz_target!(|wrapper: Attestation<MainnetEthSpec>| {
     if *INIT_OK {
         let data = wrapper.as_ssz_bytes();
+        //dump(&data);
         eth2clientsfuzz::fuzz_attestation(&BEACONSTATE, &data);
     }
 });

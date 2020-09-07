@@ -57,44 +57,44 @@ docker:
 	@echo 'USAGE: docker run -it -v beaconfuzz_v2'
 
 fuzz_attestation:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attestation
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attestation -- -detect_leaks=0
 
 fuzz_attestation-struct:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_attestation
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_attestation -- -detect_leaks=0
 
 fuzz_attester_slashing:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attester_slashing
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_attester_slashing -- -detect_leaks=0
 
 fuzz_attester_slashing-struct:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_attester_slashing
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_attester_slashing -- -detect_leaks=0
 
 fuzz_block:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block -- -detect_leaks=0
 
 fuzz_block-struct:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_block
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_block -- -detect_leaks=0
 
 # TODO - fix this one
 #fuzz_block_header:
 #	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block_header
 
 fuzz_deposit:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_deposit
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_deposit -- -detect_leaks=0
 
 fuzz_deposit-struct:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_deposit
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_deposit -- -detect_leaks=0
 
 fuzz_proposer_slashing:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_proposer_slashing
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_proposer_slashing -- -detect_leaks=0
 
 fuzz_proposer_slashing-struct:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_proposer_slashing
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_proposer_slashing -- -detect_leaks=0
 
 fuzz_voluntary_exit:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_voluntary_exit
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_voluntary_exit -- -detect_leaks=0
 
 fuzz_voluntary_exit-struct:
-	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_voluntary_exit
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo +nightly fuzz run struct_voluntary_exit -- -detect_leaks=0
 
 pfuzz:
 	echo "TODO"

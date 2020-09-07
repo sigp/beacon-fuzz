@@ -70,8 +70,27 @@ RUN apt-get update && \
 		software-properties-common \
 		curl \
 		git \
+		gpg-agent \
+		build-essential \
+		pkg-config \
+		libssl-dev \
+		build-essential \
+		libtool-bin \
+		python3-dev \
+		automake \
+		flex \
+		bison \
+		libglib2.0-dev \
+		libpixman-1-dev \
 		clang \
-		gpg-agent
+		python3-setuptools \
+		llvm \
+		binutils-dev \
+		libunwind-dev \
+		libblocksruntime-dev \
+		cmake
+
+
 
 # Install golang
 RUN add-apt-repository ppa:longsleep/golang-backports
@@ -85,8 +104,6 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | \
 RUN echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 RUN apt-get update && \
 	apt-get install -y \
-		cmake \
-		git \
 		bazel \
  		bazel-3.2.0
 
@@ -112,7 +129,10 @@ RUN cd /prysm/pfuzz/ && go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
 #####################################
 ########### Rust fuzzer #############
 
+# Install Rust fuzzer
+RUN cargo install honggfuzz
 RUN cargo install cargo-fuzz
+RUN cargo install afl
 
 #####################################
 ############ eth2fuzz ###############

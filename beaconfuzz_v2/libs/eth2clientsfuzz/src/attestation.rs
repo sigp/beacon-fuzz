@@ -1,5 +1,38 @@
 use ssz::Encode; //Decode
 
+use types::{Attestation, MainnetEthSpec};
+
+pub fn get_raw_data_from_fuzzer() -> Vec<u8> {
+    return vec![0xff; 1085];
+}
+
+use arbitrary::{Arbitrary, Unstructured};
+pub fn run_attestation_struct(beacon_blob: &[u8], data: &[u8], debug: bool) {
+    // SSZ Decoding of the beaconstate
+    let state = lighthouse::ssz_beaconstate(&beacon_blob)
+        .expect("[LIGHTHOUSE] BeaconState SSZ decoding failed");
+
+    // generate attestation
+
+    // Get the raw data from the fuzzer or wherever else.
+    let data: &[u8] = &get_raw_data_from_fuzzer();
+
+    // Wrap that raw data in an `Unstructured`.
+    let mut unstructured = Unstructured::new(data);
+
+    // Generate an arbitrary instance of `MyType` and do stuff with it.
+    if let Ok(value) = Attestation::<MainnetEthSpec>::arbitrary(&mut unstructured) {
+        println!("{:?}", value);
+    }
+
+    println!("{:?}", Attestation::<MainnetEthSpec>::size_hint(0));
+
+    println!(
+        "{:?}",
+        Attestation::<MainnetEthSpec>::arbitrary_take_rest(unstructured)
+    );
+}
+
 // TODO - use closure for ssz decoding type
 pub fn run_attestation(beacon_blob: &[u8], data: &[u8], debug: bool) {
     // SSZ Decoding of the beaconstate

@@ -12,4 +12,5 @@ fn main() {
     );
     println!("cargo:rustc-link-lib=static=backtracenim");
     println!("cargo:rustc-link-lib=static=backtrace");
+    println!("cargo:rustc-link-lib=dylib=pcre");
 }

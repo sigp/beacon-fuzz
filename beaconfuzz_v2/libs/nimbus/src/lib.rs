@@ -13,11 +13,17 @@ pub mod proposer_slashing;
 pub mod voluntary_exit;
 
 static mut DISABLE_BLS: bool = true;
-static DEBUG: bool = false;
+static mut DEBUG: bool = false;
 
 #[link(name = "nfuzz", kind = "static")]
 extern "C" {
     fn NimMain();
+}
+
+pub fn debug_mode_nimbus(activate_debug_mode: bool) {
+    unsafe {
+        DEBUG = activate_debug_mode;
+    }
 }
 
 pub fn init_nimbus(disable_bls: bool) {
@@ -32,7 +38,9 @@ pub fn process_attestation(
     attest: &Attestation<MainnetEthSpec>,
     post: &[u8],
 ) -> bool {
-    self::attestation::process_attestation(beacon, attest, post, unsafe { DISABLE_BLS }, DEBUG)
+    self::attestation::process_attestation(beacon, attest, post, unsafe { DISABLE_BLS }, unsafe {
+        DEBUG
+    })
 }
 
 pub fn process_attester_slashing(
@@ -45,7 +53,7 @@ pub fn process_attester_slashing(
         attester_slashing,
         post,
         unsafe { DISABLE_BLS },
-        DEBUG,
+        unsafe { DEBUG },
     )
 }
 
@@ -54,7 +62,9 @@ pub fn process_block(
     beacon_block: &SignedBeaconBlock<MainnetEthSpec>,
     post: &[u8],
 ) -> bool {
-    self::block::process_block(beacon, beacon_block, post, unsafe { DISABLE_BLS }, DEBUG)
+    self::block::process_block(beacon, beacon_block, post, unsafe { DISABLE_BLS }, unsafe {
+        DEBUG
+    })
 }
 
 pub fn process_block_header(
@@ -67,7 +77,7 @@ pub fn process_block_header(
         beacon_block,
         post,
         unsafe { DISABLE_BLS },
-        DEBUG,
+        unsafe { DEBUG },
     )
 }
 
@@ -76,7 +86,9 @@ pub fn process_deposit(
     deposit: &Deposit,
     post: &[u8],
 ) -> bool {
-    self::deposit::process_deposit(beacon, deposit, post, unsafe { DISABLE_BLS }, DEBUG)
+    self::deposit::process_deposit(beacon, deposit, post, unsafe { DISABLE_BLS }, unsafe {
+        DEBUG
+    })
 }
 
 pub fn process_proposer_slashing(
@@ -89,7 +101,7 @@ pub fn process_proposer_slashing(
         proposer_slashing,
         post,
         unsafe { DISABLE_BLS },
-        DEBUG,
+        unsafe { DEBUG },
     )
 }
 
@@ -98,5 +110,11 @@ pub fn process_voluntary_exit(
     exit: &SignedVoluntaryExit,
     post: &[u8],
 ) -> bool {
-    self::voluntary_exit::process_voluntary_exit(beacon, exit, post, unsafe { DISABLE_BLS }, DEBUG)
+    self::voluntary_exit::process_voluntary_exit(
+        beacon,
+        exit,
+        post,
+        unsafe { DISABLE_BLS },
+        unsafe { DEBUG },
+    )
 }

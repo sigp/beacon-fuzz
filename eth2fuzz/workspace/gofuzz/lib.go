@@ -176,7 +176,7 @@ func Prysm_block_header(b []byte) int {
 		panic("stateTrie InitializeFromProto")
 	}
 	// process the container
-	post, err := blocks.ProcessBlockHeaderNoVerify(context.Background(), s, &ethpb.SignedBeaconBlock{Block: data})
+	post, err := blocks.ProcessBlockHeaderNoVerify(s, data)
 	if err != nil {
 		return 0
 	}

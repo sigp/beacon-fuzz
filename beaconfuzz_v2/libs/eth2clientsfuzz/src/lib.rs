@@ -12,6 +12,17 @@ pub fn initialize_clients(disable_bls: bool) {
     nimbus::init_nimbus(disable_bls);
 }
 
+// Activate debug mode
+pub fn debug_clients(activate_debug_mode: bool) {
+    prysm::debug_mode_prysm(activate_debug_mode);
+    nimbus::debug_mode_nimbus(activate_debug_mode);
+}
+
+// TODO - testing
+pub fn run_attestation_struct(beacon_blob: &[u8], container_blob: &[u8], debug: bool) {
+    self::attestation::run_attestation_struct(beacon_blob, container_blob, true)
+}
+
 // attestation
 pub fn run_attestation(beacon_blob: &[u8], container_blob: &[u8]) {
     self::attestation::run_attestation(beacon_blob, container_blob, true)

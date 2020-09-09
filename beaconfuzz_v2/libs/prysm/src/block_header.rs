@@ -44,17 +44,20 @@ pub fn process_block_header(beacon: &[u8], container: &[u8], post: &[u8], debug:
         )
     };
 
-    // dump post files for debugging
-    if debug {
-        dump_post_state(&post, &out);
-    }
-
     // If error triggered during processing, we return immediately
     if !res {
         return res;
     }
 
-    // Verify prysm's post is equal to lighthouse's post
-    assert!(out == post, "[PRYSM] Mismatch post");
+    if out != post {
+        // dump post files for debugging
+        if debug {
+            println!("[PRYSM] Mismatch post");
+            dump_post_state(&post, &out);
+        } else {
+            // make fuzzer to crash
+            panic!("[PRYSM] Mismatch post");
+        }
+    }
     res
 }

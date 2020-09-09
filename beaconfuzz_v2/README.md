@@ -29,6 +29,11 @@ git clone https://github.com/sigp/lighthouse
 
 ### nimbus setup
 
+Install nimbus dependencies:
+```
+sudo apt install libpcre3-dev
+```
+
 Clone the repository of nimbus and compile the nimbus fuzzing library:
 ```
 git clone https://github.com/status-im/nim-beacon-chain --branch devel
@@ -86,3 +91,7 @@ fuzz_attester_slashing-struct  fuzz_deposit-struct            fuzz_voluntary_exi
 there is two differents kind of fuzzing targets:
 - `fuzz_*`: Mutation fuzzing using honggfuzz
 - `fuzz_*-struct`: structural fuzzing using libfuzzer + arbitrary
+
+<!---
+RUSTFLAGS='-L /home/scop/Documents/consulting/sigmaprime/prysm/pfuzz/ -L /home/scop/Documents/consulting/sigmaprime/nim-beacon-state/build/ ' make fuzz_block-struct
+ -->

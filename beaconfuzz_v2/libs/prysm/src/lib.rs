@@ -19,7 +19,13 @@ pub fn init_prysm(disable_bls: bool) {
     }
 }
 
-static DEBUG: bool = false;
+static mut DEBUG: bool = false;
+
+pub fn debug_mode_prysm(activate_debug_mode: bool) {
+    unsafe {
+        DEBUG = activate_debug_mode;
+    }
+}
 
 // SSZ decoding
 
@@ -60,35 +66,35 @@ pub fn ssz_voluntary_exit(input: &[u8]) -> bool {
 
 /// process Attestation container
 pub fn process_attestation(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::attestation::process_attestation(beacon, attest, post, DEBUG)
+    self::attestation::process_attestation(beacon, attest, post, unsafe { DEBUG })
 }
 
 /// process AttesterSlashing container
 pub fn process_attester_slashing(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::attester_slashing::process_attester_slashing(beacon, attest, post, DEBUG)
+    self::attester_slashing::process_attester_slashing(beacon, attest, post, unsafe { DEBUG })
 }
 
 /// process Block container
 pub fn process_block(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::block::process_block(beacon, attest, post, DEBUG)
+    self::block::process_block(beacon, attest, post, unsafe { DEBUG })
 }
 
 /// process Blockheader container
 pub fn process_block_header(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::block_header::process_block_header(beacon, attest, post, DEBUG)
+    self::block_header::process_block_header(beacon, attest, post, unsafe { DEBUG })
 }
 
 /// process Deposit container
 pub fn process_deposit(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::deposit::process_deposit(beacon, attest, post, DEBUG)
+    self::deposit::process_deposit(beacon, attest, post, unsafe { DEBUG })
 }
 
 /// process ProposerSlashing container
 pub fn process_proposer_slashing(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::proposer_slashing::process_proposer_slashing(beacon, attest, post, DEBUG)
+    self::proposer_slashing::process_proposer_slashing(beacon, attest, post, unsafe { DEBUG })
 }
 
 /// process VoluntaryExit container
 pub fn process_voluntary_exit(beacon: &[u8], attest: &[u8], post: &[u8]) -> bool {
-    self::voluntary_exit::process_voluntary_exit(beacon, attest, post, DEBUG)
+    self::voluntary_exit::process_voluntary_exit(beacon, attest, post, unsafe { DEBUG })
 }

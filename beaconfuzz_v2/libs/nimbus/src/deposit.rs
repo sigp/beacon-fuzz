@@ -47,17 +47,20 @@ pub fn process_deposit(
 
     let res = unsafe { nfuzz_deposit(input_ptr, input_size, output_ptr, output_size, disable_bls) };
 
-    // dump post files for debugging
-    if debug {
-        dump_post_state(&post, &out);
-    }
-
     // If error triggered during processing, we return immediately
     if !res {
         return res;
     }
 
-    // Verify nimbus's post is equal to lighthouse's post
-    assert!(out == post, "[NIMBUS] Mismatch post");
+    if out != post {
+        // dump post files for debugging
+        if debug {
+            println!("[NIMBUS] Mismatch post");
+            dump_post_state(&post, &out);
+        } else {
+            // make fuzzer to crash
+            panic!("[NIMBUS] Mismatch post");
+        }
+    }
     res
 }

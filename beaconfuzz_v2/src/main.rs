@@ -48,6 +48,23 @@ enum Cli {
         )]
         container_type: Containers,
     },
+    /// DO NOT USE - UNDER DEV
+    #[structopt(name = "test")]
+    Test {
+        /// Set corpora path
+        #[structopt(
+            short = "f",
+            long = "corpora",
+            default_value = "../eth2fuzz/workspace/corpora"
+        )]
+        corpora: String,
+        /// Which target to run
+        #[structopt(
+            possible_values = &self::Containers::variants(),
+            case_insensitive = true
+        )]
+        container_type: Containers,
+    },
     /// List all available fuzzing targets
     #[structopt(name = "list")]
     ListTargets,
@@ -73,6 +90,12 @@ fn run() -> Result<(), Error> {
             container_type,
         } => {
             fuzz_target(corpora, container_type)?;
+        }
+        Test {
+            corpora,
+            container_type,
+        } => {
+            test(corpora, container_type)?;
         }
         // list all targets
         ListTargets => {
@@ -112,6 +135,73 @@ fn list_targets() -> Result<(), Error> {
     for cont in Containers::variants().iter() {
         println!("    {}", cont);
     }
+    Ok(())
+}
+
+fn test(corpora: String, container_type: Containers) -> Result<(), Error> {
+    // init random generator
+    let mut rng = rand::Rng::new();
+
+    println!("[+] fuzz_target");
+    println!("[+] corpora: {}", corpora);
+    println!("[+] container_type: {:?}", container_type);
+
+    // Get the list of beacon files
+    let beacon_folder = &format!("{}/{}", corpora, "beaconstate");
+    let beacon_files = utils::list_files_in_folder(&beacon_folder).expect("no beacon files here");
+
+    // Pick one random beacon file
+    let index = rng.rand() % beacon_files.len();
+    let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+    println!("[+] Beacon file: {}", &beacon_files[index]);
+
+    // Get the list of container files
+    let container_folder = &format!("{}/{}", corpora, "attestation");
+    let container_files =
+        utils::list_files_in_folder(&container_folder).expect("no container files here");
+
+    // Pick one random Attestation to fuzz
+    let index = rng.rand() % container_files.len();
+    let container_blob =
+        utils::read_from_path(&container_files[index]).expect("container not here");
+
+    // Create log file
+    let mut outfd = File::create("log.txt").unwrap();
+
+    // Initialize eth2client environment and disable bls
+    eth2clientsfuzz::initialize_clients(true);
+
+    // Call the fuzzing function
+    let it = Instant::now();
+
+    /*
+    for iters in 1u64.. {
+        // Pick one random beacon file
+        let index = rng.rand() % beacon_files.len();
+        let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+        println!("[+] Beacon file: {}", &beacon_files[index]);
+
+        // Pick one random Attestation to fuzz
+        // TODO(optimization) - load contents in memory
+        let index = rng.rand() % container_files.len();
+        let container_blob =
+            utils::read_from_path(&container_files[index]).expect("container not here");
+        println!("[+] Container file: {}", &container_files[index]);
+
+        // call the function
+        eth2clientsfuzz::run_attestation(&beacon_blob, &container_blob);
+
+        // stats monitoring
+        if (iters & 0xff) == 0 {
+            let elapsed = (Instant::now() - it).as_secs_f64();
+            let cases_per_sec = iters as f64 / elapsed;
+            writeln!(outfd, "cases/sec: {:12.4}", cases_per_sec)?;
+        }
+    }
+    */
+
+    eth2clientsfuzz::run_attestation_struct(&beacon_blob, &container_blob, true);
+
     Ok(())
 }
 
@@ -195,6 +285,10 @@ fn debug_target(
 
     // Initialize eth2client environment and disable bls
     eth2clientsfuzz::initialize_clients(true);
+
+    // activate debug mode for nimbus and prysm
+    // (print message when post mismatch + dump post state)
+    eth2clientsfuzz::debug_clients(true);
 
     // SSZ processing of the container depending of the type
     match container_type {

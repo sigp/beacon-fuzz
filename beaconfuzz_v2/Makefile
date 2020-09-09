@@ -40,6 +40,8 @@ clean:
 	cargo clean
 	rm -rf target
 	rm -rf ./beaconfuzz_v2
+	rm -rf fuzz/target
+	rm -rf hfuzz_target
 
 # Compile the project (called by docker)
 build-docker:

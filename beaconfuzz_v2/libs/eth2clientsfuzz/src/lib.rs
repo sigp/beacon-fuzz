@@ -49,14 +49,10 @@ pub fn fuzz_block(beacon_blob: &[u8], container_blob: &[u8]) {
 
 // block_header
 pub fn run_block_header(beacon_blob: &[u8], container_blob: &[u8]) {
-    unimplemented!()
-    // TODO
-    // self::block_header::run_block_header(beacon_blob, container_blob, true)
+    self::block_header::run_block_header(beacon_blob, container_blob, true)
 }
 pub fn fuzz_block_header(beacon_blob: &[u8], container_blob: &[u8]) {
-    unimplemented!()
-    // TODO
-    // self::block_header::run_block_header(beacon_blob, container_blob, true)
+    self::block_header::run_block_header(beacon_blob, container_blob, false)
 }
 
 // deposit

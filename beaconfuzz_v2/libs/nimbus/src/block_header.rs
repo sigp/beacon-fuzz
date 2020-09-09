@@ -1,7 +1,7 @@
 use ssz::Encode; //Decode
 use ssz_derive::{Decode, Encode};
 
-use types::{BeaconBlock, BeaconState, MainnetEthSpec};
+use types::{BeaconBlock, BeaconState, MainnetEthSpec, Signature, SignedBeaconBlock};
 
 #[link(name = "nfuzz", kind = "static")]
 extern "C" {
@@ -17,7 +17,7 @@ extern "C" {
 #[derive(Decode, Encode)]
 struct BlockHeaderTestCase {
     pub pre: BeaconState<MainnetEthSpec>,
-    pub beacon_block: BeaconBlock<MainnetEthSpec>,
+    pub beacon_block: SignedBeaconBlock<MainnetEthSpec>,
 }
 
 use crate::debug::dump_post_state;
@@ -32,9 +32,13 @@ pub fn process_block_header(
     let mut out: Vec<u8> = vec![0 as u8; post.len()];
 
     // create testcase ssz struct
+    // we need to wrap BeaconBlock into a SignedBeaconBlock
     let target: BlockHeaderTestCase = BlockHeaderTestCase {
         pre: beacon.clone(),
-        beacon_block: beacon_block.clone(),
+        beacon_block: SignedBeaconBlock {
+            message: beacon_block.clone(),
+            signature: Signature::empty(),
+        },
     };
 
     let ssz_bytes = target.as_ssz_bytes();

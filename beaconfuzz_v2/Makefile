@@ -87,9 +87,16 @@ fuzz_block-struct:
 	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate \
 	cargo +nightly fuzz run struct_block --release
 
-# TODO - fix this one
-#fuzz_block_header:
-#	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate cargo hfuzz run diff_block_header
+
+fuzz_block_header:
+	ASAN_OPTIONS=detect_leaks=0 \
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate \
+	cargo hfuzz run diff_block_header --release
+
+fuzz_block_header-struct:
+	ASAN_OPTIONS=detect_leaks=0 \
+	ETH2FUZZ_BEACONSTATE=../eth2fuzz/workspace/corpora/beaconstate \
+	cargo +nightly fuzz run struct_block_header --release
 
 fuzz_deposit:
 	ASAN_OPTIONS=detect_leaks=0 \

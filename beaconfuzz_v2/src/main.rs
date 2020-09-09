@@ -166,13 +166,13 @@ fn test(corpora: String, container_type: Containers) -> Result<(), Error> {
         utils::read_from_path(&container_files[index]).expect("container not here");
 
     // Create log file
-    let mut outfd = File::create("log.txt").unwrap();
+    // let mut outfd = File::create("log.txt").unwrap();
 
     // Initialize eth2client environment and disable bls
     eth2clientsfuzz::initialize_clients(true);
 
     // Call the fuzzing function
-    let it = Instant::now();
+    // let it = Instant::now();
 
     /*
     for iters in 1u64.. {

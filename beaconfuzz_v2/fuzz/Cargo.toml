@@ -62,7 +62,11 @@ test = false
 doc = false
 
 # BlockHeader
-# TODO
+[[bin]]
+name = "struct_block_header"
+path = "fuzz_targets/struct_block_header.rs"
+test = false
+doc = false
 
 # Deposit
 [[bin]]

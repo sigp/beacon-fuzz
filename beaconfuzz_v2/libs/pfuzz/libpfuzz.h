@@ -68,38 +68,23 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-
-extern void PrysmMain(GoUint8 p0);
-
-extern GoUint8 pfuzz_ssz_attestation(void* p0, GoInt p1);
-
-extern GoUint8 pfuzz_ssz_attester_slashing(void* p0, GoInt p1);
-
-extern GoUint8 pfuzz_ssz_block(void* p0, GoInt p1);
-
-extern GoUint8 pfuzz_ssz_block_header(void* p0, GoInt p1);
-
-extern GoUint8 pfuzz_ssz_deposit(void* p0, GoInt p1);
-
-extern GoUint8 pfuzz_ssz_proposer_slashing(void* p0, GoInt p1);
-
-extern GoUint8 pfuzz_ssz_voluntary_exit(void* p0, GoInt p1);
+extern void PrysmMain(GoUint8 bls);
+extern GoUint8 pfuzz_ssz_attestation(void* input_ptr, GoInt input_size);
+extern GoUint8 pfuzz_ssz_attester_slashing(void* input_ptr, GoInt input_size);
+extern GoUint8 pfuzz_ssz_block(void* input_ptr, GoInt input_size);
+extern GoUint8 pfuzz_ssz_block_header(void* input_ptr, GoInt input_size);
+extern GoUint8 pfuzz_ssz_deposit(void* input_ptr, GoInt input_size);
+extern GoUint8 pfuzz_ssz_proposer_slashing(void* input_ptr, GoInt input_size);
+extern GoUint8 pfuzz_ssz_voluntary_exit(void* input_ptr, GoInt input_size);
 
 // BeaconFuzzAttestation implements libfuzzer and beacon fuzz interface.
-
-extern GoUint8 pfuzz_attestation(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
-
-extern GoUint8 pfuzz_attester_slashing(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
-
-extern GoUint8 pfuzz_block(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
-
-extern GoUint8 pfuzz_block_header(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
-
-extern GoUint8 pfuzz_deposit(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
-
-extern GoUint8 pfuzz_proposer_slashing(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
-
-extern GoUint8 pfuzz_voluntary_exit(void* p0, GoInt p1, void* p2, GoInt p3, void* p4, GoInt p5);
+extern GoUint8 pfuzz_attestation(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
+extern GoUint8 pfuzz_attester_slashing(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
+extern GoUint8 pfuzz_block(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
+extern GoUint8 pfuzz_block_header(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
+extern GoUint8 pfuzz_deposit(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
+extern GoUint8 pfuzz_proposer_slashing(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
+extern GoUint8 pfuzz_voluntary_exit(void* beacon_ptr, GoInt input_size, void* attest_ptr, GoInt attest_size, void* out_ptr, GoInt out_size);
 
 #ifdef __cplusplus
 }

@@ -23,7 +23,7 @@ eth2fuzz/workspace/jsfuzz/crash-*
 
 # dev testing
 lighthouse/*
-
+target/
 **/*.txt
 **/*.rs.bk
 Cargo.lock

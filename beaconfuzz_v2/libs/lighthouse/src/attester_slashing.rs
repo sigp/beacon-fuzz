@@ -9,18 +9,27 @@ use types::{AttesterSlashing, BeaconState, EthSpec, MainnetEthSpec, RelativeEpoc
 pub fn process_attester_slashing(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     attester_slashing: AttesterSlashing<MainnetEthSpec>,
+    debug: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
     // Ensure the current epoch cache is built.
     beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
-    process_attester_slashings(
+    let ret = process_attester_slashings(
         &mut beaconstate,
         &[attester_slashing],
         VerifySignatures::False,
         &spec,
-    )?;
+    );
 
-    Ok(beaconstate)
+    // print if processing goes well or not
+    if debug {
+        println!("[LIGHTHOUSE] {:?}", ret);
+    }
+    if let Err(e) = ret {
+        Err(e)
+    } else {
+        Ok(beaconstate)
+    }
 }

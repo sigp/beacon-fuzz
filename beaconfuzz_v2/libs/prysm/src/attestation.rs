@@ -49,6 +49,8 @@ pub fn process_attestation(beacon: &[u8], container: &[u8], post: &[u8], debug: 
         return res;
     }
 
+    dump_post_state(&post, &out);
+
     if out != post {
         // dump post files for debugging
         if debug {

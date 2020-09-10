@@ -8,18 +8,27 @@ use types::{BeaconState, EthSpec, MainnetEthSpec, RelativeEpoch, SignedVoluntary
 pub fn process_voluntary_exit(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     voluntary_exit: SignedVoluntaryExit,
+    debug: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
     // Ensure the current epoch cache is built.
     // beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
-    process_exits(
+    let ret = process_exits(
         &mut beaconstate,
         &[voluntary_exit],
         VerifySignatures::False,
         &spec,
-    )?;
+    );
 
-    Ok(beaconstate)
+    // print if processing goes well or not
+    if debug {
+        println!("[LIGHTHOUSE] {:?}", ret);
+    }
+    if let Err(e) = ret {
+        Err(e)
+    } else {
+        Ok(beaconstate)
+    }
 }

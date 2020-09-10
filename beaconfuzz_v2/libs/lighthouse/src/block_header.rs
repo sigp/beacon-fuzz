@@ -8,10 +8,19 @@ use types::{BeaconBlock, BeaconState, EthSpec, MainnetEthSpec};
 pub fn process_block_header(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     block: BeaconBlock<MainnetEthSpec>,
+    debug: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
-    process_header(&mut beaconstate, &block, &spec)?;
+    let ret = process_header(&mut beaconstate, &block, &spec);
 
-    Ok(beaconstate)
+    // print if processing goes well or not
+    if debug {
+        println!("[LIGHTHOUSE] {:?}", ret);
+    }
+    if let Err(e) = ret {
+        Err(BlockProcessingError::from(e))
+    } else {
+        Ok(beaconstate)
+    }
 }

@@ -7,10 +7,19 @@ use types::{BeaconState, Deposit, EthSpec, MainnetEthSpec};
 pub fn process_deposit(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     deposit: Deposit,
+    debug: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
-    lighthouse_process_deposit(&mut beaconstate, &deposit, &spec, true)?;
+    let ret = lighthouse_process_deposit(&mut beaconstate, &deposit, &spec, true);
 
-    Ok(beaconstate)
+    // print if processing goes well or not
+    if debug {
+        println!("[LIGHTHOUSE] {:?}", ret);
+    }
+    if let Err(e) = ret {
+        Err(e)
+    } else {
+        Ok(beaconstate)
+    }
 }

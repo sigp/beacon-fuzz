@@ -6,6 +6,7 @@ pub fn process_block(
     mut beaconstate: BeaconState<MainnetEthSpec>,
     block: SignedBeaconBlock<MainnetEthSpec>,
     validate_state_root: bool,
+    debug: bool,
 ) -> Result<BeaconState<MainnetEthSpec>, BlockProcessingError> {
     let spec = MainnetEthSpec::default_spec();
 
@@ -21,13 +22,17 @@ pub fn process_block(
         */
         beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
-        per_block_processing(
+        let ret = per_block_processing(
             &mut beaconstate,
             &block,
             None,
             BlockSignatureStrategy::NoVerification, //VerifyIndividual,
             &spec,
-        )?;
+        );
+
+        if debug {
+            println!("[LIGHTHOUSE] {:?}", ret);
+        }
         beaconstate
     };
 

@@ -16,6 +16,7 @@ pub fn initialize_clients(disable_bls: bool) {
 pub fn debug_clients(activate_debug_mode: bool) {
     prysm::debug_mode_prysm(activate_debug_mode);
     nimbus::debug_mode_nimbus(activate_debug_mode);
+    lighthouse::debug_mode_lighthouse(activate_debug_mode);
 }
 
 // TODO - testing

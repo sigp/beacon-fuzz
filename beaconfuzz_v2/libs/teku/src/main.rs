@@ -1,3 +1,7 @@
+use bfuzz_jni;
+
 fn main() {
-    println!("Hello, world!");
+    unsafe {
+        bfuzz_jni::hello();
+    }
 }

@@ -1,6 +1,6 @@
-extern "C" {
-    pub fn hello();
-}
+use std::env;
+
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[cfg(test)]
 mod tests {

@@ -11,4 +11,4 @@ description = "Provides interface to Java beacon-fuzz harnesses via JNI"
 
 [build-dependencies]
 cc = "1.0.59"
-#bindgen = "0.55.1"
+bindgen = "0.55.1"

@@ -1,0 +1,13 @@
+[package]
+name = "bfuzz-jni"
+version = "0.1.0"
+authors = ["Nathaniel Jensen <nathaniel@sigmaprime.io>"]
+edition = "2018"
+description = "Provides interface to Java beacon-fuzz harnesses via JNI"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[build-dependencies]
+cc = "1.0.59"

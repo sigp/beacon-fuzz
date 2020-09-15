@@ -27,8 +27,10 @@ eth2clientsfuzz = { path = "libs/eth2clientsfuzz" }
 members = [
 	"libs/prysm",
 	"libs/nimbus",
-	"libs/lighthouse", 
-	"libs/eth2clientsfuzz"
+	"libs/lighthouse",
+	"libs/eth2clientsfuzz",
+	"libs/bfuzz-jni",
+	"libs/teku",
 ]
 
 

@@ -49,17 +49,19 @@ pub fn process_attestation(beacon: &[u8], container: &[u8], post: &[u8], debug: 
         return res;
     }
 
-    dump_post_state(&post, &out);
-
     if out != post {
-        // dump post files for debugging
         if debug {
             println!("[PRYSM] Mismatch post");
-            dump_post_state(&post, &out);
         } else {
             // make fuzzer to crash
             panic!("[PRYSM] Mismatch post");
         }
     }
+
+    // dump post files for debugging
+    if debug {
+        dump_post_state(&post, &out);
+    }
+
     res
 }

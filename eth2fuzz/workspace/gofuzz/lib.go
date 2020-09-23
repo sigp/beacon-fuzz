@@ -13,6 +13,7 @@ import (
 
 import (
 	"context"
+	"bytes"
 
 	ethpb "github.com/prysmaticlabs/ethereumapis/eth/v1alpha1"
 	pb "github.com/prysmaticlabs/prysm/proto/beacon/p2p/v1"
@@ -23,7 +24,14 @@ import (
 	//"github.com/prysmaticlabs/prysm/shared/params/spectest"
 	//"github.com/prysmaticlabs/prysm/shared/testutil"
 	"github.com/prysmaticlabs/prysm/shared/params"
+
+	"github.com/prysmaticlabs/prysm/beacon-chain/p2p/encoder"
+	testpb "github.com/prysmaticlabs/prysm/proto/testing"
+	rpc "github.com/prysmaticlabs/prysm/proto/beacon/rpc/v1"
+	db "github.com/prysmaticlabs/prysm/proto/beacon/db"
+
 )
+
 
 func Shuffle(vals []string) {
   r := rand.New(rand.NewSource(time.Now().Unix()))
@@ -262,3 +270,196 @@ func Prysm_voluntary_exit(b []byte) int {
 	}
 	return 1
 }
+
+
+// following are some testing fuzzing harnesses
+// they are not supposed to be callable from eth2fuzz
+
+
+
+//
+// P2P
+// https://github.com/prysmaticlabs/prysm/tree/master/proto/beacon/p2p/v1
+//
+
+// SszEncoderAttestationFuzz runs network decode for attestations.
+func SszDecodeAttestationFuzz(b []byte) int {
+	params.UseMainnetConfig()
+	input := &ethpb.Attestation{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+
+// runs network decode for TestSimpleMessage.
+func DecodeTestSimpleMessage(b []byte) int {
+	params.UseMainnetConfig()
+	input := &testpb.TestSimpleMessage{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+
+// runs network decode for CheckPtInfo.
+func DecodeCheckPtInfo(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.CheckPtInfo{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+// runs network decode for PendingAttestation.
+func DecodePendingAttestation(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.PendingAttestation{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+// runs network decode for ENRForkID.
+func DecodeENRForkID(b []byte) int {
+	data := bytes.NewReader(b)
+	params.UseMainnetConfig()
+	input := &pb.ENRForkID{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeWithMaxLength(data, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+// runs network decode for MetaData.
+func DecodeMetaData(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.MetaData{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+// runs network decode for Fork.
+func DecodeFork(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.Fork{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+// runs network decode for ForkData.
+func DecodeForkData(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.ForkData{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+// runs network decode for HistoricalBatch.
+func DecodeHistoricalBatch(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.HistoricalBatch{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+
+// runs network decode for Status.
+func DecodeStatus(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.Status{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+
+func SszDecodeBeaconState(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.BeaconState{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+
+// runs network decode for SigningData.
+func DecodeSigningData(b []byte) int {
+	params.UseMainnetConfig()
+	input := &pb.SigningData{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+//
+// RPC
+// https://github.com/prysmaticlabs/prysm/tree/master/proto/beacon/rpc/v1
+//
+
+// runs network decode for ProtoArrayForkChoiceResponse.
+func DecodeProtoArrayForkChoiceResponse(b []byte) int {
+	params.UseMainnetConfig()
+	input := &rpc.ProtoArrayForkChoiceResponse{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+
+//
+// DB
+// https://github.com/prysmaticlabs/prysm/tree/master/proto/beacon/db
+//
+
+// runs decode for ETH1ChainData.
+func DecodeETH1ChainData(b []byte) int {
+	params.UseMainnetConfig()
+	input := &db.ETH1ChainData{}
+	e := encoder.SszNetworkEncoder{}
+	if err := e.DecodeGossip(b, input); err != nil {
+		_ = err
+		return 0
+	}
+	return 1
+}
+

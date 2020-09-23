@@ -54,14 +54,18 @@ pub fn process_attestation(
     }
 
     if out != post {
-        // dump post files for debugging
         if debug {
             println!("[NIMBUS] Mismatch post");
-            dump_post_state(&post, &out);
         } else {
             // make fuzzer to crash
             panic!("[NIMBUS] Mismatch post");
         }
     }
+
+    // dump post files for debugging
+    if debug {
+        dump_post_state(&post, &out);
+    }
+
     res
 }

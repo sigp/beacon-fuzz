@@ -33,6 +33,11 @@ pub fn process_block(
         if debug {
             println!("[LIGHTHOUSE] {:?}", ret);
         }
+
+        if let Err(e) = ret {
+            return Err(e);
+        }
+
         beaconstate
     };
 

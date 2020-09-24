@@ -2,12 +2,14 @@ name: Eth2diff
 
 on:
   push:
+    branches:
+      - master
     paths:
       - 'eth2diff/**'
   pull_request:
-    paths: 
+    paths:
       - 'eth2diff/**'
-  # Run this once per day to be sure there is no breaking change 
+  # Run this once per day to be sure there is no breaking change
   # due to client updates
   schedule:
     # * is a special character in YAML so you have to quote this string

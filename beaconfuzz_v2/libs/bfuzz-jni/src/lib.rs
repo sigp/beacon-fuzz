@@ -7,13 +7,14 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 #[cfg(test)]
 mod tests {
     use super::*;
+    // TODO(gnattishness) relevant tests
 
-    #[test]
-    fn call_it() {
-        unsafe {
-            hello();
-        }
-    }
+    //#[test]
+    //fn call_it() {
+    //    unsafe {
+    //        hello();
+    //    }
+    //}
 
     #[test]
     fn it_works() {

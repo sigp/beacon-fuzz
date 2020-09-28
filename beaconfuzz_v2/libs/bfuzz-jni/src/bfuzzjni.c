@@ -239,7 +239,8 @@ void bfuzz_jni_init(char const *fuzz_class_name, char const *fuzz_method_name,
  * https://docs.oracle.com/en/java/javase/11/docs/specs/jni/types.html#primitive-types
  *
  */
-int32_t bfuzz_jni_run(uint8_t *data, size_t size) {
+// TODO(gnattishness) should data be const?
+int32_t bfuzz_jni_run(uint8_t const *data, size_t size) {
   last_result_should_be_null();
 
   if (size > INT32_MAX) {

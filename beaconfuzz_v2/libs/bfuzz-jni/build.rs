@@ -10,6 +10,13 @@ fn main() {
     println!("cargo:rerun-if-changed=src/bfuzzjni.h");
 
     let jvm_home = PathBuf::from(env::var("JAVA_HOME").expect("JAVA_HOME not set"));
+    println!("cargo:rustc-link-search={}", jvm_home.join("lib").display());
+    println!(
+        "cargo:rustc-link-search={}",
+        jvm_home.join("lib/server").display()
+    );
+    println!("cargo:rustc-link-lib=jvm");
+    // TODO need the equiv of -Wl,-R"${JAVA_HOME}/lib/server"?
     // NOTE assumes a linux system here.
     cc::Build::new()
         .file("src/bfuzzjni.c")

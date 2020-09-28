@@ -304,7 +304,7 @@ int32_t bfuzz_jni_run(uint8_t *data, size_t size) {
       // don't worry about the result if it's a 0 length array
       (*g_env)->DeleteLocalRef(g_env, result);
     } else {
-      g_last_result = (*g_env)->NewGlobalRef(env, result);
+      g_last_result = (*g_env)->NewGlobalRef(g_env, result);
       if (g_last_result == NULL) {
         fprintf(stderr, "BFUZZ Fatal: System probably out of memory.\n");
         abort();
@@ -370,7 +370,7 @@ void bfuzz_jni_load_result(uint8_t *dest, size_t size) {
             "Bug in fuzzing!\n");
     abort();
   }
-  if (size != g_last_result_size) {
+  if ((ptrdiff_t)size != (ptrdiff_t)g_last_result_size) {
     fprintf(stderr,
             "BFUZZ Fatal: trying to load result with wrong size. Bug in "
             "fuzzing!\n");
@@ -383,7 +383,7 @@ void bfuzz_jni_load_result(uint8_t *dest, size_t size) {
             "Need to figure out what to do for empty but valid results\n");
     abort();
   }
-  (*g_env)->GetByteArrayRegion(g_env, g_last_result, 0, size, (*jbyte)(dest));
+  (*g_env)->GetByteArrayRegion(g_env, g_last_result, 0, size, (jbyte *)(dest));
   if ((*g_env)->ExceptionCheck(g_env) == JNI_TRUE) {
     fprintf(stderr,
             "BFUZZ Fatal: Unexpected exception extracting Java result.\n");

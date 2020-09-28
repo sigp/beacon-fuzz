@@ -5,16 +5,21 @@ use std::path::PathBuf;
 
 fn main() {
     // TODO does it matter where I put these?
-    println!("cargo:rerun-if-changed=src/hello.c");
-    println!("cargo:rerun-if-changed=src/hello.h");
+    // TODO use clang?
+    println!("cargo:rerun-if-changed=src/bfuzzjni.c");
+    println!("cargo:rerun-if-changed=src/bfuzzjni.h");
 
+    let jvm_home = PathBuf::from(env::var("JAVA_HOME").expect("JAVA_HOME not set"));
+    // NOTE assumes a linux system here.
     cc::Build::new()
-        .file("src/hello.c")
+        .file("src/bfuzzjni.c")
         .include("src")
-        .compile("hello");
+        .include(jvm_home.join("include"))
+        .include(jvm_home.join("include/linux"))
+        .compile("bfuzzjni");
 
     let bindings = bindgen::Builder::default()
-        .header("src/hello.h")
+        .header("src/bfuzzjni.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("Unable to generate bindings");

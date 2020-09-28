@@ -1,6 +1,7 @@
 #ifndef BEACONFUZZ_V2_LIBS_BFUZZ_JNI_SRC_BFUZZJNI_H_
 #define BEACONFUZZ_V2_LIBS_BFUZZ_JNI_SRC_BFUZZJNI_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 

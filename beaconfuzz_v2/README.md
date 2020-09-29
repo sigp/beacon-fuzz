@@ -65,6 +65,50 @@ Set the following variable with the current path of prysm:
 export CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs
 ```
 
+### teku setup
+
+Install Java 11 or greater
+
+e.g.
+
+```console
+$ sudo apt install openjdk-11
+```
+
+Ensure `JAVA_HOME` is set.
+
+(If `echo $JAVA_HOME` is displays no output) it should probably be set to something like:
+
+```console
+$ export JAVA_HOME="$(dirname $(dirname $(readlink -f $(command -v java))))"
+```
+
+Probably want to add it to your `.profile`
+(This is `/usr/lib/jvm/java-11-openjdk-amd64` in ubuntu)
+
+Add `$JAVA_HOME/lib/server` to your runtime library path via either of the following methods:
+
+**via LD_LIBRARY_PATH**
+
+```console
+$ export LD_LIBRARY_PATH="$JAVA_HOME/lib/server"
+```
+
+This needs to be set at runtime - i.e. whenever you want to run the teku fuzzer, not when you're building it.
+
+**via ldconfig**
+
+```console
+$ echo "$JAVA_HOME/lib/server" >> /etc/ld.so.conf.d/java.conf
+$ sudo ldconfig
+```
+
+<!--
+Also adding this?
+$ echo "$JAVA_HOME/lib" >> /etc/ld.so.conf.d/java.conf
+-->
+
+
 ### Beaconfuzz_v2 compilation
 
 Compile the project using the Makefile
@@ -82,9 +126,9 @@ cargo +nightly install honggfuzz
 Compile and run the fuzzers:
 ```
 make fuzz_*
-fuzz_attestation               fuzz_block                     fuzz_proposer_slashing       
+fuzz_attestation               fuzz_block                     fuzz_proposer_slashing
 fuzz_attestation-struct        fuzz_block-struct              fuzz_proposer_slashing-struct
-fuzz_attester_slashing         fuzz_deposit                   fuzz_voluntary_exit          
+fuzz_attester_slashing         fuzz_deposit                   fuzz_voluntary_exit
 fuzz_attester_slashing-struct  fuzz_deposit-struct            fuzz_voluntary_exit-struct
 ```
 

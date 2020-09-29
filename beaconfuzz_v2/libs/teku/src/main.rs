@@ -6,13 +6,22 @@ use std::ffi::CString;
 
 fn main() {
     // dummy to try calling the java
-    println!("Cwd= {:?}", env::current_dir());
     let class_name = CString::new("DummyFuzzUtil").expect("CString::new failed");
     let method_name = CString::new("fuzzAttestation").expect("CString::new failed");
     // lol at this rust code
+    //let class_path = CString::new(
+    //    env::current_dir()
+    //        .unwrap()
+    //        .canonicalize()
+    //        .unwrap()
+    //        .to_str()
+    //        .unwrap(),
+    //)
+    //.expect("CString::new failed");
     let class_path = CString::new(
         env::current_dir()
             .unwrap()
+            .join("../bfuzz-jni/src")
             .canonicalize()
             .unwrap()
             .to_str()

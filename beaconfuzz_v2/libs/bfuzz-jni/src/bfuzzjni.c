@@ -151,6 +151,7 @@ void bfuzz_jni_init(char const *fuzz_class_name, char const *fuzz_method_name,
   vm_args.options = options;
   vm_args.ignoreUnrecognized = false;
   jint err = JNI_CreateJavaVM(&g_jvm, (void **)&g_env, &vm_args);
+  free(class_path_option);
   if (err != JNI_OK) {
     fprintf(stderr,
             "BFUZZ Fatal: JNI_CreateJavaVM() initialization failed: %" PRId32

@@ -145,11 +145,17 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Lodestar: `AssertionError` in `bcrypto` library when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/70) **fixed** (thanks [@Buttaa](https://github.com/Buttaa) for helping identify this bug!)
 - [Lodestar: Failed assertion `val->IsArrayBufferView` when parsing invalid `ENR` string](https://github.com/ChainSafe/discv5/issues/71) (thanks [@cooganb](https://github.com/cooganb) and [@MysticRyuujin](https://github.com/MysticRyuujin) for helping identify this bug!)
 
-
 ### Prysm
 - [Prysm: `panic: runtime error: slice bounds out of range` when parsing SSZ container](https://github.com/prysmaticlabs/prysm/issues/6083) **fixed**
 - [Prysm: `panic: runtime error: nil pointer dereference` when processing ProposerSlashing](https://github.com/prysmaticlabs/prysm/issues/6127) **fixed**
 - [Prysm **(Consensus Bug)**: Missing validation of attestation indices in batch attestation processing](https://github.com/prysmaticlabs/prysm/pull/6983) **fixed**
+- [Prysm: `panic: runtime error: slice bounds out of range` when parsing `SimpleMessage`](https://github.com/prysmaticlabs/prysm/issues/6083#issuecomment-690008952)
+- [Prysm: `ProposerSlashing` processing spec deviation](https://github.com/prysmaticlabs/prysm/pull/7252) (_not directly exploitable_) **fixed** 
+
+### BLS
+- [BLST: Point Decompression does not handle invalid byte lengths](https://github.com/supranational/blst/issues/14) **fixed**
+- [BLST: Point Decompression does not enforce field points are less than field modulus](https://github.com/supranational/blst/issues/15) **fixed**
+
 
 <a name="invalidState">1</a>: **NOTE** `BeaconState` objects are considered trusted inputs (for the moment), so client state transition functions are not expected to handle invalid `BeaconState` values, for now.
 

@@ -73,7 +73,8 @@ fn extract_classpath<P: AsRef<Path>>(teku_root: P) -> String {
     }
     let dist_classpath = String::from_utf8(output.stdout).unwrap();
     // TODO replace/fix workaround
-    // NOTE: this is hard-coding the fuzz output path, also might have pain on Mac OS?
+    // NOTE: this is hard-coding the fuzz output path so will break when new teku versions are
+    // released, also might have pain on Mac OS?
     let teku_fuzz_jar = teku_root_p.join("fuzz/build/libs/teku-fuzz-0.12.9-SNAPSHOT.jar").canonicalize().expect("BeaconFuzz fatal: unable to locate teku fuzz class. Did you build with ./gradlew fuzz:build?");
     format!("{}:{}", dist_classpath, teku_fuzz_jar.display())
 }
@@ -119,6 +120,7 @@ fn run_target(input: &[u8], lh_post: &[u8], debug: bool) -> bool {
     return true;
 }
 
+/*
 fn main() {
     init_teku(true, FuzzTarget::Attestation);
     // NOTE: this raises an exception because we expect to have received valid SSZ after initial
@@ -127,6 +129,7 @@ fn main() {
     let post: Vec<u8> = vec![0; 50];
     run_target(data.as_slice(), post.as_slice(), true);
 }
+*/
 
 // TODO(gnattishness) use for unit test
 /*fn main() {

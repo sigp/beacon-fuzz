@@ -72,7 +72,7 @@ Install Java 11 or greater
 e.g.
 
 ```console
-$ sudo apt install openjdk-11
+$ sudo apt install openjdk-11-jre
 ```
 
 Ensure `JAVA_HOME` is set.
@@ -118,7 +118,7 @@ $ git clone https://github.com/PegaSysEng/teku.git
 
 Set `BFUZZ_TEKU_DIR` to the root teku directory:
 ```console
-$ BFUZZ_TEKU_DIR="$(realpath -e path/to/teku)" && export BFUZ_TEKU_DIR
+$ BFUZZ_TEKU_DIR="$(realpath -e path/to/teku)" && export BFUZZ_TEKU_DIR
 ```
 
 Build teku:

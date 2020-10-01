@@ -72,7 +72,7 @@ Install Java 11 or greater
 e.g.
 
 ```console
-$ sudo apt install openjdk-11-jre
+$ sudo apt install openjdk-11-jdk openjdk-11-jre
 ```
 
 Ensure `JAVA_HOME` is set.

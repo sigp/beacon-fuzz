@@ -38,7 +38,7 @@ Clone the repository of nimbus and compile the nimbus fuzzing library:
 ```
 git clone https://github.com/status-im/nim-beacon-chain --branch devel
 cd nim-beacon-chain
-make libnfuzz.a libnfuzz.so
+NIMFLAGS="-d:disableLTO" make libnfuzz.a libnfuzz.so
 ```
 
 Finally, set the following variable with the current path of nimbus:

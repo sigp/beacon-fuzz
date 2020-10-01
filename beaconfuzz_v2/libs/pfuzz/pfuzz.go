@@ -715,4 +715,4 @@ func pfuzz_voluntary_exit(
 // go get .
 
 // compilation to .a
-// go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
+// go build -o libpfuzz.a --tags=blst_enabled -buildmode=c-archive pfuzz.go

@@ -7,6 +7,8 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 
+use crate::debug::dump_post_state;
+
 const FUZZ_CLASS: &str = "tech/pegasys/teku/fuzz/FuzzUtil";
 
 // All supported teku fuzzing targets
@@ -97,27 +99,45 @@ pub fn init_teku(disable_bls: bool, target: FuzzTarget) {
     }
 }
 
-fn run_target(input: &[u8], lh_post: &[u8], debug: bool) -> bool {
+pub fn run_target(input: &[u8], lh_post: &[u8], debug: bool) -> bool {
+    // TODO make unsafe chunk smaller
+    // only needed around the 2 bfuzz_jni calls and the set_len
     unsafe {
         let ret = bfuzz_jni::bfuzz_jni_run(input.as_ptr(), input.len().try_into().unwrap());
         if debug {
             println!("bfuzz_jni_run result val: {:?}", ret);
         }
-        if ret >= 0 {
-            let mut result: Vec<u8> = Vec::with_capacity(ret.try_into().unwrap());
-            let result_size: usize = ret.try_into().unwrap();
-            // NOTE: the C code uses a size_t but bindgen uses a u64 instead of usize
-            // (though looks to be more accurate behaviour)
-            // https://github.com/rust-lang/rust-bindgen/issues/1671
-            bfuzz_jni::bfuzz_jni_load_result(result.as_mut_ptr(), result_size.try_into().unwrap());
-            result.set_len(result_size);
+        // If error triggered during processing, we return immediately
+        if ret < 0 {
+            return false;
+        }
+
+        let mut result: Vec<u8> = Vec::with_capacity(ret.try_into().unwrap());
+        let result_size: usize = ret.try_into().unwrap();
+        // NOTE: the C code uses a size_t but bindgen uses a u64 instead of usize
+        // (though looks to be more accurate behaviour)
+        // https://github.com/rust-lang/rust-bindgen/issues/1671
+        bfuzz_jni::bfuzz_jni_load_result(result.as_mut_ptr(), result_size.try_into().unwrap());
+        result.set_len(result_size);
+        if debug {
+            println!("result content: {:?}", result);
+        }
+        if result.as_slice() != lh_post {
             if debug {
-                println!("result content: {:?}", result);
+                println!("[TEKU] Mismatch post");
+            } else {
+                // make fuzzer to crash
+                panic!("[TEKU] Mismatch post");
             }
         }
+
+        // dump post files for debugging
+        if debug {
+            dump_post_state(&lh_post, result.as_slice());
+        }
     }
-    // TODO diff compare
-    return true;
+
+    true
 }
 
 /*

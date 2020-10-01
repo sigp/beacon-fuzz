@@ -12,6 +12,8 @@
 
 // TODO(gnattishness) note assumptions regarding trying to fuzz multiple Java
 // targets or implementations
+// TODO(gnattishness) allow fuzzing with more than 1 target - i.e. multiple
+// methods?
 
 // NOTE: just use global variables to store state for now
 // Means we can't have more than 1 Java client at once, but can't run multiple
@@ -275,7 +277,7 @@ int32_t bfuzz_jni_run(uint8_t const *data, size_t size) {
   jobject maybe_result =
       (*g_env)->CallObjectMethod(g_env, g_fuzz_instance, g_fuzz_method, input);
   if ((*g_env)->ExceptionCheck(g_env) == JNI_TRUE) {
-    fprintf(stderr, "Uncaught Java exception:\n");
+    fprintf(stderr, "Uncaught Java exception while calling target:\n");
     (*g_env)->ExceptionDescribe(g_env);
     abort();
   }

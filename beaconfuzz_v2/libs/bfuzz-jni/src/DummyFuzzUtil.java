@@ -1,5 +1,7 @@
 import java.util.Optional;
 
+// TODO convert to testdata
+
 public class DummyFuzzUtil {
   // NOTE: alternatively could also have these all in separate classes, which implement a
   // "FuzzHarness" interface

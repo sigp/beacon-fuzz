@@ -17,6 +17,7 @@ use std::process;
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use teku;
 
 /// List file in folder and return list of files paths
 #[inline(always)]
@@ -134,6 +135,7 @@ lazy_static! {
     static ref INIT_OK: bool = {
         // initialize client only once
         eth2clientsfuzz::initialize_clients(true);
+        teku::init_teku(true, teku::FuzzTarget::Attestation);
         true
     };
 }

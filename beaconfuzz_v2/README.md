@@ -86,7 +86,7 @@ $ export JAVA_HOME="$(dirname $(dirname $(readlink -f $(command -v java))))"
 Probably want to add it to your `.profile`
 (This is `/usr/lib/jvm/java-11-openjdk-amd64` in ubuntu)
 
-Add `$JAVA_HOME/lib/server` to your runtime library path via either of the following methods:
+Add `$JAVA_HOME/lib/server` to your runtime library path via *either* of the following methods:
 
 **via LD_LIBRARY_PATH**
 
@@ -95,6 +95,8 @@ $ export LD_LIBRARY_PATH="$JAVA_HOME/lib/server"
 ```
 
 This needs to be set at runtime - i.e. whenever you want to run the teku fuzzer, not when you're building it.
+
+Or
 
 **via ldconfig**
 
@@ -107,6 +109,24 @@ $ sudo ldconfig
 Also adding this?
 $ echo "$JAVA_HOME/lib" >> /etc/ld.so.conf.d/java.conf
 -->
+
+
+Clone teku repository:
+```console
+$ git clone https://github.com/PegaSysEng/teku.git
+```
+
+Set `BFUZZ_TEKU_DIR` to the root teku directory:
+```console
+$ BFUZZ_TEKU_DIR="$(realpath -e path/to/teku)" && export BFUZ_TEKU_DIR
+```
+
+Build teku:
+```console
+$ cd teku
+$ ./gradlew installDist -x test --stacktrace
+$ ./gradlew fuzz:build
+```
 
 
 ### Beaconfuzz_v2 compilation

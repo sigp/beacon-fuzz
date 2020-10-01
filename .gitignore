@@ -26,6 +26,5 @@ lighthouse/*
 target/
 **/*.txt
 **/*.rs.bk
-Cargo.lock
 files/tools/*/bin
 .mypy_cache/

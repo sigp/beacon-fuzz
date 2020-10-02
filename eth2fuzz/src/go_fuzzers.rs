@@ -86,6 +86,7 @@ impl FuzzerGoLibfuzzer {
         let compile_lib = Command::new("/eth2fuzz/bin/go114-fuzz-build")
             .args(&[
                 "-tags=blst_enabled,libfuzzer",
+                "-func",
                 &self.some_kind_of_uppercase_first_letter(&target.name()),
                 "github.com/prysmaticlabs/prysm",
             ])

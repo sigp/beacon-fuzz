@@ -122,7 +122,7 @@ RUN go get -u github.com/prysmaticlabs/prysm || true
 
 # Compile pfuzz lib
 RUN cd /prysm/pfuzz/ && go get . || true
-RUN cd /prysm/pfuzz/ && go build -o libpfuzz.a -tags=blst_enabled,libfuzzer -buildmode=c-archive pfuzz.go
+RUN cd /prysm/pfuzz/ && go build -o libpfuzz.a -tags=blst_enabled -buildmode=c-archive pfuzz.go
 
 
 

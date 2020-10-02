@@ -57,7 +57,7 @@ cp -r beacon-fuzz/beaconfuzz_v2/libs/pfuzz prysm/
 Compile the prysm fuzzing library:
 ```
 go get .
-go build -o libpfuzz.a -buildmode=c-archive pfuzz.go
+go build -o libpfuzz.a -tags=blst_enabled,libfuzzer -buildmode=c-archive pfuzz.go
 ```
  -->
 Set the following variable with the current path of prysm:

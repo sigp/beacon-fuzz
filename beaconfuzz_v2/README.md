@@ -38,7 +38,7 @@ Clone the repository of nimbus and compile the nimbus fuzzing library:
 ```
 git clone https://github.com/status-im/nim-beacon-chain --branch devel
 cd nim-beacon-chain
-NIMFLAGS="-d:disableLTO" make libnfuzz.a libnfuzz.so
+NIMFLAGS="-d:disableLTO" make libnfuzz.a
 ```
 
 Finally, set the following variable with the current path of nimbus:
@@ -72,7 +72,7 @@ Install Java 11 or greater
 e.g.
 
 ```console
-$ sudo apt install openjdk-11-jdk openjdk-11-jre
+$ sudo apt install openjdk-11-jdk
 ```
 
 Ensure `JAVA_HOME` is set.

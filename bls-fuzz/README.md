@@ -6,7 +6,7 @@ Current implementations
 - [BLST](https://github.com/supranational/blst)
 - [ZKCrypto](https://github.com/zkcrypto/bls12_381)
 
-Future Implementations:
+Future Implementations (hopefully):
 - [Herumi](https://github.com/herumi/bls-eth-rust)
 
 ## Running

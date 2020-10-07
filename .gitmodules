@@ -1,0 +1,3 @@
+[submodule "bls-fuzz/impls/blst"]
+	path = bls-fuzz/impls/blst
+	url = https://github.com/sigp/blst.git

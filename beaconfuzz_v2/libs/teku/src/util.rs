@@ -81,6 +81,7 @@ fn extract_classpath<P: AsRef<Path>>(teku_root: P) -> String {
     format!("{}:{}", dist_classpath, teku_fuzz_jar.display())
 }
 
+// TODO safety to ensure this is never called twice
 pub fn init_teku(disable_bls: bool, target: FuzzTarget) {
     let teku_root = PathBuf::from(
         env::var("BFUZZ_TEKU_DIR").expect("BeaconFuzz config error: BFUZZ_TEKU_DIR not defined"),

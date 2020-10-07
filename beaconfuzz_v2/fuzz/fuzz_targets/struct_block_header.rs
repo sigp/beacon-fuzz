@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use walkdir::WalkDir;
 
 use ssz::{Decode, Encode};
-use types::{BeaconState, MainnetEthSpec, BeaconBlock};
+use types::{BeaconBlock, BeaconState, MainnetEthSpec};
 
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -135,6 +135,7 @@ lazy_static! {
     static ref INIT_OK: bool = {
         // initialize client only once
         eth2clientsfuzz::initialize_clients(true);
+        teku::init_teku(true, teku::FuzzTarget::BlockHeader);
         true
     };
 }

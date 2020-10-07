@@ -38,6 +38,15 @@ pub fn run_deposit(beacon_blob: &[u8], data: &[u8], debug: bool) {
             } else {
                 assert_eq!(res, true);
             }
+
+            // call teku
+            let res = teku::process_deposit(&state.clone(), &att, &post.as_ssz_bytes());
+
+            if debug {
+                println!("[TEKU] Processing {}", res);
+            } else {
+                assert_eq!(res, true);
+            }
         } else {
             if debug {
                 println!("[LIGHTHOUSE] Processing {}", false);
@@ -57,6 +66,15 @@ pub fn run_deposit(beacon_blob: &[u8], data: &[u8], debug: bool) {
 
             if debug {
                 println!("[NIMBUS] Processing {}", res);
+            } else {
+                assert_eq!(res, false);
+            }
+
+            // Verify that teku gives same result as lighthouse
+            let res = teku::process_deposit(&state.clone(), &att, &beacon_blob.clone());
+
+            if debug {
+                println!("[TEKU] Processing {}", res);
             } else {
                 assert_eq!(res, false);
             }

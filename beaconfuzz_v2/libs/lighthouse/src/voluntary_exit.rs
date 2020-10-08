@@ -13,7 +13,7 @@ pub fn process_voluntary_exit(
     let spec = MainnetEthSpec::default_spec();
 
     // Ensure the current epoch cache is built.
-    // beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
+    beaconstate.build_committee_cache(RelativeEpoch::Current, &spec)?;
 
     let ret = process_exits(
         &mut beaconstate,

@@ -56,7 +56,7 @@ docker:
 	-t beaconfuzz_v2 \
 	. \
 	$(CACHE)
-	@echo 'USAGE: docker run -it -v beaconfuzz_v2 beaconfuzz_v2"
+	@echo 'USAGE: docker run -it -v beaconfuzz_v2 beaconfuzz_v2'
 
 fuzz_attestation:
 	ASAN_OPTIONS=detect_leaks=0 \

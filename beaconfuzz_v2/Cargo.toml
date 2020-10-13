@@ -22,13 +22,16 @@ types = { path = "../../lighthouse/consensus/types" }
 #prysm = { path = "libs/prysm" }
 # lighthouse = { path = "libs/lighthouse" }
 eth2clientsfuzz = { path = "libs/eth2clientsfuzz" }
+teku = { path = "libs/teku" }
 
 [workspace]
 members = [
 	"libs/prysm",
 	"libs/nimbus",
-	"libs/lighthouse", 
-	"libs/eth2clientsfuzz"
+	"libs/lighthouse",
+	"libs/eth2clientsfuzz",
+	"libs/bfuzz-jni",
+	"libs/teku",
 ]
 
 

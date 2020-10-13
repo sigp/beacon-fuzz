@@ -130,6 +130,7 @@ fn main() {
 
     // Initialize eth2client environment
     eth2clientsfuzz::initialize_clients(true);
+    teku::init_teku(true, teku::FuzzTarget::VoluntaryExit);
 
     // Run fuzzing loop
     loop {

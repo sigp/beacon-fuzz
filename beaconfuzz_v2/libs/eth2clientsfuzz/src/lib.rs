@@ -7,6 +7,7 @@ pub mod proposer_slashing;
 pub mod voluntary_exit;
 
 // Initialize eth2clients
+// NOTE: teku needs to be initialized separately
 pub fn initialize_clients(disable_bls: bool) {
     prysm::init_prysm(disable_bls);
     nimbus::init_nimbus(disable_bls);
@@ -17,6 +18,7 @@ pub fn debug_clients(activate_debug_mode: bool) {
     prysm::debug_mode_prysm(activate_debug_mode);
     nimbus::debug_mode_nimbus(activate_debug_mode);
     lighthouse::debug_mode_lighthouse(activate_debug_mode);
+    teku::debug_mode_teku(activate_debug_mode);
 }
 
 // TODO - testing

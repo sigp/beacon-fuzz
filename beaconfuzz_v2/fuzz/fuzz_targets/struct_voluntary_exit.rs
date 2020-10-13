@@ -135,6 +135,7 @@ lazy_static! {
     static ref INIT_OK: bool = {
         // initialize client only once
         eth2clientsfuzz::initialize_clients(true);
+        teku::init_teku(true, teku::FuzzTarget::VoluntaryExit);
         true
     };
 }

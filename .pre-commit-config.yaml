@@ -5,31 +5,38 @@ repos:
 
 # Python
 # TODO remove branch paths, should use specific revisions
-  - repo: https://github.com/psf/black
-    rev: 19.10b0
-    hooks:
-      - id: black
-        name: python-black
-
+#  - repo: https://github.com/psf/black
+#    rev: 20.8b1
+#    hooks:
+#      - id: black
+#        name: python-black
+#
 #  - repo: https://github.com/asottile/seed-isort-config
 #    rev: v1.9.3
 #    hooks:
 #      - id: seed-isort-config
 #        name: seed-isort-config
-
-  - repo: https://github.com/timothycrosley/isort
-    rev: 4.3.21
-    hooks:
-      - id: isort
-        name: python-isort
-        additional_dependencies: [toml]
+#
+#  - repo: https://github.com/timothycrosley/isort
+#    rev: 5.5.3
+#    hooks:
+#      - id: isort
+#        name: python-isort
+#        additional_dependencies: [toml]
 
 # Rust
   - repo: https://github.com/doublify/pre-commit-rust
-    rev: 55f347186aec7f2a4ec13c31effdb4b26512f2bc
+    rev: v1.0
     hooks:
       - id: fmt
-        name: rust-fmt
+        name: cargo-fmt-bf2
+        args: [--manifest-path, beaconfuzz_v2/Cargo.toml, --]
+      - id: fmt
+        name: cargo-fmt-eth2fuzz
+        args: [--manifest-path, eth2fuzz/Cargo.toml, --]
+      - id: fmt
+        name: cargo-fmt-eth2diff
+        args: [--manifest-path, eth2diff/Cargo.toml, --]
 # TODO currently doesn't work if Cargo.toml isn't in the root directory
 # Can have a hook that takes in Cargo.toml files and uses manifest-path for each
 #     - id: cargo-check
@@ -69,7 +76,7 @@ repos:
 
 # Shell
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 1.11.0
+    rev: 2.1.4
     hooks:
         # These need external installation
         # TODO specify via additional_dependencies ?
@@ -78,8 +85,8 @@ repos:
         args: ['-l', '-i', '4', '-ci', '-w']
 
 # C, C++ etc
-  - repo: https://gitlab.com/daverona-env/pre-commit-cpp
-    rev: 0.6.0
+  - repo: https://gitlab.com/daverona/pre-commit/cpp
+    rev: 0.8.0
     hooks:
     - id: clang-format
     - id: cpplint
@@ -100,7 +107,7 @@ repos:
 
 # Misc/General
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v3.2.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer

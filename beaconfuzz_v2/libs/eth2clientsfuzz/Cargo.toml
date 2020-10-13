@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 nimbus = { path = "../nimbus" }
+teku = { path = "../teku" }
 prysm = { path = "../prysm" }
 lighthouse = { path = "../lighthouse" }
 eth2_ssz = { path = "../../../../lighthouse/consensus/ssz/" }

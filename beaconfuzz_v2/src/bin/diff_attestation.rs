@@ -25,6 +25,8 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
+use teku;
+
 /// List file in folder and return list of files paths
 #[inline(always)]
 fn list_files_in_folder(path_str: &String) -> Result<Vec<String>, ()> {
@@ -130,6 +132,7 @@ fn main() {
 
     // Initialize eth2client environment
     eth2clientsfuzz::initialize_clients(true);
+    teku::init_teku(true, teku::FuzzTarget::Attestation);
 
     // Run fuzzing loop
     loop {

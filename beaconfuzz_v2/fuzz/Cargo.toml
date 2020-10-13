@@ -21,6 +21,7 @@ types = { path = "../../../lighthouse/consensus/types", features = ["arbitrary-f
 # local library
 lighthouse = { path = "../libs/lighthouse" }
 eth2clientsfuzz = { path = "../libs/eth2clientsfuzz" }
+teku = { path = "../libs/teku" }
 
 [patch.crates-io]
 # Needed to provide paths to some relevant dependencies

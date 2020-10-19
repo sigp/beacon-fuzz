@@ -11,3 +11,5 @@ bfuzz-jni = { path = "../bfuzz-jni" }
 eth2_ssz = { path = "../../../../lighthouse/consensus/ssz/" }
 eth2_ssz_derive = { path = "../../../../lighthouse/consensus/ssz_derive/" }
 types = { path = "../../../../lighthouse/consensus/types" }
+regex = "1"
+lazy_static = "1.4"

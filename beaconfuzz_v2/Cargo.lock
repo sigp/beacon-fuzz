@@ -1562,6 +1562,8 @@ dependencies = [
  "bfuzz-jni",
  "eth2_ssz",
  "eth2_ssz_derive",
+ "lazy_static",
+ "regex",
  "types",
 ]
 

@@ -166,5 +166,5 @@ RUSTFLAGS='-L /home/scop/Documents/consulting/sigmaprime/prysm/pfuzz/ -L /home/s
   - Useful: `-rss_limit_mb=0` to disable memory usage limits
 - You can pass extra Java parameters via the `JAVA_TOOL_OPTIONS` env var
   - This can be anything that you'd normally add as a flag when running a java program i.e. `java -XX:DumpLoadedClassList=hello.classlist hello.jar`
-  - e.g. `export JAVA_TOOL_OPTIONS='-Xmx6g -Xcheck:jni`
+  - e.g. `export JAVA_TOOL_OPTIONS='-Xmx6g -Xcheck:jni'`
     to set the max heap size for the JVM to 6GiB and do extra JNI parameter checking.

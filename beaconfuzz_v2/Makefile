@@ -46,7 +46,7 @@ clean:
 # Compile the project (called by docker)
 build-docker:
 	CARGO_PRYSM_DIR=../../prysm \
-	CARGO_NIMBUS_DIR=../../nim-beacon-chain \
+	CARGO_NIMBUS_DIR=../../nimbus-eth2 \
 	cargo +nightly build --release --out-dir=. -Z unstable-options
 
 ## Create the beaconfuzz_v2 docker

@@ -3,16 +3,16 @@ import
     ../../nim-testutils/testutils/fuzzing,
     random,
     ../targets/nim/lib,
-    ../../nim-beacon-chain/beacon_chain/spec/crypto,
-    ../../nim-beacon-chain/beacon_chain/spec/datatypes,
-    ../../nim-beacon-chain/beacon_chain/spec/digest,
-    ../../nim-beacon-chain/beacon_chain/spec/validator,
-    ../../nim-beacon-chain/beacon_chain/spec/beaconstate,
-    ../../nim-beacon-chain/beacon_chain/spec/state_transition_block,
-    ../../nim-beacon-chain/beacon_chain/ssz,
-    ../../nim-beacon-chain/beacon_chain/extras,
-    ../../nim-beacon-chain/beacon_chain/state_transition,
-    ../../nim-beacon-chain/beacon_chain/eth2_discovery
+    ../../nimbus-eth2/beacon_chain/spec/crypto,
+    ../../nimbus-eth2/beacon_chain/spec/datatypes,
+    ../../nimbus-eth2/beacon_chain/spec/digest,
+    ../../nimbus-eth2/beacon_chain/spec/validator,
+    ../../nimbus-eth2/beacon_chain/spec/beaconstate,
+    ../../nimbus-eth2/beacon_chain/spec/state_transition_block,
+    ../../nimbus-eth2/beacon_chain/ssz,
+    ../../nimbus-eth2/beacon_chain/extras,
+    ../../nimbus-eth2/beacon_chain/state_transition,
+    ../../nimbus-eth2/beacon_chain/eth2_discovery
 
 # info fuzzing nim:
 # https://github.com/status-im/nim-testutils/tree/master/testutils/fuzzing

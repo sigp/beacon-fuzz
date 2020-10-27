@@ -8,7 +8,7 @@ After setup and installation, your workspace should look as following:
 ```
 ├── beacon-fuzz
 ├── lighthouse
-├── nim-beacon-chain
+├── nimbus-eth2
 ├── prysm
 └── teku
 ```

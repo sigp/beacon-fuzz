@@ -47,7 +47,7 @@ By leveraging the latest update to the `libfuzzer-sys` and `cargo_fuzz` crates, 
 
 * [Lighthouse](https://github.com/sigp/lighthouse/) (Rust)
 * [Lodestar](https://github.com/ChainSafe/lodestar/) (JavaScript)
-* [Nimbus](https://github.com/status-im/nim-beacon-chain) (Nim)
+* [Nimbus](https://github.com/status-im/nimbus-eth2) (Nim)
 * [Prysm](https://github.com/prysmaticlabs/prysm) (Go)
 * [Teku](https://github.com/PegaSysEng/teku) (Java)
 
@@ -108,16 +108,16 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 
 ### Nimbus
 
-- [Nimbus: `process_attestation` missing index validation](https://github.com/status-im/nim-beacon-chain/issues/659) **fixed**
-- [Nimbus **(Consensus Bug)**: `process_deposit` not validating merkle proofs](https://github.com/status-im/nim-beacon-chain/issues/703) **fixed**
-- [Nimbus: `ncli_pretty` `Deposit` SSZ parsing `AssertionError`](https://github.com/status-im/nim-beacon-chain/issues/895) **fixed**
-- [Nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with empty container](https://github.com/status-im/nim-beacon-chain/issues/896) **fixed**
-- [Nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with variable list reporting 0 length](https://github.com/status-im/nim-beacon-chain/issues/920) **fixed**
-- [Nimbus: `ncli_transition` out of memory segfault during `process_final_updates`](https://github.com/status-im/nim-beacon-chain/issues/921) **fixed**
-- [Nimbus: `ncli_transition` `AssertionError` due to inconsistent aggregation bits and committee length when passed *invalid* `BeaconState` and `BeaconBlock`](https://github.com/status-im/nim-beacon-chain/issues/922) (See [1](#invalidState)) **fixed**
-- [Nimbus: `ncli` `IndexError` decoding 0-byte SSZ BitList](https://github.com/status-im/nim-beacon-chain/issues/931) **fixed**
-- [Nimbus: `IndexError` during `AttesterSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1207) **fixed**
-- [Nimbus:  Integer Underflow/overflow in `ProposerSlashing` processing](https://github.com/status-im/nim-beacon-chain/issues/1323) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
+- [Nimbus: `process_attestation` missing index validation](https://github.com/status-im/nimbus-eth2/issues/659) **fixed**
+- [Nimbus **(Consensus Bug)**: `process_deposit` not validating merkle proofs](https://github.com/status-im/nimbus-eth2/issues/703) **fixed**
+- [Nimbus: `ncli_pretty` `Deposit` SSZ parsing `AssertionError`](https://github.com/status-im/nimbus-eth2/issues/895) **fixed**
+- [Nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with empty container](https://github.com/status-im/nimbus-eth2/issues/896) **fixed**
+- [Nimbus: `ncli_pretty` Bytes Reader `IndexError` decoding `BeaconState` with variable list reporting 0 length](https://github.com/status-im/nimbus-eth2/issues/920) **fixed**
+- [Nimbus: `ncli_transition` out of memory segfault during `process_final_updates`](https://github.com/status-im/nimbus-eth2/issues/921) **fixed**
+- [Nimbus: `ncli_transition` `AssertionError` due to inconsistent aggregation bits and committee length when passed *invalid* `BeaconState` and `BeaconBlock`](https://github.com/status-im/nimbus-eth2/issues/922) (See [1](#invalidState)) **fixed**
+- [Nimbus: `ncli` `IndexError` decoding 0-byte SSZ BitList](https://github.com/status-im/nimbus-eth2/issues/931) **fixed**
+- [Nimbus: `IndexError` during `AttesterSlashing` processing](https://github.com/status-im/nimbus-eth2/issues/1207) **fixed**
+- [Nimbus:  Integer Underflow/overflow in `ProposerSlashing` processing](https://github.com/status-im/nimbus-eth2/issues/1323) **fixed** (thanks [@Daft-Wullie](https://github.com/Daft-Wullie) for helping identify this bug!)
 
 ### Trinity
 - [Trinity: some block validation raising `IndexError`, not caught by `BeaconChainSyncer`](https://github.com/ethereum/trinity/issues/1497)

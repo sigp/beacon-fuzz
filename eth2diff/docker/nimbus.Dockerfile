@@ -16,9 +16,9 @@ RUN apt-get update && \
 RUN git clone \
 	--branch "$GIT_BRANCH" \
  	--depth 1 \
-	https://github.com/status-im/nim-beacon-chain
+	https://github.com/status-im/nimbus-eth2
 
-WORKDIR nim-beacon-chain
+WORKDIR nimbus-eth2
 
 # Build nimbus
 RUN make ncli \
@@ -29,5 +29,5 @@ RUN make ncli \
 #
 FROM scratch AS export
 
-COPY --from=build /nim-beacon-chain/build/libnfuzz* .
-COPY --from=build /nim-beacon-chain/build/ncli .
+COPY --from=build /nimbus-eth2/build/libnfuzz* .
+COPY --from=build /nimbus-eth2/build/ncli .

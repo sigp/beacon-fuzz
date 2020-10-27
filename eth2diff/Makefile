@@ -105,8 +105,8 @@ lighthouse:
 	--output ./shared/lighthouse . \
 	$(CACHE)
 
-## Build nim-beacon-chain (ncli) using docker.
-## https://github.com/status-im/nim-beacon-chain
+## Build nimbus-eth2 (ncli) using docker.
+## https://github.com/status-im/nimbus-eth2
 nimbus:
 	DOCKER_BUILDKIT=1 docker build \
 	--file docker/nimbus.Dockerfile \

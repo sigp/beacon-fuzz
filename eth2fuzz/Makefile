@@ -133,10 +133,10 @@ clean-lodestar:
 
 #
 # Nimbus
-# https://github.com/status-im/nim-beacon-chain
+# https://github.com/status-im/nimbus-eth2
 #
 
-## Fuzzing of nim-beacon-chain using docker.
+## Fuzzing of nimbus-eth2 using docker.
 nimbus: build_cmd = $(BUILD_ENV) docker build \
 	--file docker/nimbus.Dockerfile \
 	-t eth2fuzz_nimbus \

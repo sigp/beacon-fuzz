@@ -32,10 +32,9 @@ FROM ubuntu:18.04
 
 # Nimbus doesn't use git tags for versioning, so pin to specific commit
 ARG NIMBUS_GIT_BRANCH="devel"
-ARG NIMBUS_GIT_COMMIT="207397775b86f7244bf3e7226a54375d512c976a"
+# ARG NIMBUS_GIT_COMMIT="2396417581a726e40fd4a6e988126c0be5a44bf3"
 ARG NIMUTIL_GIT_BRANCH="master"
-#ARG NIMUTIL_GIT_COMMIT="61e5e1ec817cc73fc43585acae4def287180e78e"
-ARG NIMUTIL_GIT_COMMIT="1601894ec1fd1c7095d405eb0c846cac212fb18f"
+ARG NIMUTIL_GIT_COMMIT="cc5d6e46123e0cf5dfd14f5fc32f0d6f58a20645"
 ARG PRESET="mainnet"
 
 # Update ubuntu
@@ -62,13 +61,14 @@ RUN git clone \
 	--branch "$NIMBUS_GIT_BRANCH" \
 	--recurse-submodules \
  	--single-branch \
-	https://github.com/status-im/nim-beacon-chain && \
-    cd nim-beacon-chain && \
-    git checkout "$NIMBUS_GIT_COMMIT" \
-	--recurse-submodules
+	https://github.com/status-im/nimbus-eth2
+
+    #cd nimbus-eth2 && \
+    #git checkout "$NIMBUS_GIT_COMMIT" \
+	#--recurse-submodules
 
 
-WORKDIR nim-beacon-chain
+WORKDIR nimbus-eth2
 
 # Build nimbus
 RUN make

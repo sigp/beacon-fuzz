@@ -94,7 +94,7 @@ impl FuzzerNimLibfuzzer {
         let envsh = root_dir()?
             .parent()
             .unwrap()
-            .join("nim-beacon-chain")
+            .join("nimbus-eth2")
             .join("env.sh");
         let compile_bin = Command::new(envsh)
             .args(args)
@@ -254,7 +254,7 @@ impl FuzzerNimAfl {
         }
 
         // build the target
-        let envsh = workspace_dir()?.join("nim-beacon-chain").join("env.sh");
+        let envsh = workspace_dir()?.join("nimbus-eth2").join("env.sh");
         let compile_bin = Command::new(envsh)
             .args(args)
             .arg(&format!("{}.{}", target.name(), target.language()))

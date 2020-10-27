@@ -16,34 +16,35 @@ After setup and installation, your workspace should look as following:
 ### Beaconfuzz_v2 setup
 
 Clone this repository
-```
+``` sh
 git clone https://github.com/sigp/beacon-fuzz
 ```
 
 ### lighthouse setup
 
 Clone the repository of lighthouse:
-```
+``` sh
 git clone https://github.com/sigp/lighthouse
 ```
 
 ### nimbus setup
 
 Install nimbus dependencies:
-```
+``` sh
 sudo apt install libpcre3-dev
 ```
 
 Clone the repository of nimbus and compile the nimbus fuzzing library:
-```
-git clone https://github.com/status-im/nim-beacon-chain --branch devel
-cd nim-beacon-chain
+``` sh
+git clone https://github.com/status-im/nimbus-eth2
+cd nimbus-eth2
+git checkout devel
 NIMFLAGS="-d:disableLTO" make libnfuzz.a
 ```
 
 Finally, set the following variable with the current path of nimbus:
-```
-export CARGO_NIMBUS_DIR=~/path/to/nim-beacon-chain
+``` sh
+export CARGO_NIMBUS_DIR=~/path/to/nimbus-eth2
 ```
 
 ### prysm setup
@@ -61,26 +62,24 @@ go build -o libpfuzz.a -tags=blst_enabled,libfuzzer -buildmode=c-archive pfuzz.g
 ```
  -->
 Set the following variable with the current path of prysm:
-```
+``` sh
 export CARGO_PRYSM_DIR=beacon-fuzz/beaconfuzz_v2/libs
 ```
 
 ### teku setup
 
-Install Java 11 or greater
-
-e.g.
-
-```console
-$ sudo apt install openjdk-11-jdk
+Install teku dependencies:
+``` sh
+# Install Java 11 or greater
+sudo apt install openjdk-11-jdk clang
 ```
 
-Ensure `JAVA_HOME` is set.
-
-(If `echo $JAVA_HOME` is displays no output) it should probably be set to something like:
-
-```console
-$ export JAVA_HOME="$(dirname $(dirname $(readlink -f $(command -v java))))"
+Setup `$JAVA_HOME`:
+``` sh
+# Ensure `JAVA_HOME` is set.
+echo $JAVA_HOME
+# (If `echo $JAVA_HOME` is displays no output) it should probably be set to something like:
+export JAVA_HOME="$(dirname $(dirname $(readlink -f $(command -v java))))"
 ```
 
 Probably want to add it to your `.profile`
@@ -90,8 +89,8 @@ Add `$JAVA_HOME/lib/server` to your runtime library path via *either* of the fol
 
 **via LD_LIBRARY_PATH**
 
-```console
-$ export LD_LIBRARY_PATH="$JAVA_HOME/lib/server"
+``` sh
+export LD_LIBRARY_PATH="$JAVA_HOME/lib/server"
 ```
 
 This needs to be set at runtime - i.e. whenever you want to run the teku fuzzer, not when you're building it.
@@ -100,9 +99,9 @@ Or
 
 **via ldconfig**
 
-```console
-$ echo "$JAVA_HOME/lib/server" >> /etc/ld.so.conf.d/java.conf
-$ sudo ldconfig
+``` sh
+echo "$JAVA_HOME/lib/server" >> /etc/ld.so.conf.d/java.conf
+sudo ldconfig
 ```
 
 <!--
@@ -112,39 +111,40 @@ $ echo "$JAVA_HOME/lib" >> /etc/ld.so.conf.d/java.conf
 
 
 Clone teku repository:
-```console
-$ git clone https://github.com/PegaSysEng/teku.git
+``` sh
+git clone --branch 0.12.9 https://github.com/PegaSysEng/teku.git
 ```
 
 Set `BFUZZ_TEKU_DIR` to the root teku directory:
-```console
-$ BFUZZ_TEKU_DIR="$(realpath -e path/to/teku)" && export BFUZZ_TEKU_DIR
+``` sh
+cd path/to/teku
+BFUZZ_TEKU_DIR="$(realpath -e .)" && export BFUZZ_TEKU_DIR
 ```
 
 Build teku:
-```console
-$ cd teku
-$ ./gradlew installDist -x test --stacktrace
-$ ./gradlew fuzz:build
+``` sh
+cd path/to/teku
+./gradlew installDist -x test --stacktrace
+./gradlew fuzz:build
 ```
 
 
 ### Beaconfuzz_v2 compilation
 
 Compile the project using the Makefile
-```
+``` sh
 cd beacon-fuzz/beaconfuzz_v2
 make
 ```
 
 Install rust fuzzers:
-```
+``` sh
 cargo +nightly install cargo-fuzz
 cargo +nightly install honggfuzz
 ```
 
 Compile and run the fuzzers:
-```
+``` sh
 make fuzz_*
 fuzz_attestation               fuzz_block                     fuzz_proposer_slashing
 fuzz_attestation-struct        fuzz_block-struct              fuzz_proposer_slashing-struct

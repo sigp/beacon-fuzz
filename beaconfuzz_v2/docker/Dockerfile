@@ -51,9 +51,9 @@ RUN git clone \
 	--branch "$NIMBUS_GIT_BRANCH" \
 	--recursive \
  	--depth 1 \
-	https://github.com/status-im/nim-beacon-chain
+	https://github.com/status-im/nimbus-eth2
 
-WORKDIR nim-beacon-chain
+WORKDIR nimbus-eth2
 
 # Build nimbus
 RUN NIMFLAGS="-d:disableLTO" make libnfuzz.so libnfuzz.a

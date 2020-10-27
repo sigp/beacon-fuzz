@@ -122,7 +122,6 @@ BFUZZ_TEKU_DIR="$(realpath -e .)" && export BFUZZ_TEKU_DIR
 ```
 
 Build teku:
-<<<<<<< HEAD
 ```sh
 cd teku
 ./gradlew installDist fuzz:build -x test --stacktrace

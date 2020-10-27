@@ -283,8 +283,15 @@ int32_t bfuzz_jni_run(uint8_t const *data, size_t size) {
   }
   (*g_env)->DeleteLocalRef(g_env, input);  // no longer need this
 
-  if ((*g_env)->CallBooleanMethod(g_env, maybe_result, g_optional_is_present) ==
-      JNI_TRUE) {
+  bool is_present =
+      (*g_env)->CallBooleanMethod(g_env, maybe_result, g_optional_is_present);
+  if ((*g_env)->ExceptionCheck(g_env) == JNI_TRUE) {
+    fprintf(stderr,
+            "BFUZZ Fatal: Unexpected exception extracting Java result.\n");
+    (*g_env)->ExceptionDescribe(g_env);
+    abort();
+  }
+  if (is_present == JNI_TRUE) {
     // bytes were returned
     jbyteArray result = (jbyteArray)(*g_env)->CallObjectMethod(
         g_env, maybe_result, g_optional_get);
@@ -295,9 +302,6 @@ int32_t bfuzz_jni_run(uint8_t const *data, size_t size) {
     }
     jsize result_size = (*g_env)->GetArrayLength(g_env, result);
     if ((*g_env)->ExceptionCheck(g_env) == JNI_TRUE) {
-      // NOTE: better practice to check for pending exceptions after each
-      // call, as later calls may have undefined behavior, but we are ok to
-      // abort if any exception occurs in the above
       fprintf(stderr,
               "BFUZZ Fatal: Unexpected exception extracting Java result.\n");
       (*g_env)->ExceptionDescribe(g_env);
@@ -332,8 +336,11 @@ int32_t bfuzz_jni_run(uint8_t const *data, size_t size) {
   // https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.vm.80.doc/docs/jni_refs.html
   // we would need to detach from the JVM in order for automatic garbage
   // collection to occur as this is single threaded, we never perform garbage
-  // collection unless we detach or manually Can methods create local
+  // collection unless we detach or manually
+  //
+  // Can methods create local
   // references internally that can then explode?
+  // A: no
   //
   // could detach and attach the jvm each time, but a fair bit of overhead?
   // And how would gc occur without an active Java thread? a daemon-thread?

@@ -123,9 +123,8 @@ BFUZZ_TEKU_DIR="$(realpath -e .)" && export BFUZZ_TEKU_DIR
 
 Build teku:
 ``` sh
-cd path/to/teku
-./gradlew installDist -x test --stacktrace
-./gradlew fuzz:build
+$ cd teku
+$ ./gradlew installDist fuzz:build -x test --stacktrace
 ```
 
 
@@ -159,3 +158,13 @@ there is two differents kind of fuzzing targets:
 <!---
 RUSTFLAGS='-L /home/scop/Documents/consulting/sigmaprime/prysm/pfuzz/ -L /home/scop/Documents/consulting/sigmaprime/nim-beacon-state/build/ ' make fuzz_block-struct
  -->
+
+
+## Other Useful Troubleshooting/tips
+
+- You can pass libfuzzer flags using `cargo fuzz` like `cargo fuzz run -- -help=1`
+  - Useful: `-rss_limit_mb=0` to disable memory usage limits
+- You can pass extra Java parameters via the `JAVA_TOOL_OPTIONS` env var
+  - This can be anything that you'd normally add as a flag when running a java program i.e. `java -XX:DumpLoadedClassList=hello.classlist hello.jar`
+  - e.g. `export JAVA_TOOL_OPTIONS='-Xmx6g -Xcheck:jni'`
+    to set the max heap size for the JVM to 6GiB and do extra JNI parameter checking.

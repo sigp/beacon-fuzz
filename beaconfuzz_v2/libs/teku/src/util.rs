@@ -1,4 +1,6 @@
 use bfuzz_jni;
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::convert::TryInto;
 use std::env;
 use std::ffi::CString;
@@ -10,6 +12,12 @@ use std::process::Command;
 use crate::debug::dump_post_state;
 
 const FUZZ_CLASS: &str = "tech/pegasys/teku/fuzz/FuzzUtil";
+
+macro_rules! FUZZ_CLASS_PATH_STRING {
+    ($version:tt) => {
+        format!("fuzz/build/libs/teku-fuzz-{}.jar", $version)
+    };
+}
 
 // All supported teku fuzzing targets
 pub enum FuzzTarget {
@@ -74,11 +82,38 @@ fn extract_classpath<P: AsRef<Path>>(teku_root: P) -> String {
         panic!("BeaconFuzz fatal: Failed to extract Teku CLASSPATH() from script");
     }
     let dist_classpath = String::from_utf8(output.stdout).unwrap();
-    // TODO replace/fix workaround
-    // NOTE: this is hard-coding the fuzz output path so will break when new teku versions are
-    // released, also might have pain on Mac OS?
-    let teku_fuzz_jar = teku_root_p.join("fuzz/build/libs/teku-fuzz-0.12.9-SNAPSHOT.jar").canonicalize().expect("BeaconFuzz fatal: unable to locate teku fuzz class. Did you build with ./gradlew fuzz:build?");
+    let version = teku_version_from_classpath(&dist_classpath)
+        .expect("BeaconFuzz fatal: unable to extract teku version from distribution classpath.");
+    let teku_fuzz_jar = teku_root_p.join(FUZZ_CLASS_PATH_STRING!(version)).canonicalize().expect("BeaconFuzz fatal: unable to locate teku fuzz class. Did you build with ./gradlew fuzz:build?");
     format!("{}:{}", dist_classpath, teku_fuzz_jar.display())
+}
+
+// Gets the current teku version
+// Alternative, but requires the compiled classpath version to be equiv to the current source code,
+// which might not always be true
+/*fn get_current_version<P: AsRef<Path>>(teku_root: P) -> String {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(
+            "./gradlew properties | grep version: | cut -d' ' -f 2"
+        )
+        .current_dir(teku_root)
+        .output()
+        .expect("BeaconFuzz failed to execute command to extract Teku version");
+    if !output.status.success() {
+        panic!("BeaconFuzz fatal: Failed to extract Teku CLASSPATH() from script");
+    }
+    output
+}*/
+
+//
+fn teku_version_from_classpath(teku_classpath: &str) -> Option<&str> {
+    lazy_static! {
+        static ref RE: Regex =
+            Regex::new(r"teku-[^/:]*?(?P<ver>\d+(?:\.\d+)*(?:-SNAPSHOT)?)\.jar").unwrap();
+    }
+    RE.captures(teku_classpath)
+        .and_then(|cap| cap.name("ver").map(|ver| ver.as_str()))
 }
 
 // TODO safety to ensure this is never called twice
@@ -204,3 +239,47 @@ fn main() {
         }
     }
 }*/
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_teku_version_from_classpath_finds_result() {
+        let input = "$APP_HOME/lib/teku-0.12.9-SNAPSHOT.jar:$APP_HOME/lib/teku-0.12.9-SNAPSHOT.jar:$APP_HOME/lib/teku-services-beaconchain-0.12.9-SNAPSHOT.jar";
+        assert_eq!(teku_version_from_classpath(input), Some("0.12.9-SNAPSHOT"));
+        let input2 = "$APP_HOME/lib/teku-services-beaconchain-0.13.8-SNAPSHOT.jar";
+        assert_eq!(teku_version_from_classpath(input2), Some("0.13.8-SNAPSHOT"));
+    }
+
+    #[test]
+    fn test_teku_version_from_classpath_weird_versions() {
+        let input = "$APP_HOME/lib/teku-0.12.9.jar";
+        assert_eq!(teku_version_from_classpath(input), Some("0.12.9"));
+        let input2 = "$APP_HOME/lib/teku-0.12-SNAPSHOT.jar";
+        assert_eq!(teku_version_from_classpath(input2), Some("0.12-SNAPSHOT"));
+        let input3 = "$APP_HOME/lib/teku-1.jar";
+        assert_eq!(teku_version_from_classpath(input3), Some("1"));
+    }
+
+    #[test]
+    fn test_teku_version_from_classpath_none_when_missing() {
+        let input = "$APP_HOME/lib/";
+        assert!(teku_version_from_classpath(input).is_none());
+        let input2 = "";
+        assert!(teku_version_from_classpath(input2).is_none());
+        let input3= "$APP_HOME/lib/j2objc-annotations-0.15.8-SNAPSHOT.jar:$APP_HOME/lib/jackson-core-0.12.9-SNAPSHOT.jar";
+        assert!(teku_version_from_classpath(input3).is_none());
+        let input4 = "$APP_HOME/lib/teku/j2objc-annotations-0.15.8-SNAPSHOT.jar";
+        assert!(teku_version_from_classpath(input4).is_none());
+        let input5 = "$APP_HOME/lib/teku/*:$APP_HOME/lib/jackson-core-0.12.9-SNAPSHOT.jar";
+        assert!(teku_version_from_classpath(input5).is_none());
+    }
+
+    #[test]
+    fn test_teku_version_from_classpath_avoids_non_teku() {
+        let input = "$APP_HOME/lib/j2objc-annotations-0.15.8-SNAPSHOT.jar:$APP_HOME/lib/teku-0.12.9-SNAPSHOT.jar:$APP_HOME/lib/teku-services-beaconchain-0.12.9-SNAPSHOT.jar";
+        assert_eq!(teku_version_from_classpath(input), Some("0.12.9-SNAPSHOT"));
+    }
+}

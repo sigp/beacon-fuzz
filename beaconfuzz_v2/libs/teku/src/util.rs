@@ -140,9 +140,9 @@ pub fn run_target(input: &[u8], lh_post: &[u8], debug: bool) -> bool {
     // only needed around the 2 bfuzz_jni calls and the set_len
     unsafe {
         let ret = bfuzz_jni::bfuzz_jni_run(input.as_ptr(), input.len().try_into().unwrap());
-        if debug {
-            println!("bfuzz_jni_run result val: {:?}", ret);
-        }
+        //if debug {
+        //    println!("bfuzz_jni_run result val: {:?}", ret);
+        //}
         // If error triggered during processing, we return immediately
         if ret < 0 {
             return false;
@@ -155,9 +155,9 @@ pub fn run_target(input: &[u8], lh_post: &[u8], debug: bool) -> bool {
         // https://github.com/rust-lang/rust-bindgen/issues/1671
         bfuzz_jni::bfuzz_jni_load_result(result.as_mut_ptr(), result_size.try_into().unwrap());
         result.set_len(result_size);
-        if debug {
-            println!("result content: {:?}", result);
-        }
+        //if debug {
+        //    println!("result content: {:?}", result);
+        //}
         if result.as_slice() != lh_post {
             if debug {
                 println!("[TEKU] Mismatch post");

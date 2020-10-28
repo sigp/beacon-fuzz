@@ -11,6 +11,8 @@ use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
 
+use basic_mutator::{EmptyDatabase, Mutator};
+
 mod rand;
 mod utils;
 
@@ -47,6 +49,9 @@ enum Cli {
             case_insensitive = true
         )]
         container_type: Containers,
+        /// Set debug option
+        #[structopt(short = "d", long = "debug")]
+        debug: bool,
     },
     /// DO NOT USE - UNDER DEV
     #[structopt(name = "test")]
@@ -88,8 +93,9 @@ fn run() -> Result<(), Error> {
         Fuzz {
             corpora,
             container_type,
+            debug,
         } => {
-            fuzz_target(corpora, container_type)?;
+            fuzz_target(corpora, container_type, debug)?;
         }
         Test {
             corpora,
@@ -219,9 +225,15 @@ fn test(corpora: String, container_type: Containers) -> Result<(), Error> {
     Ok(())
 }
 
-fn fuzz_target(corpora: String, container_type: Containers) -> Result<(), Error> {
+fn fuzz_target(corpora: String, container_type: Containers, debug: bool) -> Result<(), Error> {
     // init random generator
     let mut rng = rand::Rng::new();
+
+    // Create a mutator for 128-byte ASCII printable inputs
+    let mut mutator = Mutator::new()
+        .seed(1337)
+        .max_input_size(4096 * 4096)
+        .printable(true);
 
     println!("[+] fuzz_target");
     println!("[+] corpora: {}", corpora);
@@ -245,34 +257,65 @@ fn fuzz_target(corpora: String, container_type: Containers) -> Result<(), Error>
     let index = rng.rand() % container_files.len();
     let container_blob =
         utils::read_from_path(&container_files[index]).expect("container not here");
+    println!("[+] Container file: {}", &container_files[index]);
 
     // Create log file
     let mut outfd = File::create("log.txt").unwrap();
 
-    // Initialize eth2client environment and disable bls
-    eth2clientsfuzz::initialize_clients(true);
+    let init_ok: bool = {
+        // Initialize eth2client environment and disable bls
+        eth2clientsfuzz::initialize_clients(true);
 
-    // Initialize teku
-    teku::init_teku(true, container_type.to_teku_FuzzTarget());
+        // Initialize teku
+        teku::init_teku(true, container_type.to_teku_FuzzTarget());
+
+        // Set debugging logs level
+        eth2clientsfuzz::debug_clients(debug);
+
+        true
+    };
+
+    use std::{thread, time};
+    while !init_ok {
+        thread::sleep(time::Duration::from_secs(1));
+    }
 
     // Call the fuzzing function
     let it = Instant::now();
 
+    // Update the input
+    mutator.input.clear();
+    mutator.input.extend_from_slice(&container_blob);
+
     for iters in 1u64.. {
         // Pick one random beacon file
-        let index = rng.rand() % beacon_files.len();
-        let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
-        println!("[+] Beacon file: {}", &beacon_files[index]);
-
+        // change beacon file after 4095 iterations
+        if (iters & 0xfff) == 0 {
+            let index = rng.rand() % beacon_files.len();
+            let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+            println!("[+] Beacon file: {}", &beacon_files[index]);
+        }
         // Pick one random Attestation to fuzz
         // TODO(optimization) - load contents in memory
-        let index = rng.rand() % container_files.len();
-        let container_blob =
-            utils::read_from_path(&container_files[index]).expect("container not here");
-        println!("[+] Container file: {}", &container_files[index]);
+        if (iters & 0xfff) == 0 {
+            let index = rng.rand() % container_files.len();
+            let container_blob =
+                utils::read_from_path(&container_files[index]).expect("container not here");
+            println!("[+] Container file: {}", &container_files[index]);
 
+            // Update the input
+            mutator.input.clear();
+            mutator.input.extend_from_slice(&container_blob);
+        }
+
+        // Corrupt it with 4 mutation passes
+        mutator.mutate(1, &EmptyDatabase);
+        assert!(mutator.input.len() <= 4096 * 4096);
+
+        //println!("simple: {}", String::from_utf8_lossy(&mutator.input));
+        //utils::dump("test_att.ssz".to_string(), &mutator.input);
         // call the function
-        eth2clientsfuzz::run_attestation(&beacon_blob, &container_blob);
+        eth2clientsfuzz::run_attestation(&beacon_blob, &mutator.input);
 
         // stats monitoring
         if (iters & 0xff) == 0 {

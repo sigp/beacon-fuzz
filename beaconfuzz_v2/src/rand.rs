@@ -7,7 +7,7 @@ pub struct Rng(u64);
 impl Rng {
     /// Create a new random number generator
     pub fn new() -> Self {
-        Rng(0x8644d6eb17b7ab1a ^ rdtsc())
+        Rng(0x8644d6eb17b7ab1a) // ^ rdtsc())
     }
 
     /// Generate a random number

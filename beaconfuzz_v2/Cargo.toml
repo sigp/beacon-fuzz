@@ -12,6 +12,7 @@ structopt = "0.3.14" # cli parsing
 clap =  "2.33.0" # arg_num
 walkdir = "2"
 honggfuzz = "0.5"
+basic_mutator = { git = "https://github.com/gamozolabs/basic_mutator" }
 rand = "0.6"
 eth2_ssz = { path = "../../lighthouse/consensus/ssz/" }
 eth2_ssz_derive = { path = "../../lighthouse/consensus/ssz_derive/" }

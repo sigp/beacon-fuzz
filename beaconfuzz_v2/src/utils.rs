@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::io::Read;
-
+use std::io::Write;
 use walkdir::WalkDir;
 
 /// Read the contents from file path
@@ -24,4 +24,14 @@ pub fn list_files_in_folder(path_str: &str) -> Result<Vec<String>, ()> {
         }
     }
     Ok(list)
+}
+
+/// Dump u8 array into a file
+pub fn dump(name: String, input: &[u8]) {
+    // Create dump file for lighthouse post
+    // in case lighthouse return an error, this file will be the pre-state
+    let mut file = File::create(&format!("{}", name)).expect("Cannot open dump file");
+
+    // write the content
+    file.write(&input).expect("Cannot write dump file");
 }

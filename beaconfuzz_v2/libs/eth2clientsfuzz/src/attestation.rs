@@ -3,7 +3,7 @@ use ssz::Encode; //Decode
 use types::{Attestation, MainnetEthSpec};
 
 pub fn get_raw_data_from_fuzzer() -> Vec<u8> {
-    return vec![0xff; 1085];
+    return vec![0x00; 100];
 }
 
 use arbitrary::{Arbitrary, Unstructured};
@@ -15,22 +15,24 @@ pub fn run_attestation_struct(beacon_blob: &[u8], data: &[u8], debug: bool) {
     // generate attestation
 
     // Get the raw data from the fuzzer or wherever else.
-    let data: &[u8] = &get_raw_data_from_fuzzer();
+    let data2: &[u8] = &get_raw_data_from_fuzzer();
 
     // Wrap that raw data in an `Unstructured`.
-    let mut unstructured = Unstructured::new(data);
+    let mut unstructured = Unstructured::new(data2);
 
+    println!("unstructured len  {:?}", unstructured.len());
+    println!(
+        "x  {:?}",
+        Attestation::<MainnetEthSpec>::arbitrary(&mut unstructured)
+    );
+
+    println!("unstructured len  {:?}", unstructured.len());
     // Generate an arbitrary instance of `MyType` and do stuff with it.
     if let Ok(value) = Attestation::<MainnetEthSpec>::arbitrary(&mut unstructured) {
-        println!("{:?}", value);
+        println!("a  {:?}", value);
     }
 
-    println!("{:?}", Attestation::<MainnetEthSpec>::size_hint(0));
-
-    println!(
-        "{:?}",
-        Attestation::<MainnetEthSpec>::arbitrary_take_rest(unstructured)
-    );
+    println!("b {:?}", Attestation::<MainnetEthSpec>::size_hint(0));
 }
 
 // TODO - use closure for ssz decoding type

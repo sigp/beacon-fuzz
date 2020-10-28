@@ -185,40 +185,20 @@ fn test(corpora: String, container_type: Containers) -> Result<(), Error> {
     let container_blob =
         utils::read_from_path(&container_files[index]).expect("container not here");
 
+    use std::fs;
+    let container_blob = fs::read("crash-04bf9c907f05466a1bf0d9f203f30dacb2f19703")
+        .expect("Something went wrong reading the file");
     // Create log file
     // let mut outfd = File::create("log.txt").unwrap();
 
     // Initialize eth2client environment and disable bls
     eth2clientsfuzz::initialize_clients(true);
 
-    // Call the fuzzing function
-    // let it = Instant::now();
+    // Initialize teku
+    teku::init_teku(true, container_type.to_teku_FuzzTarget());
 
-    /*
-    for iters in 1u64.. {
-        // Pick one random beacon file
-        let index = rng.rand() % beacon_files.len();
-        let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
-        println!("[+] Beacon file: {}", &beacon_files[index]);
-
-        // Pick one random Attestation to fuzz
-        // TODO(optimization) - load contents in memory
-        let index = rng.rand() % container_files.len();
-        let container_blob =
-            utils::read_from_path(&container_files[index]).expect("container not here");
-        println!("[+] Container file: {}", &container_files[index]);
-
-        // call the function
-        eth2clientsfuzz::run_attestation(&beacon_blob, &container_blob);
-
-        // stats monitoring
-        if (iters & 0xff) == 0 {
-            let elapsed = (Instant::now() - it).as_secs_f64();
-            let cases_per_sec = iters as f64 / elapsed;
-            writeln!(outfd, "cases/sec: {:12.4}", cases_per_sec)?;
-        }
-    }
-    */
+    // Set debugging logs level
+    eth2clientsfuzz::debug_clients(debug);
 
     eth2clientsfuzz::run_attestation_struct(&beacon_blob, &container_blob, true);
 
@@ -245,7 +225,7 @@ fn fuzz_target(corpora: String, container_type: Containers, debug: bool) -> Resu
 
     // Pick one random beacon file
     let index = rng.rand() % beacon_files.len();
-    let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+    let mut beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
     println!("[+] Beacon file: {}", &beacon_files[index]);
 
     // Get the list of container files
@@ -255,7 +235,7 @@ fn fuzz_target(corpora: String, container_type: Containers, debug: bool) -> Resu
 
     // Pick one random Attestation to fuzz
     let index = rng.rand() % container_files.len();
-    let container_blob =
+    let mut container_blob =
         utils::read_from_path(&container_files[index]).expect("container not here");
     println!("[+] Container file: {}", &container_files[index]);
 
@@ -292,14 +272,14 @@ fn fuzz_target(corpora: String, container_type: Containers, debug: bool) -> Resu
         // change beacon file after 4095 iterations
         if (iters & 0xfff) == 0 {
             let index = rng.rand() % beacon_files.len();
-            let beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
+            beacon_blob = utils::read_from_path(&beacon_files[index]).expect("beacon not here");
             println!("[+] Beacon file: {}", &beacon_files[index]);
         }
         // Pick one random Attestation to fuzz
         // TODO(optimization) - load contents in memory
         if (iters & 0xfff) == 0 {
             let index = rng.rand() % container_files.len();
-            let container_blob =
+            container_blob =
                 utils::read_from_path(&container_files[index]).expect("container not here");
             println!("[+] Container file: {}", &container_files[index]);
 
@@ -308,7 +288,7 @@ fn fuzz_target(corpora: String, container_type: Containers, debug: bool) -> Resu
             mutator.input.extend_from_slice(&container_blob);
         }
 
-        // Corrupt it with 4 mutation passes
+        // Corrupt it with 1 mutation passes
         mutator.mutate(1, &EmptyDatabase);
         assert!(mutator.input.len() <= 4096 * 4096);
 

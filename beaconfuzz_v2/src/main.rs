@@ -293,24 +293,31 @@ fn debug_target(
     // SSZ processing of the container depending of the type
     match container_type {
         Containers::Attestation => {
+            teku::init_teku(true, teku::FuzzTarget::Attestation);
             eth2clientsfuzz::run_attestation(&beacon_blob, &container_blob);
         }
         Containers::AttesterSlashing => {
+            teku::init_teku(true, teku::FuzzTarget::AttesterSlashing);
             eth2clientsfuzz::run_attester_slashing(&beacon_blob, &container_blob);
         }
         Containers::Block => {
+            teku::init_teku(true, teku::FuzzTarget::Block);
             eth2clientsfuzz::run_block(&beacon_blob, &container_blob);
         }
         Containers::BlockHeader => {
+            teku::init_teku(true, teku::FuzzTarget::BlockHeader);
             eth2clientsfuzz::run_block_header(&beacon_blob, &container_blob);
         }
         Containers::Deposit => {
+            teku::init_teku(true, teku::FuzzTarget::Deposit);
             eth2clientsfuzz::run_deposit(&beacon_blob, &container_blob);
         }
         Containers::ProposerSlashing => {
+            teku::init_teku(true, teku::FuzzTarget::ProposerSlashing);
             eth2clientsfuzz::run_proposer_slashing(&beacon_blob, &container_blob);
         }
         Containers::VoluntaryExit => {
+            teku::init_teku(true, teku::FuzzTarget::VoluntaryExit);
             eth2clientsfuzz::run_voluntary_exit(&beacon_blob, &container_blob);
         }
     }

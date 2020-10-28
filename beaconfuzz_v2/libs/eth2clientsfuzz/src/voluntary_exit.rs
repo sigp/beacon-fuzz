@@ -95,7 +95,7 @@ pub fn run_voluntary_exit(beacon_blob: &[u8], data: &[u8], debug: bool) {
             assert_eq!(res, false);
         }
 
-        // TODO - nimbus decoding
-        // TODO - create dedicated ssz_decoding function for nimbus and prysm
+        // TODO - nimbus & teku decoding
+        // TODO - create dedicated ssz_decoding function for nimbus and teku
     }
 }

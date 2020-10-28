@@ -47,6 +47,7 @@ clean:
 build-docker:
 	CARGO_PRYSM_DIR=../../prysm \
 	CARGO_NIMBUS_DIR=../../nimbus-eth2 \
+	BFUZZ_TEKU_DIR=../../teku \
 	cargo +nightly build --release --out-dir=. -Z unstable-options
 
 ## Create the beaconfuzz_v2 docker

@@ -36,6 +36,8 @@ RUN git clone \
 #####################################
 ############ nimbus #################
 
+WORKDIR /
+
 ARG NIMBUS_GIT_BRANCH="devel"
 ARG PRESET="mainnet"
 
@@ -53,7 +55,7 @@ RUN git clone \
  	--depth 1 \
 	https://github.com/status-im/nimbus-eth2
 
-WORKDIR nimbus-eth2
+WORKDIR /nimbus-eth2
 
 # Build nimbus
 RUN NIMFLAGS="-d:disableLTO" make libnfuzz.so libnfuzz.a
@@ -124,6 +126,38 @@ ENV GOPATH="/prysm"
 # RUN cd /prysm/pfuzz/ && go build -o libpfuzz.a -tags=blst_enabled -buildmode=c-archive pfuzz.go
 
 
+#####################################
+############ teku #################
+
+WORKDIR /
+
+ARG TEKU_GIT_BRANCH="0.12.9"
+
+# Update ubuntu
+RUN apt-get update && \
+	apt-get install -y \
+		openjdk-11-jdk clang openjdk-11-jre build-essential default-jdk
+
+# set teku environment variables
+# RUN export JAVA_HOME="$(dirname $(dirname $(readlink -f $(command -v java))))"
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 
+
+ENV LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+
+# Clone the project
+RUN git clone \
+	--branch "$TEKU_GIT_BRANCH" \
+	--recursive \
+ 	--depth 1 \
+	https://github.com/PegaSysEng/teku.git
+
+WORKDIR /teku
+
+# Build teku
+# RUN BFUZZ_TEKU_DIR="$(realpath -e .)" && export BFUZZ_TEKU_DIR
+ENV BFUZZ_TEKU_DIR=/teku/
+
+RUN ./gradlew installDist fuzz:build -x test --stacktrace
 
 #####################################
 ########### Rust fuzzer #############

@@ -198,7 +198,7 @@ fn test(corpora: String, container_type: Containers) -> Result<(), Error> {
     teku::init_teku(true, container_type.to_teku_FuzzTarget());
 
     // Set debugging logs level
-    eth2clientsfuzz::debug_clients(debug);
+    eth2clientsfuzz::debug_clients(true);
 
     eth2clientsfuzz::run_attestation_struct(&beacon_blob, &container_blob, true);
 

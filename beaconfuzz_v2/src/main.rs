@@ -105,7 +105,7 @@ fn run() -> Result<(), Error> {
     Ok(())
 }
 arg_enum! {
-    #[derive(StructOpt, Debug)]
+    #[derive(Copy, Clone, StructOpt, Debug)]
     enum Containers {
         Attestation,
         AttesterSlashing,
@@ -114,6 +114,20 @@ arg_enum! {
         Deposit,
         ProposerSlashing,
         VoluntaryExit,
+    }
+}
+
+impl Containers {
+    fn to_teku_FuzzTarget(self) -> teku::FuzzTarget {
+        match self {
+            Containers::Attestation => teku::FuzzTarget::Attestation,
+            Containers::AttesterSlashing => teku::FuzzTarget::AttesterSlashing,
+            Containers::Block => teku::FuzzTarget::Block,
+            Containers::BlockHeader => teku::FuzzTarget::BlockHeader,
+            Containers::Deposit => teku::FuzzTarget::Deposit,
+            Containers::ProposerSlashing => teku::FuzzTarget::ProposerSlashing,
+            Containers::VoluntaryExit => teku::FuzzTarget::VoluntaryExit,
+        }
     }
 }
 
@@ -238,6 +252,9 @@ fn fuzz_target(corpora: String, container_type: Containers) -> Result<(), Error>
     // Initialize eth2client environment and disable bls
     eth2clientsfuzz::initialize_clients(true);
 
+    // Initialize teku
+    teku::init_teku(true, container_type.to_teku_FuzzTarget());
+
     // Call the fuzzing function
     let it = Instant::now();
 
@@ -286,6 +303,9 @@ fn debug_target(
     // Initialize eth2client environment and disable bls
     eth2clientsfuzz::initialize_clients(true);
 
+    // Initialize teku
+    teku::init_teku(true, container_type.to_teku_FuzzTarget());
+
     // activate debug mode for nimbus and prysm
     // (print message when post mismatch + dump post state)
     eth2clientsfuzz::debug_clients(true);
@@ -293,31 +313,24 @@ fn debug_target(
     // SSZ processing of the container depending of the type
     match container_type {
         Containers::Attestation => {
-            teku::init_teku(true, teku::FuzzTarget::Attestation);
             eth2clientsfuzz::run_attestation(&beacon_blob, &container_blob);
         }
         Containers::AttesterSlashing => {
-            teku::init_teku(true, teku::FuzzTarget::AttesterSlashing);
             eth2clientsfuzz::run_attester_slashing(&beacon_blob, &container_blob);
         }
         Containers::Block => {
-            teku::init_teku(true, teku::FuzzTarget::Block);
             eth2clientsfuzz::run_block(&beacon_blob, &container_blob);
         }
         Containers::BlockHeader => {
-            teku::init_teku(true, teku::FuzzTarget::BlockHeader);
             eth2clientsfuzz::run_block_header(&beacon_blob, &container_blob);
         }
         Containers::Deposit => {
-            teku::init_teku(true, teku::FuzzTarget::Deposit);
             eth2clientsfuzz::run_deposit(&beacon_blob, &container_blob);
         }
         Containers::ProposerSlashing => {
-            teku::init_teku(true, teku::FuzzTarget::ProposerSlashing);
             eth2clientsfuzz::run_proposer_slashing(&beacon_blob, &container_blob);
         }
         Containers::VoluntaryExit => {
-            teku::init_teku(true, teku::FuzzTarget::VoluntaryExit);
             eth2clientsfuzz::run_voluntary_exit(&beacon_blob, &container_blob);
         }
     }

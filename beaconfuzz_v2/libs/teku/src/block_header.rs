@@ -7,7 +7,7 @@ use types::{BeaconBlock, BeaconState, MainnetEthSpec, Signature, SignedBeaconBlo
 #[derive(Decode, Encode)]
 struct BlockHeaderTestCase {
     pub pre: BeaconState<MainnetEthSpec>,
-    pub beacon_block: SignedBeaconBlock<MainnetEthSpec>,
+    pub beacon_block: BeaconBlock<MainnetEthSpec>,
 }
 
 // TODO modify to take a SignedBeaconBlock instead?
@@ -21,10 +21,7 @@ pub fn process_block_header(
     // we need to wrap BeaconBlock into a SignedBeaconBlock
     let target: BlockHeaderTestCase = BlockHeaderTestCase {
         pre: beacon.clone(),
-        beacon_block: SignedBeaconBlock {
-            message: beacon_block.clone(),
-            signature: Signature::empty(),
-        },
+        beacon_block: beacon_block.clone(),
     };
 
     let input_ssz = target.as_ssz_bytes();

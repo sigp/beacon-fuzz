@@ -35,8 +35,6 @@ members = [
 	"libs/teku",
 ]
 
-
-
 [patch.crates-io]
 # Needed to provide paths to some relevant dependencies
 # Alternative would be to depend on the lighthouse root, which

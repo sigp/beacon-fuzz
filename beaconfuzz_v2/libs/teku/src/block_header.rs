@@ -2,7 +2,7 @@ use ssz::Encode; //Decode
 use ssz_derive::{Decode, Encode};
 
 use crate::util::run_target;
-use types::{BeaconBlock, BeaconState, MainnetEthSpec, Signature, SignedBeaconBlock};
+use types::{BeaconBlock, BeaconState, MainnetEthSpec};
 
 #[derive(Decode, Encode)]
 struct BlockHeaderTestCase {

@@ -25,7 +25,7 @@ RUN git clone \
 
 RUN cd teku && \
 	# Build Teku
-	./gradlew installDist
+	./gradlew distTar installDist
 
 #
 # Exporting compiled binaries 
@@ -33,4 +33,4 @@ RUN cd teku && \
 FROM scratch AS export
 
 # Copy over the CLI and libraries from the build phase
-COPY --from=build /app/teku/build/install/teku .
+COPY --from=build /app/teku/build/install/teku/bin/teku .

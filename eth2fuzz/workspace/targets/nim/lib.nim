@@ -42,10 +42,11 @@ proc fuzz_nimbus_block*(state: var BeaconState, payload: openarray[byte]): bool 
     # only in one function.
 
     try:
+        var cache = StateCache()
         let blck = SSZ.decode(payload, SignedBeaconBlock)
         var hashedState =
             HashedBeaconState(data: state, root: hash_tree_root(state))
-        discard state_transition(mainnetRuntimePreset, hashedState, blck, {}, noRollback)
+        discard state_transition(mainnetRuntimePreset, hashedState, blck, cache, {}, noRollback)
     except SSZError: #CatchableError:
         discard
     true

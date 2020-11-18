@@ -45,4 +45,4 @@ RUN cd prysm && \
 FROM scratch AS export
 
 # Copy over the CLI from the build phase
-COPY --from=build /app/prysm/bazel-bin/tools/pcli/linux_amd64_stripped/pcli .
+COPY --from=build /app/prysm/bazel-bin/tools/pcli/pcli_/pcli .

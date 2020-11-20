@@ -1,6 +1,7 @@
 FROM ubuntu:18.04 AS build
 
 ARG GIT_BRANCH="master"
+ARG T_VERSION="0.12.5"
 ARG PRESET="preset_mainnet"
 
 # Update ubuntu
@@ -19,7 +20,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 RUN git clone \
-	--branch "$GIT_BRANCH" \
+	--branch "$T_VERSION" \
 	--depth 1 \
 	https://github.com/PegaSysEng/teku.git
 
@@ -33,4 +34,4 @@ RUN cd teku && \
 FROM scratch AS export
 
 # Copy over the CLI and libraries from the build phase
-COPY --from=build /app/teku/build/install/teku/bin/teku .
+COPY --from=build /app/teku/build/install/teku .

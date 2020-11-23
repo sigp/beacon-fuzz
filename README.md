@@ -80,15 +80,15 @@ Please refer to each tool's `README` for detailed instructions:
 
 - [x] Development of `eth2fuzz`
 - [x] Development of `eth2diff`
-- [ ] Development of `beaconfuzz_v2` (WIP)
+- [x] Development of `beaconfuzz_v2`
   - [x] Integration of Prysm
   - [x] Integration of Lighthouse
   - [x] Integration of Nimbus
-  - [ ] Integration of Teku (WIP)
+  - [x] Integration of Teku
 - [x] Improved onboarding, ease of adding new targets and implementations
 - [x] Improved coverage measurements and visibility
 - [x] Structure-aware fuzzing mutations in `beaconfuzz_v2`
-- [ ] Deploy on dedicated production fuzzing infrastructure
+- [x] Deploy on dedicated production fuzzing infrastructure
 
 The Beacon Fuzz team regularly posts updates on the [Sigma Prime blog](blog.sigmaprime.io/). The latest update is available [here](https://blog.sigmaprime.io/beacon-fuzz-06.html).
 

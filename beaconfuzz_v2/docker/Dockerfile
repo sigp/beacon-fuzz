@@ -107,7 +107,7 @@ RUN echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.
 RUN apt-get update && \
 	apt-get install -y \
 		bazel \
- 		bazel-3.2.0
+ 		bazel-3.7.0
 
 # Copy all
 COPY libs/pfuzz /prysm/pfuzz/

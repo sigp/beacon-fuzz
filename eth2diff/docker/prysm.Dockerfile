@@ -26,7 +26,7 @@ RUN apt-get update && \
 		cmake \
 		git \
 		bazel \
-		bazel-3.2.0
+		bazel-3.7.0
 
 WORKDIR /app
 

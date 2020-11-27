@@ -10,6 +10,8 @@ Maintained by Sigma Prime for the Ethereum Foundation.
 
 For details on our community fuzzing initiative, please refer to the `eth2fuzz` [README](./eth2fuzz/README.md), along with [this blog post](https://blog.sigmaprime.io/beacon-fuzz-06.html).
 
+If you would like to raise any crashes or disclose any bugs identified using this project, please contact us via [email](mailto:security@sigmaprime.io) and use our [PGP key](https://keybase.io/sigp/pgp_keys.asc?fingerprint=15e66d941f697e28f49381f426416dc3f30674b0) to encrypt sensitive messages.
+
 ## Overview
 
 This project aims at identifying bugs and vulnerabilities on various Eth2 implementations, by leveraging three different fuzzing tools.
@@ -129,7 +131,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Teku: `IndexOutOfBoundsException` when SSZ decoding 0-byte `BitList`](https://github.com/PegaSysEng/teku/issues/1678) **fixed**
 - [Teku: `IndexOutOfBoundsException` when passed *invalid* `BeaconState` and committee size is inconsistent with attestation aggregation bits](https://github.com/PegaSysEng/teku/issues/1685). (See [1](#invalidState)) **fixed**
 - [Teku: `ArrayIndexOutOfBoundsException` in `AttesterSlashing` processing](https://github.com/PegaSysEng/teku/issues/2345) **fixed**
-- [Teku: `ProposerSlashing` processing spec deviation](https://github.com/ConsenSys/teku/pull/3151) (_not directly exploitable_) **fixed** 
+- [Teku: `ProposerSlashing` processing spec deviation](https://github.com/ConsenSys/teku/pull/3151) (_not directly exploitable_) **fixed**
 
 ### Lighthouse
 - [Lighthouse: out-of-bounds offset in variable list SSZ decoding](https://github.com/sigp/lighthouse/pull/974) **fixed**
@@ -151,7 +153,7 @@ The fuzzing tools developed as part of this project (`eth2fuzz`, `eth2diff` and 
 - [Prysm: `panic: runtime error: nil pointer dereference` when processing ProposerSlashing](https://github.com/prysmaticlabs/prysm/issues/6127) **fixed**
 - [Prysm **(Consensus Bug)**: Missing validation of attestation indices in batch attestation processing](https://github.com/prysmaticlabs/prysm/pull/6983) **fixed**
 - [Prysm: `panic: runtime error: slice bounds out of range` when parsing `SimpleMessage`](https://github.com/prysmaticlabs/prysm/issues/6083#issuecomment-690008952)
-- [Prysm: `ProposerSlashing` processing spec deviation](https://github.com/prysmaticlabs/prysm/pull/7252) (_not directly exploitable_) **fixed** 
+- [Prysm: `ProposerSlashing` processing spec deviation](https://github.com/prysmaticlabs/prysm/pull/7252) (_not directly exploitable_) **fixed**
 - [Prysm **(Consensus Bug)**: _Off-by-one_ bug in attestation processing](https://github.com/prysmaticlabs/prysm/pull/7684) **fixed**
 - [Prysm **(Consensus Bug)**: wrong epoch in proposer slashing validation](https://github.com/prysmaticlabs/prysm/pull/7725) **fixed**
 

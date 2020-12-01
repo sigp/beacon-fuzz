@@ -108,12 +108,13 @@ fn extract_classpath<P: AsRef<Path>>(teku_root: P) -> String {
 
 //
 fn teku_version_from_classpath(teku_classpath: &str) -> Option<&str> {
-    lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"teku-[^/:]*?(?P<ver>\d+(?:\.\d+)*(?:-SNAPSHOT)?)\.jar").unwrap();
-    }
-    RE.captures(teku_classpath)
-        .and_then(|cap| cap.name("ver").map(|ver| ver.as_str()))
+    //lazy_static! {
+    //    static ref RE: Regex =
+    //        Regex::new(r"teku-[^/:]*?(?P<ver>\d+(?:\.\d+)*(?:-SNAPSHOT)?)\.jar").unwrap();
+    //}
+    //RE.captures(teku_classpath)
+    //    .and_then(|cap| cap.name("ver").map(|ver| ver.as_str()));
+    Some("develop")
 }
 
 // TODO safety to ensure this is never called twice

@@ -131,7 +131,7 @@ ENV GOPATH="/prysm"
 
 WORKDIR /
 
-ARG TEKU_GIT_BRANCH="master"
+ARG TEKU_GIT_BRANCH="0.12.9"
 
 # Update ubuntu
 RUN apt-get update && \

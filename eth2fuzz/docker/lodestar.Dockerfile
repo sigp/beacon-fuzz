@@ -30,8 +30,8 @@ RUN make -f eth2fuzz.mk build
 
 FROM ubuntu:18.04
 
-ARG LODESTAR_VERSION="0.11.0"
-ARG DISCV5_VERSION="0.3.2"
+ARG LODESTAR_VERSION="0.13.0"
+ARG DISCV5_VERSION="0.5.0"
 
 # Update ubuntu
 RUN apt-get update && \

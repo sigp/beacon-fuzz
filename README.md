@@ -1,4 +1,8 @@
-# beacon-fuzz
+# beacon-fuzz - archive
+
+:warning: **This repository is now deprecated and will be archived** (the beacon-fuzz project is still being actively maintained in a *private* repository, due to the sensitive nature of the work and its potential impact on a live beacon chain) :warning:
+
+See [discord explanation](https://discord.com/channels/605577013327167508/727783315842662474/837249924604624936) for more info.
 
 Open-source fuzzing framework for Ethereum 2.0 (Eth2) Phase0 implementations.
 Maintained by Sigma Prime for the Ethereum Foundation.

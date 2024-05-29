@@ -29,10 +29,11 @@ function is_lodestar_valid_exception(e)  {
 
 }
 
+
 function fuzz_lodestar_attestation(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.Attestation.deserialize(buf);
+        mainnet_1.types.phase0.Attestation.deserialize(buf);
     } catch (e) {
         // verify if it's a valid exception
         is_lodestar_valid_exception(e);
@@ -40,9 +41,9 @@ function fuzz_lodestar_attestation(buf) {
 }
 
 function fuzz_lodestar_attester_slashing(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.AttesterSlashing.deserialize(buf);
+        mainnet_1.types.phase0.AttesterSlashing.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
@@ -50,51 +51,51 @@ function fuzz_lodestar_attester_slashing(buf) {
 
 
 function fuzz_lodestar_block(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.BeaconBlock.deserialize(buf);
+        mainnet_1.types.phase0.BeaconBlock.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
 }
 
 function fuzz_lodestar_block_header(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.BeaconBlockHeader.deserialize(buf);
+        mainnet_1.types.phase0.BeaconBlockHeader.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
 }
 function fuzz_lodestar_deposit(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.Deposit.deserialize(buf);
+        mainnet_1.types.phase0.Deposit.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
 }
 function fuzz_lodestar_proposer_slashing(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.ProposerSlashing.deserialize(buf);
+        mainnet_1.types.phase0.ProposerSlashing.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
 }
 function fuzz_lodestar_voluntary_exit(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.VoluntaryExit.deserialize(buf);
+        mainnet_1.types.phase0.VoluntaryExit.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
 }
 
 function fuzz_lodestar_beaconstate(buf) {
-    var mainnet_1 = require("@chainsafe/lodestar-types/lib/ssz/presets/mainnet");
+    var mainnet_1 = require("@chainsafe/lodestar-types/lib/presets/mainnet");
     try {
-        mainnet_1.types.BeaconState.deserialize(buf);
+        mainnet_1.types.phase0.BeaconState.deserialize(buf);
     } catch (e) {
         is_lodestar_valid_exception(e);
     }
